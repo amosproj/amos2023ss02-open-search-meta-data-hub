@@ -1,7 +1,10 @@
 version: '3'
 services:
   opensearch-node:
-    image: os-node
+    build:
+      context: os-node
+      dockerfile: Dockerfile
+    # image: os-node
     container_name: opensearch-node
     environment:
       - cluster.name=opensearch-cluster # Name the cluster
@@ -27,7 +30,10 @@ services:
     networks:
       - opensearch-net # All of the containers will join the same Docker bridge network
   opensearch-dashboards:
-    image: os-dashboard
+    build:
+      context: os-dashboard
+      dockerfile: Dockerfile
+    # image: os-dashboard
     container_name: opensearch-dashboards
     ports:
       - 5601:5601 # Map host port 5601 to container port 5601
@@ -39,7 +45,10 @@ services:
     networks:
       - opensearch-net
   import-script:
-    image: import-script
+    build:
+      context: import-script
+      dockerfile: Dockerfile
+    # image: import-script
     container_name: import-script
 
 volumes:
