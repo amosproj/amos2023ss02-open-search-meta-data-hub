@@ -34,3 +34,7 @@ bin/
 
 # MacOS
 .DS_Store
+
+
+# others
+.env
