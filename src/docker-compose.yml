@@ -50,9 +50,19 @@ services:
       dockerfile: Dockerfile
     # image: import-script
     container_name: import-script
+  webserver:
+    build:
+      context: webserver
+      dockerfile: Dockerfile
+    container_name: webserver
+    ports:
+      - 80:80
+    expose:
+      - "80"
 
 volumes:
   opensearch-data1:
 
 networks:
   opensearch-net:
+    
