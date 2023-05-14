@@ -18,6 +18,9 @@ request_path_file=os.path.join(os.getcwd(),"request.gql")
 
 mdh.init()
 # if(mdh.core.main.get().count>0):
+
+""" Connexion to MDH-Core """
+
 mdh.core.main.add(
 url=os.getenv("URL_CORE_1"),
 password_user=os.getenv("PW_USER_CORE_1"))
@@ -26,7 +29,7 @@ password_user=os.getenv("PW_USER_CORE_1"))
 # def get_result():
 for core in mdh.core.main.get():
     result=mdh.core.main.execute(core,request_path_file)
-    with open('my_file_result.json', 'w') as f:
+    with open('test_file_1.json', 'w') as f:
          # write the dictionary to the file
         json.dump(result, f,indent=4)
 
@@ -74,6 +77,7 @@ print(response)
 
 """ get a json test file that was manually extracted from the mdh """
 basepath = os.path.dirname(__file__)
+#TODO : use directly result 
 new_path = os.path.join(basepath, 'Test_Data/test_file_1.json')
 print(new_path)
 with open(new_path, 'r') as f:
