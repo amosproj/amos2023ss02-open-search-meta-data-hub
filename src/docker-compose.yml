@@ -45,11 +45,14 @@ services:
     networks:
       - opensearch-net
   import-script:
+    env_file:
+      - .env
     build:
       context: import-script
       dockerfile: Dockerfile
     # image: import-script
     container_name: import-script
+
 
 volumes:
   opensearch-data1:
