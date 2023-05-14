@@ -1,0 +1,203 @@
+{"data":{"mdhSearch":{"instanceName" : "AMOSCore",
+"timeZone" : "UTC",
+"graphQLQuery" : "query\r\n{\r\n  mdhSearch\r\n  (\r\n    fileIds: [\"AMOSCore§8\"],\r\n    convertDateTimeTo: \"UTC\",\r\n  )\r\n  {\r\n    totalFilesCount,\r\n    returnedFilesCount,\r\n    instanceName,\r\n    timeZone,\r\n    fixedReturnColumnSize,\r\n    graphQLQuery,\r\n   graphQLVariables,\r\n    limitedByLicensing,\r\n    queryStatusAsText,\r\n    dataTypes\r\n    {\r\n      name,\r\n      type,\r\n    }\r\n    files\r\n    {\r\n      metadata\r\n      {\r\n        name,\r\n        value,\r\n      }\r\n    }\r\n  }\r\n}",
+"graphQLVariables" : "",
+"limitedByLicensing" : false,
+"queryStatusAsText" : "The query was sucessfully executed",
+"files" : [ {
+  "metadata" : [ {
+    "name" : "FileName",
+    "value" : "image_0.jpeg"
+  }, {
+    "name" : "InstanceName",
+    "value" : "AMOSCore"
+  }, {
+    "name" : "Directory",
+    "value" : "/media/harvest/general/basic/"
+  }, {
+    "name" : "FileSize",
+    "value" : "29967"
+  }, {
+    "name" : "FileModifyDate",
+    "value" : "2023-03-09 09:30:00"
+  }, {
+    "name" : "FileAccessDate",
+    "value" : "2023-03-10 07:40:00"
+  }, {
+    "name" : "FileInodeChangeDate",
+    "value" : "2023-03-10 08:28:00"
+  }, {
+    "name" : "FilePermissions",
+    "value" : "rw-rw-r--"
+  }, {
+    "name" : "FileType",
+    "value" : "JPEG"
+  }, {
+    "name" : "FileTypeExtension",
+    "value" : "JPG"
+  }, {
+    "name" : "MIMEType",
+    "value" : "image/jpeg"
+  }, {
+    "name" : "SourceFile",
+    "value" : "/media/harvest/general/basic/image_0.jpeg"
+  }, {
+    "name" : "BitsPerSample",
+    "value" : "8"
+  }, {
+    "name" : "ColorComponents",
+    "value" : "1"
+  }, {
+    "name" : "EncodingProcess",
+    "value" : "0"
+  }, {
+    "name" : "FileNameExtension",
+    "value" : "jpeg"
+  }, {
+    "name" : "FilePermissionsNumeric",
+    "value" : "664"
+  }, {
+    "name" : "ImageHeight",
+    "value" : "496"
+  }, {
+    "name" : "ImageSize",
+    "value" : "512 496"
+  }, {
+    "name" : "ImageWidth",
+    "value" : "512"
+  }, {
+    "name" : "JFIFVersion",
+    "value" : "1 1"
+  }, {
+    "name" : "MdHAmountTagsInFile",
+    "value" : "31"
+  }, {
+    "name" : "MdHDatabase",
+    "value" : "mdh-core-amos-db"
+  }, {
+    "name" : "MdHHostName",
+    "value" : "h2899145.stratoserver.net"
+  }, {
+    "name" : "MdHName",
+    "value" : "AMOSCore"
+  }, {
+    "name" : "MdHStorageType",
+    "value" : "Local"
+  }, {
+    "name" : "MdHTimestamp",
+    "value" : "2023-04-26 15:28:00"
+  }, {
+    "name" : "Megapixels",
+    "value" : "0.253952"
+  }, {
+    "name" : "ResolutionUnit",
+    "value" : "0"
+  }, {
+    "name" : "XResolution",
+    "value" : "1"
+  }, {
+    "name" : "YResolution",
+    "value" : "1"
+  } ],
+  "instanceName" : "AMOSCore"
+} ],
+"dataTypes" : [ {
+  "name" : "MdHHostName",
+  "type" : "str"
+}, {
+  "name" : "MdHTimestamp",
+  "type" : "ts"
+}, {
+  "name" : "ImageSize",
+  "type" : "str"
+}, {
+  "name" : "FileName",
+  "type" : "str"
+}, {
+  "name" : "FileModifyDate",
+  "type" : "ts"
+}, {
+  "name" : "JFIFVersion",
+  "type" : "str"
+}, {
+  "name" : "MdHAmountTagsInFile",
+  "type" : "num"
+}, {
+  "name" : "BitsPerSample",
+  "type" : "str"
+}, {
+  "name" : "YResolution",
+  "type" : "num"
+}, {
+  "name" : "MdHStorageType",
+  "type" : "str"
+}, {
+  "name" : "ImageWidth",
+  "type" : "str"
+}, {
+  "name" : "FilePermissions",
+  "type" : "str"
+}, {
+  "name" : "SourceFile",
+  "type" : "str"
+}, {
+  "name" : "ColorComponents",
+  "type" : "num"
+}, {
+  "name" : "Directory",
+  "type" : "str"
+}, {
+  "name" : "EncodingProcess",
+  "type" : "num"
+}, {
+  "name" : "MdHName",
+  "type" : "str"
+}, {
+  "name" : "FileNameExtension",
+  "type" : "str"
+}, {
+  "name" : "FileAccessDate",
+  "type" : "ts"
+}, {
+  "name" : "FileInodeChangeDate",
+  "type" : "ts"
+}, {
+  "name" : "FileTypeExtension",
+  "type" : "str"
+}, {
+  "name" : "InstanceName",
+  "type" : "str"
+}, {
+  "name" : "MdHDatabase",
+  "type" : "str"
+}, {
+  "name" : "MIMEType",
+  "type" : "str"
+}, {
+  "name" : "ImageHeight",
+  "type" : "str"
+}, {
+  "name" : "XResolution",
+  "type" : "num"
+}, {
+  "name" : "FileType",
+  "type" : "str"
+}, {
+  "name" : "Megapixels",
+  "type" : "num"
+}, {
+  "name" : "ResolutionUnit",
+  "type" : "num"
+}, {
+  "name" : "FileSize",
+  "type" : "num"
+}, {
+  "name" : "FilePermissionsNumeric",
+  "type" : "num"
+} ],
+"returnedFilesCount" : 1,
+"totalFilesCount" : 1,
+"fixedReturnColumnSize" : false
+}
+}
+}
