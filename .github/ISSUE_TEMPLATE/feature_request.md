@@ -18,9 +18,12 @@ assignees: ''
 * ...
 
 ## Definition of done (DoD)
-* Added only after week 5
-* The same for all features
-* Here goes the project specific part
+A feature is considered complete when
+  * All of its acceptance criteria have been met.
+  * It has been thoroughly tested.
+  * The code has been peer reviewed by the dedicated team.
+  * It can be seamlessly integrated into the main branch without causing any negative side effects.
+  * Its core functionality has been thoroughly documented.
 
 ## DoD general criteria
 * Feature has been fully implemented
