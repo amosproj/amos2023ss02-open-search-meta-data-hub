@@ -45,7 +45,7 @@ new_json = {}
 for file in mdh_file['data']['mdhSearch']['files']:
     for metadata in file['metadata']:
         new_json[metadata['name']] = metadata['value']
-        print(new_json)
+    print(new_json)
     # response = client.index(
     #     index=index_name,
     #     body=new_json,
