@@ -53,3 +53,7 @@ body{
     box-shadow: none;
     border:none;
 }
+
+#resTable{
+    display: none;
+}

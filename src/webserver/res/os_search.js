@@ -22,13 +22,13 @@ var client = new Client({
     // },
 });
 
-async function search(index_name)
+async function search(index_name, queryParam)
 {
     var query = {
         query: {
             match: {
                 FileName: {
-                    query: "image-00041.dcm",
+                    query: queryParam,
                 },
             },
         },
@@ -40,7 +40,16 @@ async function search(index_name)
         body: query,
     });
 
+    i=0;
+    while ( i < len(response.body.hits["hits"])){
+        $("#resBody").append("<tr><td>"+i+"</td><td>"+ response.body.hits["hits"][i]["_source"]+"</td></tr>");
+        i++;
+    }
     console.log(response.body.hits["hits"][0]["_source"]);
+
 }
 
-search("amoscore")
+
+function searchOuter(){
+    search('amoscore', $("#searchField").val());
+}

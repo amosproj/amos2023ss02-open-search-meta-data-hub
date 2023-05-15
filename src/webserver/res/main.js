@@ -5,7 +5,7 @@ function sendAlert(){
     alert("Hello World!");
 }
 
-function search(){
+function searchOuter(){
     $.ajax({
         url: ".../mdh/_search",
         
