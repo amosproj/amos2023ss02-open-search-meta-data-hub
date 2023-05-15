@@ -7,7 +7,7 @@ import pathlib
 
 """ init MDH directory """
 load_dotenv()
-os.environ['MDH_HOME'] = '/WORK_REPO/Data_Import/mdh_home'
+os.environ['MDH_HOME'] = '/WORK_REPO/mdh_home'
 
 
 """ create the path where to search for data"""
