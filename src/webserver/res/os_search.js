@@ -45,6 +45,7 @@ async function search(index_name, queryParam)
         $("#resBody").append("<tr><td>"+i+"</td><td>"+ response.body.hits["hits"][i]["_source"]+"</td></tr>");
         i++;
     }
+    $("#resTable").show();
     console.log(response.body.hits["hits"][0]["_source"]);
 
 }
