@@ -10,7 +10,7 @@ COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
 # add the graphql file to the work repo
-COPY /res/Data_Import/request.gql request.gql
+COPY /res/request.gql request.gql
 
 # download mdh-lib
 RUN wget https://metadatahub.de/cloud/s/JpgrZMQBMn6GWHs/download/mdh-2.3.1-py3-none-any.whl
