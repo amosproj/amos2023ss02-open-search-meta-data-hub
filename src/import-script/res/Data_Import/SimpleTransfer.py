@@ -1,43 +1,19 @@
 import json
-import mdh
-from dotenv import load_dotenv
 import os
-import pathlib
 import time
 from opensearchpy import OpenSearch
-from opensearchpy.exceptions import ConnectionError
+from opensearchpy.exceptions import ConnectionError, RequestError
+import mdh_extraction
 
 
-""" init MDH directory """
-load_dotenv()
-os.environ['MDH_HOME'] = '/WORK_REPO/Data_Import/mdh_home'
-
-
-request_path_file=os.path.join(os.getcwd(),"request.gql")
-
-
-mdh.init()
-# if(mdh.core.main.get().count>0):
-
-""" Connexion to MDH-Core """
-
-mdh.core.main.add(
-url=os.getenv("URL_CORE_1"),
-password_user=os.getenv("PW_USER_CORE_1"))
-    # )
-
-# def get_result():
-for core in mdh.core.main.get():
-    result=mdh.core.main.execute(core,request_path_file)
-    with open('test_file_1.json', 'w') as f:
-         # write the dictionary to the file
-        json.dump(result, f,indent=4)
-
+""" get the data from the MDH by using the mdh_extraction script """
+mdh_data_file = mdh_extraction.result
+mdh_data_index = mdh_data_file['mdhSearch']['instanceName'].lower()
 
 
 """ connect to OpenSearch """
 host = 'opensearch-node' # container name of the opensearch node docker container
-port = 9200 # port on which the opensearch node run s
+port = 9200 # port on which the opensearch node runs
 auth = ('admin', 'admin') # For testing only. Don't store credentials in code.
 
 
@@ -52,6 +28,7 @@ client = OpenSearch(
     retry_on_timeout=True # enable the client trying to reconnect after a timeout
     )
 
+
 """ wait till node is ready before performing an import """
 print('\nConnection to OpenSearch Node ...')
 for _ in range(100):
@@ -61,8 +38,9 @@ for _ in range(100):
         time.sleep(2) # take a short break to give the opensearch node time to be fully set-up
 print('\nSuccessfully connected!')
 
-""" create a new index with not default settings """
-index_name = 'mdh-test-data' # the index name
+
+""" create  new index with not default settings """
+index_name = mdh_data_index # the index name
 index_body = {
   'settings': {
     'index': {
@@ -70,31 +48,36 @@ index_body = {
     }
   }
 }
-response = client.indices.create(index_name, body=index_body) # create the index in the opensearch node
-print('\nCreating index:')
-print(response)
+if not client.indices.exists(index_name): # check if index already exists
+    response = client.indices.create(index_name, body=index_body) # create the index in the opensearch node
+    print('\nCreating index:')
+    print(index_name)
 
 
-""" get a json test file that was manually extracted from the mdh """
-basepath = os.path.dirname(__file__)
-#TODO : use directly result 
-new_path = os.path.join(basepath, 'Test_Data/test_file_1.json')
-print(new_path)
-with open(new_path, 'r') as f:
-    mdh_file = json.load(f)
+
+""" get a json test file that was manually extracted from the mdh (just for testing the code) """
+# basepath = os.path.dirname(__file__)
+# new_path = os.path.join(basepath, 'Test_Data/test_file_1.json')
+# print(new_path)
+# with open(new_path, 'r') as f:
+#     mdh_file = json.load(f)
 
 
 """ extract metadata from json file """
-new_json = {} # initialize a new json file
+modified_data_file = {} # initialize a new json file
 # id = 1
-for file in mdh_file['data']['mdhSearch']['files']: # loop over all files
+for file in mdh_data_file['mdhSearch']['files']: # loop over all files
+    file_name = '' # initialize variable for file name
     for metadata in file['metadata']: # loop over all metadata
-        new_json[metadata['name']] = metadata['value'] # save each metadata in the new json file
-    print(new_json)
+        modified_data_file[metadata['name']] = metadata['value'] # save each metadata in the new json file
+        if metadata['name'] == 'FileName': # check if metadata is current file name
+            file_name = metadata['value'] # save file name
+    print(modified_data_file)
     # upload new json to the opensearch node
+    #TODO : Modify so that first iot will be checked if file already exists
     response = client.index(
         index=index_name,
-        body=new_json,
+        body=modified_data_file,
         # id = id,
         refresh=True
     )
