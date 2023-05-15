@@ -1,4 +1,3 @@
-
 var host = "localhost";
 var protocol = "http";
 var port = 9200;
@@ -29,7 +28,7 @@ async function search(index_name)
         query: {
             match: {
                 FileName: {
-                    query: "image_0.jpeg",
+                    query: "image-00041.dcm",
                 },
             },
         },
@@ -44,4 +43,4 @@ async function search(index_name)
     console.log(response.body.hits["hits"][0]["_source"]);
 }
 
-search("mdh-test-data")
+search("amoscore")
