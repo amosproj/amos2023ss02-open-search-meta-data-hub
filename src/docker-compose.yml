@@ -45,11 +45,17 @@ services:
     networks:
       - opensearch-net
   import-script:
+    env_file:
+      - .env
     build:
       context: import-script
       dockerfile: Dockerfile
-    # image: import-script
+      # image: import-script
+    depends_on:
+      - opensearch-node # defining that the import-script container is depending on the opensearch-node container
     container_name: import-script
+    networks:
+      - opensearch-net
 
 volumes:
   opensearch-data1:
