@@ -1,33 +1,33 @@
 query
 {
-  mdhSearch
-  (
-    filterFunctions:[
-      {tag: "MIMEType", operation: CONTAINS, value: "dicom", dataType: STR} ,]
-    filterLogicOption: AND,
-    selectedTags:["FileName", "FileSize", "MIMEType", "FileInodeChangeDate", "SourceFile", ],
-  	limit:4
-  )
-  {
-    totalFilesCount,
-    returnedFilesCount,
-    instanceName,
-    timeZone,
-    fixedReturnColumnSize,
-    limitedByLicensing,
-    queryStatusAsText,
-    dataTypes
+    mdhSearch
+    (
+        filterFunctions:[
+            {tag: "MIMEType", operation: CONTAINS, value: "dicom", dataType: STR} ,]
+        filterLogicOption: AND,
+        selectedTags:["FileName", "FileSize", "MIMEType", "FileInodeChangeDate", "SourceFile", ],
+        limit:4
+    )
     {
-      name,
-      type,
+        totalFilesCount,
+        returnedFilesCount,
+        instanceName,
+        timeZone,
+        fixedReturnColumnSize,
+        limitedByLicensing,
+        queryStatusAsText,
+        dataTypes
+        {
+            name,
+            type,
+        }
+        files
+        {
+            metadata
+            {
+                name,
+                value,
+            }
+        }
     }
-    files
-    {
-      metadata
-      {
-        name,
-        value,
-      }
-    }
-  }
 }

@@ -1,5 +1,4 @@
 from opensearchpy import OpenSearch
-import time
 
 
 def connect_to_os():
