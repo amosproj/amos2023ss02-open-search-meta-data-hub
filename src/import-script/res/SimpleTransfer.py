@@ -1,10 +1,9 @@
-import json
-import os
 import time
-from opensearchpy import OpenSearch
-from opensearchpy.exceptions import ConnectionError, RequestError
-import mdh_extraction
 
+from opensearchpy import OpenSearch
+from opensearchpy.exceptions import ConnectionError
+
+import mdh_extraction
 
 """ get the data from the MDH by using the mdh_extraction script """
 mdh_data_file = mdh_extraction.result

@@ -1,7 +1,8 @@
 from flask import Flask
 from flask import render_template
-from backend import connection_os, search_os
 from opensearchpy import OpenSearch
+
+from backend import connection_os
 
 app = Flask(__name__)
 # TODO: find a better solution

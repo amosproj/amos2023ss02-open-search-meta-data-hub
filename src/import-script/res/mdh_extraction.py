@@ -1,9 +1,10 @@
-import json
 import mdh
 from dotenv import load_dotenv
 import os
-import pathlib
+import os
 
+import mdh
+from dotenv import load_dotenv
 
 """ init MDH directory """
 load_dotenv()
