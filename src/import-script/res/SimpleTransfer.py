@@ -54,14 +54,6 @@ if not client.indices.exists(index_name): # check if index already exists
 
 
 
-""" get a json test file that was manually extracted from the mdh (just for testing the code) """
-# basepath = os.path.dirname(__file__)
-# new_path = os.path.join(basepath, 'Test_Data/test_file_1.json')
-# print(new_path)
-# with open(new_path, 'r') as f:
-#     mdh_file = json.load(f)
-
-
 """ extract metadata from json file """
 modified_data_file = {} # initialize a new json file
 # id = 1
