@@ -42,6 +42,7 @@ def connect_to_os():
 
 def create_index(client: OpenSearch, mdh_data_index: str):
     """ create  new index with not default settings """
+    # TODO: add data_type property for all relevant tags (see data_types.py)
     index_name = mdh_data_index # the index name
     index_body = {
       'settings': {
@@ -91,14 +92,12 @@ def perform_bulk(client: OpenSearch, formatted_data: list, instance_name: str):
 
 
 if __name__ == "__main__":
-    start = timeit.timeit()
     print("Start importing...")
     _mdh_data, _instance_name = get_mdh_data()
     _client: OpenSearch = connect_to_os()
     _formatted_data = format_data(_mdh_data)
     perform_bulk(_client, _formatted_data, _instance_name)
-    end = timeit.timeit()
-    print("Finished, time needed: ", end - start)
+    print("Finished!")
 
 
 
