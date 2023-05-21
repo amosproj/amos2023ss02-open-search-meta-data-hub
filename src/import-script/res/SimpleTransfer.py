@@ -1,4 +1,7 @@
+import time
+
 from opensearchpy import OpenSearch
+from opensearchpy.exceptions import ConnectionError
 
 import mdh_extraction
 
@@ -12,19 +15,24 @@ port = 9200  # port on which the opensearch node runs
 auth = ('admin', 'admin')  # For testing only. Don't store credentials in code.
 
 """ Create the client with SSL/TLS and hostname verification disabled. """
-try:
-    client = OpenSearch(
-        hosts=[{'host': host, 'port': port}],
-        http_compress=True,  # enables gzip compression for request bodies
-        http_auth=auth,
-        use_ssl=True,
-        verify_certs=False,
-        ssl_assert_hostname=False,
-        ssl_show_warn=False
-    )
-except BaseException:
-    # connection error; send error message
-    print("ERROR unable to connect opensearch instance")
+client = OpenSearch(
+    hosts=[{'host': host, 'port': port}],  # host and port to connect with
+    http_auth=auth,  # credentials
+    use_ssl=False,  # disable ssl
+    verify_certs=False,  # disable verification of certificates
+    ssl_assert_hostname=False,  # disable verification of hostname
+    ssl_show_warn=False,  # disable ssl warnings
+    retry_on_timeout=True  # enable the client trying to reconnect after a timeout
+)
+
+""" wait till node is ready before performing an import """
+print('\nConnection to OpenSearch Node ...')
+for _ in range(100):
+    try:
+        client.cluster.health(wait_for_status="yellow")  # make sure the cluster is available
+    except ConnectionError:
+        time.sleep(2)  # take a short break to give the opensearch node time to be fully set-up
+print('\nSuccessfully connected!')
 
 """ create  new index with not default settings """
 index_name = mdh_data_index  # the index name
@@ -39,14 +47,6 @@ if not client.indices.exists(index_name):  # check if index already exists
     response = client.indices.create(index_name, body=index_body)  # create the index in the opensearch node
     print('\nCreating index:')
     print(index_name)
-
-""" get a json test file that was manually extracted from the mdh (just for testing the code) """
-# basepath = os.path.dirname(__file__)
-# new_path = os.path.join(basepath, 'Test_Data/test_file_1.json')
-# print(new_path)
-# with open(new_path, 'r') as f:
-#     mdh_file = json.load(f)
-
 
 """ extract metadata from json file """
 modified_data_file = {}  # initialize a new json file
