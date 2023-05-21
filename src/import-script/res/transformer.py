@@ -1,4 +1,10 @@
-response = {
+import time
+import numpy as np
+from opensearchpy import OpenSearch, helpers
+
+
+def get_sample_data():
+    response = {
     "data": {
         "mdhSearch": {
             "files": [
@@ -150,31 +156,35 @@ response = {
         }
     }
 }
+    return response
 
-# To create a generic method to get the data format based on the provided dataTypes, you can use the following code:
-data_types = response
+def get_data_format(data_types):
+    data_format = {}
+    for data_type in data_types:
+        name = data_type['name']
+        data_format[name] = data_type['type']
+    return data_format
 
+def get_client():
+    """ connect to OpenSearch """
+    host = 'localhost'  # container name of the opensearch node docker container
+    port = 9200  # port on which the opensearch node runs
+    auth = ('admin', 'admin')  # For testing only. Don't store credentials in code.
 
-# def get_data_format(data_types):
-#     data_format = {}
-#     for data_type in data_types:
-#         name = data_type['name']
-#         data_format[name] = data_type['type']
-#     return data_format
-#
-#
-# # You can call this method by passing the dataTypes list from the response as an argument, like this:
-# data_types = response['data']['mdhSearch']['dataTypes']
-# data_format = get_data_format(data_types)
-
+    """ Create the client with SSL/TLS and hostname verification disabled. """
+    client = OpenSearch(
+        hosts=[{'host': host, 'port': port}],  # host and port to connect with
+        http_auth=auth,  # credentials
+        use_ssl=False,  # disable ssl
+        verify_certs=False,  # disable verification of certificates
+        ssl_assert_hostname=False,  # disable verification of hostname
+        ssl_show_warn=False,  # disable ssl warnings
+        retry_on_timeout=True  # enable the client trying to reconnect after a timeout
+    )
+    return client
 
 def format_output(response):
-    # Check if the necessary fields are present in the data
-    if "data" not in response or "mdhSearch" not in response["data"]:
-        return "Invalid data format."
-
     mdh_search = response["data"]["mdhSearch"]
-
     # Extract the relevant information from the data
     files = mdh_search.get("files", [])
     output = []
@@ -190,49 +200,25 @@ def format_output(response):
             if name and value:
                 file_info[name] = value
 
-        # Build the formatted output row
-        row = [
-            index,
-            file_info.get("FileName", ""),
-            file_info.get("FileSize", ""),
-            file_info.get("MIMEType", ""),
-            file_info.get("FileInodeChangeDate", ""),
-            file_info.get("SourceFile", "")
-        ]
-
-        output.append(row)
+        output.append(file_info)
 
     return output
 
-
-print("#\tFileName\tFileSize\tMIMEType\tFileInodeChangeDate\tSourceFile")
-for row in format_output(response):
-    print('\t'.join(str(value) for value in row))
-
-bulk_data = []  # Initialize a list to store the bulk data
-
-
-# a bulk API call in OpenSearch, you can use the client.bulk method.
-# Here's an example of how you can modify the code
-mdh_data_file = response
-index_name = "amoscore"
-for file in mdh_data_file['mdhSearch']['files']:
-    modified_data_file = {}  # Initialize a new dictionary for each file
-    for metadata in file['metadata']:
-        modified_data_file[metadata['name']] = metadata['value']
-
-    # Create the bulk action dictionary for indexing the document
-    action = {
-        '_index': index_name,
-        '_source': modified_data_file
+def perform_bulk(client: OpenSearch, formated_data: dict, instance_name: str):
+    index_operation = {
+        "index": {"_index": instance_name}
     }
+    create_operation = {
+        "create": {"_index": instance_name}
+    }
+    bulk_data = (str(index_operation) +
+                 '\n' + ('\n' + str(create_operation) +
+                         '\n').join(str(data) for data in formated_data)).replace("'", "\"")
+    client.bulk(bulk_data)
 
-    # Append the action to the bulk_data list
-    bulk_data.append(action)
+formated_data = format_output(get_sample_data())
+bulk_data = perform_bulk(get_client(), formated_data, 'amoscore')
 
-# Perform the bulk API call
-response = client.bulk(body=bulk_data, refresh=True)
 
-print('\nIndexing documents:')
-print(response)
+
 
