@@ -1,6 +1,9 @@
 # Replace the 'response' variable with the actual response data from the query
+<<<<<<< HEAD
 from opensearch import client
 
+=======
+>>>>>>> origin/implement-efficient-data-transportation
 response = {
 
 }
@@ -62,6 +65,7 @@ def format_output(data):
 print("#\tFileName\tFileSize\tMIMEType\tFileInodeChangeDate\tSourceFile")
 for row in format_output(response):
     print('\t'.join(str(value) for value in row))
+<<<<<<< HEAD
 bulk_data = []  # Initialize a list to store the bulk data
 
 
@@ -88,3 +92,5 @@ response = client.bulk(body=bulk_data, refresh=True)
 
 print('\nIndexing documents:')
 print(response)
+=======
+>>>>>>> origin/implement-efficient-data-transportation
