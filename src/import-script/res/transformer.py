@@ -1,34 +1,179 @@
-# Replace the 'response' variable with the actual response data from the query
-
-from opensearch import client
-
 response = {
-
+    "data": {
+        "mdhSearch": {
+            "files": [
+                {
+                    "metadata": [
+                        {
+                            "name": "FileName",
+                            "value": "which-attributes.gif"
+                        },
+                        {
+                            "name": "FileSize",
+                            "value": "44955"
+                        },
+                        {
+                            "name": "MIMEType",
+                            "value": "image/gif"
+                        },
+                        {
+                            "name": "FileInodeChangeDate",
+                            "value": "2023-03-10 08:28:00"
+                        },
+                        {
+                            "name": "SourceFile",
+                            "value": "/media/harvest/general/basic/which-attributes.gif"
+                        }
+                    ]
+                },
+                {
+                    "metadata": [
+                        {
+                            "name": "FileName",
+                            "value": "HEIC.heic"
+                        },
+                        {
+                            "name": "FileSize",
+                            "value": "293608"
+                        },
+                        {
+                            "name": "MIMEType",
+                            "value": "image/heif"
+                        },
+                        {
+                            "name": "FileInodeChangeDate",
+                            "value": "2023-03-10 08:28:00"
+                        },
+                        {
+                            "name": "SourceFile",
+                            "value": "/media/harvest/general/basic/HEIC.heic"
+                        }
+                    ]
+                },
+                {
+                    "metadata": [
+                        {
+                            "name": "FileName",
+                            "value": "image_0.jpeg"
+                        },
+                        {
+                            "name": "FileSize",
+                            "value": "29967"
+                        },
+                        {
+                            "name": "MIMEType",
+                            "value": "image/jpeg"
+                        },
+                        {
+                            "name": "FileInodeChangeDate",
+                            "value": "2023-03-10 08:28:00"
+                        },
+                        {
+                            "name": "SourceFile",
+                            "value": "/media/harvest/general/basic/image_0.jpeg"
+                        }
+                    ]
+                },
+                {
+                    "metadata": [
+                        {
+                            "name": "FileName",
+                            "value": "image-00041.dcm"
+                        },
+                        {
+                            "name": "FileSize",
+                            "value": "86664"
+                        },
+                        {
+                            "name": "MIMEType",
+                            "value": "application/dicom"
+                        },
+                        {
+                            "name": "FileInodeChangeDate",
+                            "value": "2023-03-10 08:28:00"
+                        },
+                        {
+                            "name": "SourceFile",
+                            "value": "/media/harvest/domain/medical_science/dicom/series-00000/image-00041.dcm"
+                        }
+                    ]
+                },
+                {
+                    "metadata": [
+                        {
+                            "name": "FileName",
+                            "value": "image-00171.dcm"
+                        },
+                        {
+                            "name": "FileSize",
+                            "value": "92528"
+                        },
+                        {
+                            "name": "MIMEType",
+                            "value": "application/dicom"
+                        },
+                        {
+                            "name": "FileInodeChangeDate",
+                            "value": "2023-03-10 08:28:00"
+                        },
+                        {
+                            "name": "SourceFile",
+                            "value": "/media/harvest/domain/medical_science/dicom/series-00000/image-00171.dcm"
+                        }
+                    ]
+                },
+                {
+                    "metadata": [
+                        {
+                            "name": "FileName",
+                            "value": "PPT-Sample-with-Images.pptx"
+                        },
+                        {
+                            "name": "FileSize",
+                            "value": "5309683"
+                        },
+                        {
+                            "name": "MIMEType",
+                            "value": "application/zip"
+                        },
+                        {
+                            "name": "FileInodeChangeDate",
+                            "value": "2023-03-10 08:28:00"
+                        },
+                        {
+                            "name": "SourceFile",
+                            "value": "/media/harvest/general/office/PPT-Sample-with-Images.pptx"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
 }
 
 # To create a generic method to get the data format based on the provided dataTypes, you can use the following code:
 data_types = response
 
 
-def get_data_format(data_types):
-    data_format = {}
-    for data_type in data_types:
-        name = data_type['name']
-        data_format[name] = data_type['type']
-    return data_format
+# def get_data_format(data_types):
+#     data_format = {}
+#     for data_type in data_types:
+#         name = data_type['name']
+#         data_format[name] = data_type['type']
+#     return data_format
+#
+#
+# # You can call this method by passing the dataTypes list from the response as an argument, like this:
+# data_types = response['data']['mdhSearch']['dataTypes']
+# data_format = get_data_format(data_types)
 
 
-# You can call this method by passing the dataTypes list from the response as an argument, like this:
-data_types = response['data']['mdhSearch']['dataTypes']
-data_format = get_data_format(data_types)
-
-
-def format_output(data):
+def format_output(response):
     # Check if the necessary fields are present in the data
-    if "data" not in data or "mdhSearch" not in data["data"]:
+    if "data" not in response or "mdhSearch" not in response["data"]:
         return "Invalid data format."
 
-    mdh_search = data["data"]["mdhSearch"]
+    mdh_search = response["data"]["mdhSearch"]
 
     # Extract the relevant information from the data
     files = mdh_search.get("files", [])
