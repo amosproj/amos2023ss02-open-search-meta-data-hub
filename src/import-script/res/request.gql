@@ -6,7 +6,7 @@ query
       {tag: "MIMEType", operation: CONTAINS, value: "dicom", dataType: STR} ,]
     filterLogicOption: AND,
     selectedTags:["FileName", "FileSize", "MIMEType", "FileInodeChangeDate", "SourceFile", ],
-  	limit:4
+  	limit:10000
   )
   {
     totalFilesCount,
