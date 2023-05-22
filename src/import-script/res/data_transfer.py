@@ -122,12 +122,23 @@ def perform_bulk_with_data_type(client: OpenSearch, formatted_data: List[Dict[st
     client.bulk('\n'.join(bulk_data))
 
 
+def get_data_type(field: str) -> str:
+    """ Get the data type for a given field """
+    data_types = {
+        "MIMEType": "str",
+        "FileName": "str",
+        "FileInodeChangeDate": "ts",
+        "SourceFile": "str",
+        "FileSize": "num"
+    }
+    return data_types.get(field, "str")  # Default to "str" if data type is not defined
+
 
 if __name__ == "__main__":
     print("Start importing...")
     _mdh_data, _instance_name = get_mdh_data()
     _client: OpenSearch = connect_to_os()
     _formatted_data = format_data(_mdh_data)
-    # perform_bulk(_client, _formatted_data, _instance_name)
-    perform_bulk_with_data_tyoe(_client, _formatted_data, _instance_name)
+    perform_bulk(_client, _formatted_data, _instance_name)
+    # perform_bulk_with_data_type(_client, _formatted_data, _instance_name)
     print("Finished!")
