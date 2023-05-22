@@ -33,10 +33,10 @@ def search_simple():
     return search_os.simple_search(client, request.args.get('searchString'))
 
 
-@app.route('/files_type_pie')
-def files_type_pie():
+@app.route('/files_type_chart')
+def files_type_chart():
     labels,values,colors=files_type.get_files_type()
-    return render_template('pie_chart.html', max=17000, set=zip(values, labels, colors))
+    return render_template('doughnut_chart.html', max=17000, set=zip(values, labels, colors))
 
 
 
