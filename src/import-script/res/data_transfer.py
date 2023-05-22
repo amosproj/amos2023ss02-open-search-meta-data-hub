@@ -1,8 +1,10 @@
 import time
-import timeit
+from datetime import datetime
+from typing import List, Dict, Any
 
 from opensearchpy import OpenSearch
 from opensearchpy.exceptions import ConnectionError
+
 import mdh_extraction
 
 
@@ -15,27 +17,27 @@ def get_mdh_data():
 
 def connect_to_os():
     """ connect to OpenSearch """
-    host = 'localhost' # container name of the opensearch node docker container
-    port = 9200 # port on which the opensearch node runs
-    auth = ('admin', 'admin') # For testing only. Don't store credentials in code.
+    host = 'localhost'  # container name of the opensearch node docker container
+    port = 9200  # port on which the opensearch node runs
+    auth = ('admin', 'admin')  # For testing only. Don't store credentials in code.
 
     """ Create the client with SSL/TLS and hostname verification disabled. """
     client = OpenSearch(
-        hosts=[{'host': host, 'port': port}], # host and port to connect with
-        http_auth=auth, # credentials
-        use_ssl=False, # disable ssl
-        verify_certs=False, # disable verification of certificates
-        ssl_assert_hostname=False, # disable verification of hostname
-        ssl_show_warn=False, # disable ssl warnings
-        retry_on_timeout=True # enable the client trying to reconnect after a timeout
-        )
+        hosts=[{'host': host, 'port': port}],  # host and port to connect with
+        http_auth=auth,  # credentials
+        use_ssl=False,  # disable ssl
+        verify_certs=False,  # disable verification of certificates
+        ssl_assert_hostname=False,  # disable verification of hostname
+        ssl_show_warn=False,  # disable ssl warnings
+        retry_on_timeout=True  # enable the client trying to reconnect after a timeout
+    )
 
     """ wait till node is ready before performing an import """
     for _ in range(100):
         try:
-            client.cluster.health(wait_for_status="yellow") # make sure the cluster is available
+            client.cluster.health(wait_for_status="yellow")  # make sure the cluster is available
         except ConnectionError:
-            time.sleep(2) # take a short break to give the opensearch node time to be fully set-up
+            time.sleep(2)  # take a short break to give the opensearch node time to be fully set-up
 
     return client
 
@@ -43,16 +45,16 @@ def connect_to_os():
 def create_index(client: OpenSearch, mdh_data_index: str):
     """ create  new index with not default settings """
     # TODO: add data_type property for all relevant tags (see data_types.py)
-    index_name = mdh_data_index # the index name
+    index_name = mdh_data_index  # the index name
     index_body = {
-      'settings': {
-        'index': {
-          'number_of_shards': 4
+        'settings': {
+            'index': {
+                'number_of_shards': 4
+            }
         }
-      }
     }
-    if not client.indices.exists(index_name): # check if index already exists
-        response = client.indices.create(index_name, body=index_body) # create the index in the opensearch node
+    if not client.indices.exists(index_name):  # check if index already exists
+        response = client.indices.create(index_name, body=index_body)  # create the index in the opensearch node
 
 
 def format_data(mdh_data: dict):
@@ -91,15 +93,41 @@ def perform_bulk(client: OpenSearch, formatted_data: list, instance_name: str):
     client.bulk(bulk_data)
 
 
+# Here's an updated version of the method that incorporates the data types:
+def perform_bulk_with_data_type(client: OpenSearch, formatted_data: List[Dict[str, Any]], instance_name: str):
+    """ inserting multiple documents into opensearch via a bulk API """
+    index_operation = {
+        "index": {"_index": instance_name}
+    }
+    create_operation = {
+        "create": {"_index": instance_name}
+    }
+    bulk_data = []
+
+    for data in formatted_data:
+        doc = str(index_operation)
+        doc += '\n' + str(create_operation) + '\n'
+
+        for field in data:
+            field_value = data[field]
+            data_type = get_data_type(field)
+
+            if data_type == "ts":  # Special handling for "ts" type (assuming UNIX timestamp)
+                field_value = datetime.fromtimestamp(field_value).isoformat()
+
+            doc += f'{{"{field}": {field_value}}}\n'
+
+        bulk_data.append(doc)
+
+    client.bulk('\n'.join(bulk_data))
+
+
+
 if __name__ == "__main__":
     print("Start importing...")
     _mdh_data, _instance_name = get_mdh_data()
     _client: OpenSearch = connect_to_os()
     _formatted_data = format_data(_mdh_data)
-    perform_bulk(_client, _formatted_data, _instance_name)
+    # perform_bulk(_client, _formatted_data, _instance_name)
+    perform_bulk_with_data_tyoe(_client, _formatted_data, _instance_name)
     print("Finished!")
-
-
-
-
-
