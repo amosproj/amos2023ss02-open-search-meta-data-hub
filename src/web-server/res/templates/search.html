@@ -3,13 +3,19 @@
 {% block content %}
 <br>
 <h1>{% block title %}Search for Metadata!{% endblock %}</h1>
+<div class="input-group mb-3">
+  <input type="text" class="form-control form-input" placeholder="Search anything..." id="searchField">
+  <button class="btn btn-primary" type="button" id="searchButton">Search</button>
+</div>
+
 <input id="searchField" type="text" class="form-control form-input" placeholder="Search anything...">
 <button type="button" class="btn btn-primary" id="searchButton">Search</button>
 <table class="table" id="resTable">
     <thead>
       <tr>
         <th>Hit number</th>
-        <th>_source</th>
+        <th>FileName</th>
+        <th>Last Changed</th>
       </tr>
     </thead>
     <tbody id="resBody">
