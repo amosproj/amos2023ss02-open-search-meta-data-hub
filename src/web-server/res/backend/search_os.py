@@ -1,7 +1,7 @@
 from opensearchpy import OpenSearch
 
-def simple_search(client: OpenSearch, search_text):
 
+def simple_search(client: OpenSearch, search_text):
     query = {
         "query": {
             "match": {
@@ -15,10 +15,3 @@ def simple_search(client: OpenSearch, search_text):
         index='amoscore'
     )
     return response
-
-
-
-
-
-
-
