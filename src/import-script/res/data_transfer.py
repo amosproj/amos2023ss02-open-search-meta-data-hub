@@ -2,11 +2,12 @@ import time
 from datetime import datetime
 from typing import List, Dict, Any
 
+import opensearchpy
 from opensearchpy import OpenSearch
 from opensearchpy.exceptions import ConnectionError
 
 import mdh_extraction
-import data_types
+from data_types import *
 
 
 def get_mdh_data():
@@ -18,7 +19,7 @@ def get_mdh_data():
 
 def connect_to_os():
     """ connect to OpenSearch """
-    host = 'localhost'  # container name of the opensearch node docker container
+    host = 'opensearch-node'  # container name of the opensearch node docker container
     port = 9200  # port on which the opensearch node runs
     auth = ('admin', 'admin')  # For testing only. Don't store credentials in code.
 
@@ -54,6 +55,12 @@ def create_index(client: OpenSearch, mdh_data_index: str):
             }
         }
     }
+    properties = {'properties': {}}
+    for key in data_types:
+        properties['properties'][key]=data_types[key]
+
+    index_body['mappings'] = properties
+
     if not client.indices.exists(index_name):  # check if index already exists
         response = client.indices.create(index_name, body=index_body)  # create the index in the opensearch node
 
@@ -72,6 +79,12 @@ def format_data(mdh_data: dict):
         for meta in metadata:
             name = meta.get("name")
             value = meta.get("value")
+            # set correct datatypes
+            if data_types[name]['type'] == 'date':
+                value = value
+                #TODO: Please try to make this work: value = datetime.strptime(value, '%Y-%m-%d %H:%M:%S').isoformat()
+            elif data_types[name]['type'] == 'integer':
+                value = int(value)
             if name and value:
                 file_info[name] = value
 
@@ -94,38 +107,9 @@ def perform_bulk(client: OpenSearch, formatted_data: list, instance_name: str):
     client.bulk(bulk_data)
 
 
-# Here's an updated version of the method that incorporates the data types:
-def perform_bulk_with_data_type(client: OpenSearch, formatted_data: List[Dict[str, Any]], instance_name: str):
-    """ inserting multiple documents into opensearch via a bulk API """
-    index_operation = {
-        "index": {"_index": instance_name}
-    }
-    create_operation = {
-        "create": {"_index": instance_name}
-    }
-    bulk_data = []
-
-    for data in formatted_data:
-        doc = str(index_operation)
-        doc += '\n' + str(create_operation) + '\n'
-
-        for field in data:
-            field_value = data[field]
-            data_type = get_data_type(field)
-
-            if data_type == "ts":  # Special handling for "ts" type (assuming UNIX timestamp)
-                field_value = datetime.fromtimestamp(field_value).isoformat()
-
-            doc += f'{{"{field}": {field_value}}}\n'
-
-        bulk_data.append(doc)
-
-    client.bulk('\n'.join(bulk_data))
-
-
 def get_data_type(field: str) -> str:
     """ Get the data type for a given field """
-    return data_types.get(field, "str")  # Default to "str" if data type is not defined
+    return data_types.data_types.get(field, "str")  # Default to "str" if data type is not defined
 
 
 if __name__ == "__main__":
@@ -133,6 +117,6 @@ if __name__ == "__main__":
     _mdh_data, _instance_name = get_mdh_data()
     _client: OpenSearch = connect_to_os()
     _formatted_data = format_data(_mdh_data)
+    create_index(_client, _instance_name)
     perform_bulk(_client, _formatted_data, _instance_name)
-    # perform_bulk_with_data_type(_client, _formatted_data, _instance_name)
     print("Finished!")
