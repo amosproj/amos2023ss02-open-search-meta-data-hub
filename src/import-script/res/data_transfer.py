@@ -6,6 +6,7 @@ from opensearchpy import OpenSearch
 from opensearchpy.exceptions import ConnectionError
 
 import mdh_extraction
+import data_types
 
 
 def get_mdh_data():
@@ -124,13 +125,6 @@ def perform_bulk_with_data_type(client: OpenSearch, formatted_data: List[Dict[st
 
 def get_data_type(field: str) -> str:
     """ Get the data type for a given field """
-    data_types = {
-        "MIMEType": "str",
-        "FileName": "str",
-        "FileInodeChangeDate": "ts",
-        "SourceFile": "str",
-        "FileSize": "num"
-    }
     return data_types.get(field, "str")  # Default to "str" if data type is not defined
 
 
