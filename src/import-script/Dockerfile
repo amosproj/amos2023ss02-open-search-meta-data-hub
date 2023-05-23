@@ -21,4 +21,4 @@ RUN pip install mdh-2.3.1-py3-none-any.whl
 RUN mkdir mdh_home
 
 # execute the python file to start transfer
-CMD python SimpleTransfer.py
+CMD python data_transfer.py
