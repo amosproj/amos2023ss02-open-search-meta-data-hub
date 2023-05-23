@@ -7,14 +7,15 @@ from dotenv import load_dotenv
 load_dotenv()
 os.environ['MDH_HOME'] = '/WORK_REPO/mdh_home'
 
+
 """ create the path where to search for data"""
 request_path_file = os.path.join(os.getcwd(), "request.gql")
 
-""" Intitialization of the MDH-Core"""
+""" Initialization of the MDH-Core"""
 mdh.init()
 # if(mdh.core.main.get().count>0):
 
-""" Connecion to MDH-Core """
+""" Connection to MDH-Core """
 mdh.core.main.add(
     url=os.getenv("URL_CORE_1"),
     password_user=os.getenv("PW_USER_CORE_1")
