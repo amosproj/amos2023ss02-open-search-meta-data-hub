@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 services:
   opensearch-node:
     build:
@@ -56,7 +56,17 @@ services:
     container_name: import-script
     networks:
       - opensearch-net
-
+  web-server:
+    build:
+      context: web-server
+    stop_signal: SIGINT
+    ports:
+      - "8000:8000"
+    depends_on:
+      - opensearch-node # defining that the import-script container is depending on the opensearch-node container
+      - import-script
+    networks:
+      - opensearch-net
 volumes:
   opensearch-data1:
 

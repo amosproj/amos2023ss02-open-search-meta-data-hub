@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br>
+<h1>{% block title %}Search for Metadata!{% endblock %}</h1>
+<input id="searchField" type="text" class="form-control form-input" placeholder="Search anything...">
+<button type="button" class="btn btn-primary" id="searchButton">Search</button>
+<table class="table" id="resTable">
+    <thead>
+      <tr>
+        <th>Hit number</th>
+        <th>_source</th>
+      </tr>
+    </thead>
+    <tbody id="resBody">
+    </tbody>
+  </table>
+{% endblock %}
