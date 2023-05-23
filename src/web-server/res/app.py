@@ -1,8 +1,10 @@
 from flask import Flask
 from flask import render_template
+from flask import request
 from opensearchpy import OpenSearch
 
 from backend import connection_os
+from backend import search_os
 
 app = Flask(__name__)
 # TODO: find a better solution
@@ -21,8 +23,12 @@ def index():
 
 @app.route('/search')
 def search():
-    # response = search_os.simple_search(client = client, search_text = 'image')
+    # response = search_os.simple_search(client = client, search_text = searchField)
     return render_template('search.html')
+
+@app.route('/search/simple')
+def search_simple():
+    return search_os.simple_search(client, request.args.get('searchString'))
 
 
 if __name__ == '__main__':
