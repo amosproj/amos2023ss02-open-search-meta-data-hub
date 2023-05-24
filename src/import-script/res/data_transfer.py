@@ -46,27 +46,28 @@ def connect_to_os():
 
 def create_index(client: OpenSearch, mdh_data_index: str):
     """ create  new index with not default settings """
-    # TODO: add data_type property for all relevant tags (see data_types.py)
+    """ create new index with non-default settings """
     index_name = mdh_data_index  # the index name
     index_body = {
         'settings': {
             'index': {
                 'number_of_shards': 4
             }
+        },
+        'mappings': {
+            'properties': {}
         }
     }
-    properties = {'properties': {}}
-    for key in data_types:
-        properties['properties'][key]=data_types[key]
 
-    index_body['mappings'] = properties
+    for key in data_types:
+        index_body['mappings']['properties'][key] = data_types[key]
 
     if not client.indices.exists(index_name):  # check if index already exists
-        response = client.indices.create(index_name, body=index_body)  # create the index in the opensearch node
-
+        response = client.indices.create(index_name, body=index_body)  # create the index in the OpenSearch node
+        # Handle the response if needed
 
 def format_data(mdh_data: dict):
-    """ reformatting the mdh_data dictionary so it can be stored in OpenSearch """
+    """ reformatting the mdh_data dictionary, so it can be stored in OpenSearch """
     mdh_search = mdh_data["mdhSearch"]
     # Extract the relevant information from the data
     files = mdh_search.get("files", [])
@@ -81,8 +82,8 @@ def format_data(mdh_data: dict):
             value = meta.get("value")
             # set correct datatypes
             if data_types[name]['type'] == 'date':
-                value = value
-                #TODO: Please try to make this work: value = datetime.strptime(value, '%Y-%m-%d %H:%M:%S').isoformat()
+                #  data_types['FileInodeChangeDate']['value'] = value
+                data_types['FileInodeChangeDate']['value'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             elif data_types[name]['type'] == 'integer':
                 value = int(value)
             if name and value:
