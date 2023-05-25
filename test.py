@@ -1,8 +1,8 @@
-def factorial(n):
-    if n == 0:
+def factorial(var_test):
+    if var_test == 0:
         return 1
     else:
-        return n * factorial(n-1)
+        return var_test * factorial(var_test-1)
 
 
 if __name__ == "__main__":
