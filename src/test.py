@@ -4,6 +4,7 @@ def factorial(n):
     else:
         return n * factorial(n-1)
 
+
 if __name__ == "__main__":
     num = int(input("Enter a number: "))
     result = factorial(num)
