@@ -8,7 +8,7 @@ def fetch_all_MIMEType(client: OpenSearch, index_name):
         "aggs": {
             "mime_type_counts": {
                 "terms": {
-                    "field": "MIMEType.keyword",
+                    "field": "MIMEType",
                     "size": 10
                     }
                 }

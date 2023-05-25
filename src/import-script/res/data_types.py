@@ -3,7 +3,7 @@
 data_types = {
     'FileName': {"type": "text"},
     'FileSize': {"type": "integer"},
-    'MIMEType': {"type": "text"},
+    'MIMEType': {"type": "text","fielddata": True},
     #TODO: Please try to make this work
     # 'FileInodeChangeDate': {
     #     "type": "date",
