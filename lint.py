@@ -2,7 +2,7 @@ import sys
 
 from pylint.lint import Run
 
-THRESHOLD = 2
+THRESHOLD = 5
 score = Run(["test.py"], exit=False).linter.stats.global_note
 
 
