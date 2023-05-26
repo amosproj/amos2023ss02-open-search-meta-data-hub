@@ -35,6 +35,9 @@ def perform_advanced_search(client: OpenSearch, search_info: dict):
         {"field": "FileSize", "operator": "LESS_THAN", "value": 2000}
     ]
 
+    filter_functions.remove({"field": "FileSize", "operator": "LESS_THAN", "value": 2000})
+    print(filter_functions)
+
     selected_tags = [
         "FileName",
         "FileSize",
@@ -78,7 +81,6 @@ def perform_advanced_search(client: OpenSearch, search_info: dict):
        }
      """ % (filter_functions_json, selected_tags, limit)
 
-    # Execute the query and process the response as needed
 
 #     # This is just a sample idea of how to pass search information from frontend to backend
 #     search_info = {
