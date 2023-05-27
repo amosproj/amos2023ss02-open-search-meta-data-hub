@@ -82,6 +82,37 @@ def perform_advanced_search(client: OpenSearch, search_info: dict):
      """ % (filter_functions_json, selected_tags, limit)
 
 
+def apply_filters(data, filter_functions):
+    filtered_data = []
+
+    for filter_func in filter_functions:
+        field = filter_func.get("field")
+        operator = filter_func.get("operator")
+        value = filter_func.get("value")
+
+        if operator == "EXIST":
+            filtered_data.extend(item for item in data if field in item)
+        elif operator == "NOT_EXIST":
+            filtered_data.extend(item for item in data if field not in item)
+        elif operator == "EMPTY":
+            filtered_data.extend(item for item in data if not item.get(field))
+        elif operator == "NOT_EMPTY":
+            filtered_data.extend(item for item in data if item.get(field))
+        elif operator == "CONTAINS":
+            filtered_data.extend(item for item in data if field in item and value in item[field])
+        elif operator == "NOT_CONTAINS":
+            filtered_data.extend(item for item in data if field in item and value not in item[field])
+        elif operator == "EQUALS":
+            filtered_data.extend(item for item in data if field in item and item[field] == value)
+        elif operator == "NOT_EQUALS":
+            filtered_data.extend(item for item in data if field in item and item[field] != value)
+        elif operator == "GREATER_THAN":
+            filtered_data.extend(item for item in data if field in item and item[field] > value)
+        elif operator == "LESS_THAN":
+            filtered_data.extend(item for item in data if field in item and item[field] < value)
+
+    return filtered_data
+
 #     # This is just a sample idea of how to pass search information from frontend to backend
 #     search_info = {
 #         'FileName': {
