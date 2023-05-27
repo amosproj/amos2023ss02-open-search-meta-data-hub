@@ -14,11 +14,11 @@ for file_path in file_list:
     (pylint_stdout, _) = lint.py_run(file_path, return_std=True)
     lint_output.append(pylint_stdout.getvalue())
 
-
 print(lint_output)
 # Calculate the average score
 scores = [float(output.split(":")[1].strip()) for output in lint_output]
 average_score = sum(scores) / len(scores)
+
 
 print("Average score:", average_score)
 if average_score < THRESHOLD:
