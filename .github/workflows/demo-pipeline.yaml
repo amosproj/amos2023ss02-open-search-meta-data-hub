@@ -20,7 +20,7 @@ jobs:
           pip install pylint pytest
       - name: Lint with pylint
         run: |
-          pylint_result=$(pylint res/mdh_extraction.py --output-format=parseable)
+          pylint_result=$(pylint src/import-script/res/mdh_extraction.py --output-format=parseable)
           echo "$pylint_result"
           if [[ $pylint_result =~ "rated at 10.00/10" ]]; then
             echo "Linting passed!"
