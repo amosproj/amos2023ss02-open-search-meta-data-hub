@@ -22,5 +22,14 @@ jobs:
         run: |
           pylint_result=$(pylint test --output-format=parseable)
           echo "$pylint_result"
+          exit_code=$?
+          echo "$pylint_result"
+          if [ $exit_code -eq 0 ]; then
+            echo "Linting passed!"
+            else
+            echo "Linting failed with exit code $exit_code"
+            exit $exit_code
+          fi
+          
       #   run: |
       #     pytest pytest_test.py
