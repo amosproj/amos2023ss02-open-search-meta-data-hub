@@ -4,7 +4,7 @@ from pylint import epylint as lint
 
 THRESHOLD = 5
 folder_path = "test"
-folder_path = "src/import-script/res"
+# folder_path = "src/import-script/res"
 
 # Get a list of all Python files in the folder
 file_list = [os.path.join(folder_path, filename) for filename in os.listdir(folder_path) if filename.endswith(".py")]
