@@ -20,6 +20,7 @@ print(lint_output)
 scores = [float(output.split(":")[1].strip()) for output in lint_output]
 average_score = sum(scores) / len(scores)
 
+
 print("Average score:", average_score)
 if average_score < THRESHOLD:
     print("Linter failed: Average score < threshold value")
