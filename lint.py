@@ -3,6 +3,7 @@ import sys
 from pylint import epylint as lint
 
 THRESHOLD = 5
+folder_path = "test"
 folder_path = "src/import-script/res"
 
 # Get a list of all Python files in the folder
