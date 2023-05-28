@@ -1,6 +1,7 @@
+import os
+
 import mdh
 from dotenv import load_dotenv
-import os
 
 
 class MetaDataHubManager:

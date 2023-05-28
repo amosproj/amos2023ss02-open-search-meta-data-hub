@@ -1,5 +1,5 @@
-import json
 import time
+
 from opensearchpy import OpenSearch
 
 

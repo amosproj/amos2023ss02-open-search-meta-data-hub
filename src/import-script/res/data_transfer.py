@@ -1,6 +1,7 @@
+from datetime import datetime
+
 from mdh_api import MetaDataHubManager
 from opensearch_api import OpenSearchManager
-from datetime import datetime
 
 
 def modify_datatypes(mdh_datatypes: dict) -> dict:
