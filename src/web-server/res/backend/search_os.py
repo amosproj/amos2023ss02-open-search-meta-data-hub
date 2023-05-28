@@ -1,6 +1,7 @@
 from opensearchpy import OpenSearch
 import json
-
+from data_types import DataTypes
+import connection_os
 
 def simple_search(client: OpenSearch, search_text):
     query = {
@@ -18,116 +19,60 @@ def simple_search(client: OpenSearch, search_text):
     return response
 
 
-# To replace the dynamic values in the query string,
-# you can use string manipulation methods provided by this method.
-#  Here's an example:
-def perform_advanced_search(client: OpenSearch, search_info: dict):
-    filter_functions = [
-        {"field": "FileName", "operator": "EXIST"},
-        {"field": "FileName", "operator": "NOT_EXIST"},
-        {"field": "FileSize", "operator": "EMPTY"},
-        {"field": "FileSize", "operator": "NOT_EMPTY"},
-        {"field": "FileName", "operator": "CONTAINS", "value": "example"},
-        {"field": "FileName", "operator": "NOT_CONTAINS", "value": "abc"},
-        {"field": "MIMEType", "operator": "EQUALS", "value": "text/plain"},
-        {"field": "MIMEType", "operator": "NOT_EQUALS", "value": "image/jpeg"},
-        {"field": "FileSize", "operator": "GREATER_THAN", "value": 1000},
-        {"field": "FileSize", "operator": "LESS_THAN", "value": 2000}
-    ]
-
-    filter_functions.remove({"field": "FileSize", "operator": "LESS_THAN", "value": 2000})
-    print(filter_functions)
-
-    selected_tags = [
-        "FileName",
-        "FileSize",
-        "MIMEType",
-        "FileInodeChangeDate",
-        "SourceFile"
-    ]
-
-    limit = 100
-
-    # Convert filter_functions list to JSON string
-    filter_functions_json = json.dumps(filter_functions)
-
-    # Construct the query with the updated filter functions, logic option, selected tags, and limit
-    query = """
-       query {
-         mdhSearch(
-           filterFunctions: %s
-           filterLogicOption: AND
-           selectedTags: %s
-           limit: %d
-         ) {
-           totalFilesCount
-           returnedFilesCount
-           instanceName
-           timeZone
-           fixedReturnColumnSize
-           limitedByLicensing
-           queryStatusAsText
-           dataTypes {
-             name
-             type
-           }
-           files {
-             metadata {
-               name
-               value
-             }
-           }
-         }
-       }
-     """ % (filter_functions_json, selected_tags, limit)
+def advanced_search(client: OpenSearch, search_info):
+    data_types = DataTypes()
+    sub_queries = []
+    for search_field in search_info:
+        data_type = data_types.get_data_type(search_field)
+        search_content = search_info[search_field]['search_content']
+        operator = search_info[search_field]['operator']
+        sub_queries.append(get_sub_query(data_type, operator, search_field, search_content))
+    query = get_query(sub_queries)
+    print(query)
+    response = client.search(
+        body=query,
+        index='amoscore'
+    )
+    return response
 
 
-def apply_filters(data, filter_functions):
-    filtered_data = []
+def get_query(sub_queries: list[tuple]):
+    query = {'query': {'bool': {}}}
+    for sub_query, functionality in sub_queries:
+        if functionality not in query['query']['bool']:
+            query['query']['bool'][functionality] = [sub_query]
+        else:
+            query['query']['bool'][functionality].append(sub_query)
+    return query
 
-    for filter_func in filter_functions:
-        field = filter_func.get("field")
-        operator = filter_func.get("operator")
-        value = filter_func.get("value")
 
-        if operator == "EXIST":
-            filtered_data.extend(item for item in data if field in item)
-        elif operator == "NOT_EXIST":
-            filtered_data.extend(item for item in data if field not in item)
-        elif operator == "EMPTY":
-            filtered_data.extend(item for item in data if not item.get(field))
-        elif operator == "NOT_EMPTY":
-            filtered_data.extend(item for item in data if item.get(field))
-        elif operator == "CONTAINS":
-            filtered_data.extend(item for item in data if field in item and value in item[field])
-        elif operator == "NOT_CONTAINS":
-            filtered_data.extend(item for item in data if field in item and value not in item[field])
-        elif operator == "EQUALS":
-            filtered_data.extend(item for item in data if field in item and item[field] == value)
-        elif operator == "NOT_EQUALS":
-            filtered_data.extend(item for item in data if field in item and item[field] != value)
-        elif operator == "GREATER_THAN":
-            filtered_data.extend(item for item in data if field in item and item[field] > value)
-        elif operator == "LESS_THAN":
-            filtered_data.extend(item for item in data if field in item and item[field] < value)
+def get_sub_query(data_type: str, operator: str, search_field: str, search_content: any) -> tuple:
+    if data_type == 'integer':
+        if operator == 'EQUALS':
+            return {'term': {search_field: {'value': int(search_content)}}}, 'must'
+        elif operator == 'GREATER_THAN':
+            return {'range': {search_field: {'gt': int(search_content)}}}, 'must'
+        elif operator == 'LOWER_THAN':
+            return {'range': {search_field: {'lt': int(search_content)}}}, 'must'
+        elif operator == 'NOT_EQUALS':
+            return {'term': {search_field: {'value': int(search_content)}}}, 'must_not'
+    elif data_type == 'text':
+        if operator == 'EQUALS':
+            return {'match': {search_field: search_content}}, 'must'
+        elif operator == 'NOT_EQUALS':
+            return {'match': {search_field: search_content}}, 'must_not'
 
-    return filtered_data
+# This is just a sample idea of how to pass search information from frontend to backend
+search_info = {
+    'FileName': {
+        'search_content': 'image',
+        'operator': 'NOT_EQUALS',
+    },
+    'FileSize': {
+        'search_content': 500,
+        'operator': 'GREATER_THAN',
+    },
+}
 
-#     # This is just a sample idea of how to pass search information from frontend to backend
-#     search_info = {
-#         'FileName': {
-#             'search_content': 'medicine',
-#             'operator': '=',
-#             'boost': 2
-#         },
-#         'FileSize': {
-#             'search_content': 500,
-#             'operator': '>',
-#             'boost': 2
-#         },
-#         'FileNodeChangeDate': '2013-05-05T08:00:00',
-#         'operator': '>',
-#         'boost': 3
-#     }
-#     query = {}
-#     return
+print(advanced_search(connection_os.connect_to_os(), search_info))
+

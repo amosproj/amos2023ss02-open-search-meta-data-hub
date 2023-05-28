@@ -12,6 +12,7 @@ from datetime import datetime
 # Feel free to modify the code or extend the class with additional functionality as per your requirements.
 class DataTypes:
     def __init__(self):
+
         self._data_types = {
             'FileName': {"type": "text"},
             'FileSize': {"type": "integer"},
@@ -20,22 +21,21 @@ class DataTypes:
                 "type": "date",
                 "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis",
                 "value": str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-            }
+            },
+            'SourceFile': {"type": "text"}
         }
 
-    def get_data_type(self, field: str) -> dict:
+    def get_data_types(self) -> dict:
+        """ returns the whole data_types dictionary """
+        return self._data_types
+
+    def get_data_type(self, field: str) -> str:
         """Get the data type for a given field."""
-        return self._data_types.get(field, {})
+        try:
+            return self._data_types[field]['type']
+        except KeyError:
+            print("Unknown field")
 
-    def set_data_type(self, field: str, data_type: dict):
+    def set_data_type(self, field: str, data_type: str):
         """Set the data type for a given field."""
-        self._data_types[field] = data_type
-
-
-# Example usage:
-data_types_obj = DataTypes()
-print(data_types_obj.get_data_type('FileName'))  # {'type': 'text'}
-
-# Set the data type for a field
-data_types_obj.set_data_type('FileName', {"type": "custom_text"})
-print(data_types_obj.get_data_type('FileName'))  # {'type': 'custom_text'}
+        self._data_types[field]['type'] = data_type
