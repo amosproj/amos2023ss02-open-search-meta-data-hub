@@ -2,7 +2,6 @@ from flask import Flask
 from flask import render_template
 from flask import request
 from opensearchpy import OpenSearch
-
 from backend import connection_os
 from backend import search_os
 from backend import files_type

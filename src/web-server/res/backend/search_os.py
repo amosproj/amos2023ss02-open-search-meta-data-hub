@@ -1,7 +1,7 @@
 from opensearchpy import OpenSearch
 import json
-from data_types import DataTypes
 import connection_os
+
 
 def simple_search(client: OpenSearch, search_text):
     query = {
@@ -19,11 +19,15 @@ def simple_search(client: OpenSearch, search_text):
     return response
 
 
+def get_datatype(client: OpenSearch, field_name: str) -> str:
+    mapping = client.indices.get_mapping(index='amoscore')
+    return mapping['amoscore']['mappings']['properties'][field_name]['type']
+
+
 def advanced_search(client: OpenSearch, search_info):
-    data_types = DataTypes()
     sub_queries = []
     for search_field in search_info:
-        data_type = data_types.get_data_type(search_field)
+        data_type = get_datatype(client, search_field)
         search_content = search_info[search_field]['search_content']
         operator = search_info[search_field]['operator']
         sub_queries.append(get_sub_query(data_type, operator, search_field, search_content))
@@ -66,7 +70,7 @@ def get_sub_query(data_type: str, operator: str, search_field: str, search_conte
 search_info = {
     'FileName': {
         'search_content': 'image',
-        'operator': 'NOT_EQUALS',
+        'operator': 'EQUALS',
     },
     'FileSize': {
         'search_content': 500,
