@@ -1,5 +1,5 @@
 [MASTER]
-ignored-modules=opensearchpy
+ignored-modules=opensearchpy,mdh,dotenv,flask
 
 [MESSAGES CONTROL]
 disable=logging-fstring-interpolation,missing-module-docstring
