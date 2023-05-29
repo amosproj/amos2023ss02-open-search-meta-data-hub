@@ -1,14 +1,6 @@
 query {
   mdhSearch(
     filterFunctions: []
-    filterLogicOption: AND
-    selectedTags: [
-      "FileName"
-      "FileSize"
-      "MIMEType"
-      "FileInodeChangeDate"
-      "SourceFile"
-    ]
     limit: 100
   ) {
     totalFilesCount

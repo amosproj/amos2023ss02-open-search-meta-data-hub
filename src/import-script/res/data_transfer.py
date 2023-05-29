@@ -1,122 +1,66 @@
-import time
 from datetime import datetime
-from typing import List, Dict, Any
 
-import opensearchpy
-from opensearchpy import OpenSearch
-from opensearchpy.exceptions import ConnectionError
-
-import mdh_extraction
-from data_types import *
+from mdh_api import MetaDataHubManager
+from opensearch_api import OpenSearchManager
 
 
-def get_mdh_data():
-    """ get the data from the MDH by using the mdh_extraction script """
-    mdh_data = mdh_extraction.result
-    instance_name = mdh_data['mdhSearch']['instanceName'].lower()
-    return mdh_data, instance_name
+def modify_datatypes(mdh_datatypes: dict) -> dict:
+    """ reformatting the mdh_datatypes dictionary, so it can be stored in OpenSearch
+    :param mdh_datatypes: a dictionary containing the corresponding datatypes to the metadata-tags from a MetaDataHub request
+    :return: this function returns a dictionary containing the corresponding OpenSearch datatypes for the metadata-tags
+    """
+    modified_datatypes = {} # init the resulting dictionary
+    for mdh_datatype in mdh_datatypes: # loop over all entries of the mdh_datatypes dictionary
+        name = mdh_datatype.get("name").replace(".", "_") # get the name of the metadata-tag and replace the '.' with '_' to avoid parsing errors
+        mdh_type = mdh_datatype.get("type") # get the corresponding datatype
+        # assign the correct OpenSearch datatype
+        if mdh_type == 'num':
+            modified_datatypes[name] = 'float'
+        elif mdh_type == 'ts':
+            modified_datatypes[name] = 'date'
+        elif mdh_type == 'str':
+            modified_datatypes[name] = 'text'
+        else:
+            modified_datatypes[name] = 'text'
+    return modified_datatypes
 
 
-def connect_to_os():
-    """ connect to OpenSearch """
-    host = 'opensearch-node'  # container name of the opensearch node docker container
-    port = 9200  # port on which the opensearch node runs
-    auth = ('admin', 'admin')  # For testing only. Don't store credentials in code.
-
-    """ Create the client with SSL/TLS and hostname verification disabled. """
-    client = OpenSearch(
-        hosts=[{'host': host, 'port': port}],  # host and port to connect with
-        http_auth=auth,  # credentials
-        use_ssl=False,  # disable ssl
-        verify_certs=False,  # disable verification of certificates
-        ssl_assert_hostname=False,  # disable verification of hostname
-        ssl_show_warn=False,  # disable ssl warnings
-        retry_on_timeout=True  # enable the client trying to reconnect after a timeout
-    )
-
-    """ wait till node is ready before performing an import """
-    for _ in range(100):
-        try:
-            client.cluster.health(wait_for_status="yellow")  # make sure the cluster is available
-        except ConnectionError:
-            time.sleep(2)  # take a short break to give the opensearch node time to be fully set-up
-
-    return client
-
-
-def create_index(client: OpenSearch, mdh_data_index: str):
-    """ create  new index with not default settings """
-    # TODO: add data_type property for all relevant tags (see data_types.py)
-    index_name = mdh_data_index  # the index name
-    index_body = {
-        'settings': {
-            'index': {
-                'number_of_shards': 4
-            }
-        }
-    }
-    properties = {'properties': {}}
-    for key in data_types:
-        properties['properties'][key]=data_types[key]
-
-    index_body['mappings'] = properties
-
-    if not client.indices.exists(index_name):  # check if index already exists
-        response = client.indices.create(index_name, body=index_body)  # create the index in the opensearch node
-
-
-def format_data(mdh_data: dict):
-    """ reformatting the mdh_data dictionary so it can be stored in OpenSearch """
-    mdh_search = mdh_data["mdhSearch"]
-    # Extract the relevant information from the data
-    files = mdh_search.get("files", [])
-    formatted_data = []
-
-    # Iterate over the files and extract the required metadata
-    for index, file_data in enumerate(files, start=1):
-        metadata = file_data.get("metadata", [])
-        file_info = {}
-        for meta in metadata:
-            name = meta.get("name")
-            value = meta.get("value")
+def modify_data(mdh_data: list[dict], data_types: dict) -> list[dict]:
+    """ reformatting the mdh_data dictionary, so it can be stored in OpenSearch
+    :param mdh_data: a list of dictionaries that contains all metadata-tags for every file of a MetaDataHub request
+    :param data_types: a dictionary containing the modified OpenSearch datatypes
+    :return: this function returns a list of dictionaries containing the modified metadata tags and their corresponding values
+    """
+    modified_data = [] # init the resulting list
+    for index, file_data in enumerate(mdh_data, start=1): # Loop over all files of mdh_data
+        metadata = file_data.get("metadata", []) # get the metadata for each file
+        file_info = {} # init the dictionary in which the metadata will be stored
+        for meta in metadata: # loop over every metadata-tag
+            name = str(meta.get("name")).replace(".", "_") # get the name and replace '. with '_' to avoid parsing errors
+            value = meta.get("value") # get the corresponding value for the metadata-tag
             # set correct datatypes
-            if data_types[name]['type'] == 'date':
-                value = value
-                #TODO: Please try to make this work: value = datetime.strptime(value, '%Y-%m-%d %H:%M:%S').isoformat()
-            elif data_types[name]['type'] == 'integer':
-                value = int(value)
+            if data_types[name] == 'date':
+                date = datetime.strptime(value, "%Y-%m-%d %H:%M:%S") # get the correct datetime format
+                value = str(date.utcnow().strftime("%Y-%m-%d" "T" "%H:%M:%S")) # make the datetime a string so it can be stored in OpenSearch
+            elif data_types[name] == 'float':
+                value = float(value)
             if name and value:
                 file_info[name] = value
 
-        formatted_data.append(file_info)
+        modified_data.append(file_info)
 
-    return formatted_data
-
-
-def perform_bulk(client: OpenSearch, formatted_data: list, instance_name: str):
-    """ inserting multiple documents into opensearch via a bulk API """
-    index_operation = {
-        "index": {"_index": instance_name}
-    }
-    create_operation = {
-        "create": {"_index": instance_name}
-    }
-    bulk_data = (str(index_operation) +
-                 '\n' + ('\n' + str(create_operation) +
-                         '\n').join(str(data) for data in formatted_data)).replace("'", "\"")
-    client.bulk(bulk_data)
-
-
-def get_data_type(field: str) -> str:
-    """ Get the data type for a given field """
-    return data_types.data_types.get(field, "str")  # Default to "str" if data type is not defined
+    return modified_data
 
 
 if __name__ == "__main__":
     print("Start importing...")
-    _mdh_data, _instance_name = get_mdh_data()
-    _client: OpenSearch = connect_to_os()
-    _formatted_data = format_data(_mdh_data)
-    create_index(_client, _instance_name)
-    perform_bulk(_client, _formatted_data, _instance_name)
+    mdh_manager = MetaDataHubManager() # create a manager for handling the MetaDataHub API
+    instance_name = mdh_manager.get_instance_name() # get the instance (core name) of the MetaDataHub request
+    mdh_datatypes = mdh_manager.get_datatypes() # get all mdh_datatypes of the request
+    mdh_data = mdh_manager.get_data() # get all mdh_data from the request
+    data_types = modify_datatypes(mdh_datatypes=mdh_datatypes) # modify the datatypes so they fit in OpenSearch
+    data = modify_data(mdh_data=mdh_data, data_types=data_types) # modify the data so it fits in OpenSearch
+    os_manager = OpenSearchManager(localhost=False) # create a manager for handling the OpenSearch API
+    os_manager.create_index(index_name=instance_name, data_types=data_types) # create an index for the new data
+    os_manager.perform_bulk(index_name=instance_name, data=data) # perform a bulk request to store the new data in OpenSearch
     print("Finished!")
