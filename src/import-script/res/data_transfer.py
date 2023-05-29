@@ -5,36 +5,43 @@ from opensearch_api import OpenSearchManager
 
 
 def modify_datatypes(mdh_datatypes: dict) -> dict:
-    modified_datatypes = {}
-    for mdh_datatype in mdh_datatypes:
-        name = mdh_datatype.get("name").replace(".", "_")
-        type = mdh_datatype.get("type")
-        if type == 'num':
+    """ reformatting the mdh_datatypes dictionary, so it can be stored in OpenSearch
+    :param mdh_datatypes: a dictionary containing the corresponding datatypes to the metadata-tags from a MetaDataHub request
+    :return: this function returns a dictionary containing the corresponding OpenSearch datatypes for the metadata-tags
+    """
+    modified_datatypes = {} # init the resulting dictionary
+    for mdh_datatype in mdh_datatypes: # loop over all entries of the mdh_datatypes dictionary
+        name = mdh_datatype.get("name").replace(".", "_") # get the name of the metadata-tag and replace the '.' with '_' to avoid parsing errors
+        mdh_type = mdh_datatype.get("type") # get the corresponding datatype
+        # assign the correct OpenSearch datatype
+        if mdh_type == 'num':
             modified_datatypes[name] = 'float'
-        elif type == 'ts':
+        elif mdh_type == 'ts':
             modified_datatypes[name] = 'date'
-        elif type == 'str':
+        elif mdh_type == 'str':
             modified_datatypes[name] = 'text'
         else:
             modified_datatypes[name] = 'text'
     return modified_datatypes
 
 
-def modify_data(mdh_data: list[dict], data_types) -> list[dict]:
-    """ reformatting the mdh_data dictionary so it can be stored in OpenSearch """
-    modified_data = []
-    # Iterate over the files and extract the required metadata
-    for index, file_data in enumerate(mdh_data, start=1):
-        metadata = file_data.get("metadata", [])
-        file_info = {}
-        for meta in metadata:
-            name = str(meta.get("name")).replace(".", "_")
-            value = meta.get("value")
+def modify_data(mdh_data: list[dict], data_types: dict) -> list[dict]:
+    """ reformatting the mdh_data dictionary, so it can be stored in OpenSearch
+    :param mdh_data: a list of dictionaries that contains all metadata-tags for every file of a MetaDataHub request
+    :param data_types: a dictionary containing the modified OpenSearch datatypes
+    :return: this function returns a list of dictionaries containing the modified metadata tags and their corresponding values
+    """
+    modified_data = [] # init the resulting list
+    for index, file_data in enumerate(mdh_data, start=1): # Loop over all files of mdh_data
+        metadata = file_data.get("metadata", []) # get the metadata for each file
+        file_info = {} # init the dictionary in which the metadata will be stored
+        for meta in metadata: # loop over every metadata-tag
+            name = str(meta.get("name")).replace(".", "_") # get the name and replace '. with '_' to avoid parsing errors
+            value = meta.get("value") # get the corresponding value for the metadata-tag
             # set correct datatypes
             if data_types[name] == 'date':
-                date = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
-                #value = date.strftime('%Y-%m-%dT%H:%M:%S')
-                value = str(date.utcnow().strftime("%Y-%m-%d" "T" "%H:%M:%S"))
+                date = datetime.strptime(value, "%Y-%m-%d %H:%M:%S") # get the correct datetime format
+                value = str(date.utcnow().strftime("%Y-%m-%d" "T" "%H:%M:%S")) # make the datetime a string so it can be stored in OpenSearch
             elif data_types[name] == 'float':
                 value = float(value)
             if name and value:
@@ -47,19 +54,13 @@ def modify_data(mdh_data: list[dict], data_types) -> list[dict]:
 
 if __name__ == "__main__":
     print("Start importing...")
-    mdh_manager = MetaDataHubManager()
-    instance_name = mdh_manager.get_instance_name()
-    mdh_datatypes = mdh_manager.get_datatypes()
-    mdh_data = mdh_manager.get_files()
-    data_types = modify_datatypes(mdh_datatypes=mdh_datatypes)
-    print(data_types)
-    data = modify_data(mdh_data=mdh_data, data_types=data_types)
-    print(len(data_types))
-    #print(data_types)
-    #print(data)
-    os_manager = OpenSearchManager(localhost=False)
-    #os_manager.create_index(index_name=instance_name, data_types=data_types)
-    response = os_manager.perform_bulk(index_name=instance_name, data=data)
-    print(response)
-
+    mdh_manager = MetaDataHubManager() # create a manager for handling the MetaDataHub API
+    instance_name = mdh_manager.get_instance_name() # get the instance (core name) of the MetaDataHub request
+    mdh_datatypes = mdh_manager.get_datatypes() # get all mdh_datatypes of the request
+    mdh_data = mdh_manager.get_data() # get all mdh_data from the request
+    data_types = modify_datatypes(mdh_datatypes=mdh_datatypes) # modify the datatypes so they fit in OpenSearch
+    data = modify_data(mdh_data=mdh_data, data_types=data_types) # modify the data so it fits in OpenSearch
+    os_manager = OpenSearchManager(localhost=False) # create a manager for handling the OpenSearch API
+    os_manager.create_index(index_name=instance_name, data_types=data_types) # create an index for the new data
+    os_manager.perform_bulk(index_name=instance_name, data=data) # perform a bulk request to store the new data in OpenSearch
     print("Finished!")
