@@ -27,6 +27,8 @@ if average_score < THRESHOLD:
     print("Linter failed: Average score < threshold value")
     sys.exit(1)
 sys.exit(0)
+
+
 #-------------------------------
 
 # import os
