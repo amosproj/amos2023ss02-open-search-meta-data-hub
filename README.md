@@ -32,7 +32,8 @@ Here, you can learn, how to start the OpenSearch-Metadata-Hub.
 URL_CORE_1=https://metadahub.de/example
 PW_USER_CORE_1=testpw
 ```
-5) Navigate to the `src/`-folder and execute `docker compose up`. Alternatively, you can also execute `docker compose up -d` for detached mode.
-6) Our website runs on port 8000, so you should be able to access it on [localhost:8000](localhost:8000).
-7) Top stop all services, run `docker compose down` in `src/`.
-8) You can use the `-v`-option in the last command to clear persistent data (e.g. to clear imported data). This action cannot be undone!
+5) You should set the Linux setting `vm.max_map_count` to at least 262144. This is required by OpenSearch. You can read more about it in the [OpenSearch-Documenation](https://opensearch.org/docs/latest/install-and-configure/install-opensearch/index/#important-settings).
+6) Navigate to the `src/`-folder and execute `docker compose up`. Alternatively, you can also execute `docker compose up -d` for detached mode.
+7) Our website runs on port 8000, so you should be able to access it on [localhost:8000](localhost:8000).
+8) Top stop all services, run `docker compose down` in `src/`.
+9) You can use the `-v`-option in the last command to clear persistent data (e.g. to clear imported data). This action cannot be undone!
