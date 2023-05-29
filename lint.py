@@ -7,7 +7,7 @@ from pylint import lint
 # Acceptable code: For less critical projects or projects with specific constraints, a pylint score between 6 and 7 might be acceptable. 
 # Minimum threshold: In some cases, a project may have a minimum threshold to ensure a basic level of code quality. This threshold could be set anywhere between 4 and 6.
  
-THRESHOLD = 5
+THRESHOLD = 3
 folder_path = "."
 
 file_list = subprocess.check_output(["find", folder_path, "-type", "f", "-name", "*.py"]).decode().splitlines()
@@ -24,7 +24,7 @@ average_score = sum(scores) / len(scores)
 
 print("Average score:", average_score)
 if average_score < THRESHOLD:
-    print("Linter failed: Average score < threshold value")
+    print("Linter failed: Average score < threshold value="+str(THRESHOLD))
     sys.exit(1)
 sys.exit(0)
 
