@@ -66,6 +66,7 @@ def get_sub_query(data_type: str, operator: str, search_field: str, search_conte
         elif operator == 'NOT_EQUALS':
             return {'match': {search_field: search_content}}, 'must_not'
 
+
 # This is just a sample idea of how to pass search information from frontend to backend
 search_info = {
     'FileName': {
@@ -78,5 +79,56 @@ search_info = {
     },
 }
 
-print(advanced_search(connection_os.connect_to_os(), search_info))
 
+# The method iterates over the search information and generates the corresponding query clauses
+# based on the provided search criteria.
+# The resulting query follows the structure required for querying the specified index.
+# This method provides a flexible and reusable approach for constructing queries in an OpenSearch environment.
+def construct_query(index_name, search_info):
+    # Construct the query
+    query = {
+        'query': {
+            'bool': {
+                'must': [],
+                'filter': []
+            }
+        }
+    }
+
+    for field, field_info in search_info.items():
+        if field == 'operator':
+            query['query']['bool'][field] = field_info
+            continue
+
+        field_query = {
+            'term': {
+                field: {
+                    'value': field_info['search_content'],
+                    'boost': field_info.get('boost', 1)
+                }
+            }
+        }
+
+        if 'operator' in field_info:
+            operator_mapping = {
+                '=': 'must',
+                '>': 'gt',
+                '<': 'lt',
+                '>=': 'gte',
+                '<=': 'lte'
+            }
+            operator = operator_mapping.get(field_info['operator'])
+            if operator:
+                field_query['term'][field].update({operator: field_info['search_content']})
+
+        if field_query:
+            query['query']['bool']['must'].append(field_query)
+
+    return query
+
+
+# Usage
+index_name = 'your_index_name'
+query = construct_query(index_name, search_info)
+
+print(advanced_search(connection_os.connect_to_os(), search_info))
