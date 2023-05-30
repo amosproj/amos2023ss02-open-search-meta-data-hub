@@ -5,6 +5,7 @@ from opensearchpy import OpenSearch
 from backend import connection_os
 from backend import search_os
 from backend import files_type
+import urllib
 
 app = Flask(__name__)
 # TODO: find a better solution
@@ -31,9 +32,11 @@ def search():
 def search_simple():
     return search_os.simple_search(client, request.args.get('searchString'))
 
-@app.route('/search/advanced',methods=['POST'])
+@app.route('/search/advanced')
 def search_advanced():
-    return search_os.advanced_search(client, request.form)
+    print(urllib.parse.unquote(request.args.get('searchString')))
+    return search_os.advanced_search(client, urllib.parse.unquote(request.args.get('searchString')))
+
 
 @app.route('/files_type_chart')
 def files_type_chart():
