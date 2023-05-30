@@ -1,5 +1,6 @@
 from opensearchpy import OpenSearch
 from search_os import search_info
+
 # Create a client instance
 client = OpenSearch(hosts=['opensearch-node'], port=9200)
 
@@ -50,4 +51,3 @@ response = client.search(index=index_name, body=query)
 
 # Process the search results
 # ...
-

@@ -42,17 +42,18 @@ def field_exists(client: OpenSearch, field_name: str) -> bool:
     """
     print(field_name)
     query = {
-      "query": {
-        "exists": {
-          "field": field_name
+        "query": {
+            "exists": {
+                "field": field_name
+            }
         }
-      }
     }
     response = client.search(
         body=query,
         index='amoscore'
     )
     return bool(response['hits']['hits'])
+
 
 def advanced_search(client: OpenSearch, search_info: dict) -> any:
     """ Function that performs an advanced search in OpenSearch
@@ -125,8 +126,3 @@ def get_sub_query(data_type: str, operator: str, search_field: str, search_conte
             return {'match': {search_field: search_content}}, 'must_not'
         else:
             return {'match': {search_field: search_content}}, 'must'
-
-
-
-
-

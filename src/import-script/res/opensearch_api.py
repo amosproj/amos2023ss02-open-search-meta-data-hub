@@ -1,6 +1,6 @@
 import time
-
 from opensearchpy import OpenSearch
+from opensearchpy.exceptions import ConnectionError
 
 
 class OpenSearchManager:
@@ -38,7 +38,7 @@ class OpenSearchManager:
         )
 
         # Wait until the node is ready before performing an import
-        for _ in range(100):
+        for _ in range(200):
             try:
                 self._client.cluster.health(wait_for_status="yellow")  # Make sure the cluster is available
             except ConnectionError:

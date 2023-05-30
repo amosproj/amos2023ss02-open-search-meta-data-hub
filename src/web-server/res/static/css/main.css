@@ -1,28 +1,28 @@
-body{
+body {
 
     background: #d1d5db;
 }
 
-.height{
+.height {
 
     height: 100vh;
 }
 
-.form{
+.form {
 
     position: relative;
 }
 
-.form .fa-search{
+.form .fa-search {
 
     position: absolute;
-    top:20px;
+    top: 20px;
     left: 20px;
     color: #9ca3af;
 
 }
 
-.form span{
+.form span {
 
     position: absolute;
     right: 17px;
@@ -32,28 +32,28 @@ body{
 
 }
 
-.left-pan{
+.left-pan {
     padding-left: 7px;
 }
 
-.left-pan i{
-   
-   padding-left: 10px;
+.left-pan i {
+
+    padding-left: 10px;
 }
 
-.form-input{
+.form-input {
 
     height: 55px;
     text-indent: 33px;
     border-radius: 10px;
 }
 
-.form-input:focus{
+.form-input:focus {
 
     box-shadow: none;
-    border:none;
+    border: none;
 }
 
-#resTable{
+#resTable {
     display: none;
 }
