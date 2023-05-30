@@ -1,7 +1,7 @@
 from opensearchpy import OpenSearch
 from search_os import search_info
 # Create a client instance
-client = OpenSearch(hosts=['localhost'], port=9200)
+client = OpenSearch(hosts=['opensearch-node'], port=9200)
 
 # Specify the index name
 index_name = 'your_index_name'

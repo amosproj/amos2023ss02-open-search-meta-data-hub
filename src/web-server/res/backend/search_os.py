@@ -1,6 +1,6 @@
 from opensearchpy import OpenSearch
 import json
-import connection_os
+from backend import connection_os
 
 
 def simple_search(client: OpenSearch, search_text):
