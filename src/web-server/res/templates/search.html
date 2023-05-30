@@ -3,9 +3,34 @@
 {% block content %}
 <br>
 <h1>{% block title %}Search for Metadata!{% endblock %}</h1>
-<div class="input-group mb-3">
+  
+<div class="btn-group" role="group" aria-label="Search options">
+  <button type="button" class="btn btn-secondary" id="simpleSearchButton">Simple Search</button>
+  <button type="button" class="btn btn-secondary" id="advancedSearchButton">Advanced Search</button>
+</div>
+
+<div id="simpleSearch" class="mt-3">
   <input type="text" class="form-control form-input" placeholder="Search anything..." id="searchField">
   <button class="btn btn-primary" type="button" id="searchButton">Search</button>
+</div>
+
+<div id="advancedSearch" class="mt-3" style="display: none;">
+  <div id="searchParameters">
+    <div class="input-group mb-3">
+      <input type="text" class="form-control form-input" placeholder="Parameter Name" id="parameterName0">
+      <select class="form-control" id="operators0">
+        <option>=</option>
+        <option>></option>
+        <option>>=</option>
+        <option><</option>
+        <option><=</option>
+        <option><></option>
+      </select>
+      <input type="text" class="form-control form-input" placeholder="Search Value" id="searchValue0">
+    </div>
+  </div>
+  <button class="btn btn-primary mb-3" type="button" id="addParameterButton">Add Parameter</button>
+  <button class="btn btn-primary" type="button" id="advancedSearch">Advanced Search</button>
 </div>
 
 <table class="table" id="resTable">
@@ -18,5 +43,5 @@
     </thead>
     <tbody id="resBody">
     </tbody>
-  </table>
+</table>
 {% endblock %}
