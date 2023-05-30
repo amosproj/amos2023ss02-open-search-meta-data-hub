@@ -1,3 +1,4 @@
+
 function sendAlert(){
     alert("Hello World!");
 }
@@ -29,7 +30,9 @@ function searchOuter(){
 
 function advancedSearch() {
     let search_info = {};
-    for (let i = 0; i < parameterCount; i++) {
+    let parameterCount = parseInt($('#countParams').val());
+    console.log(parameterCount);
+    for (let i = 0; i <= parameterCount; i++) {
       let parameterName = $('#parameterName' + i).val();
       let operator = $('#operators' + i).val();
       let searchValue = $('#searchValue' + i).val();
@@ -58,10 +61,10 @@ function advancedSearch() {
   
       search_info[parameterName] = {
         'search_content': searchValue,
-        'operator': operatorName,
+        'operator': operatorName
       };
     }
-    
+    return search_info;
     }
   
   $('#advancedSearchButton').click(function() {
@@ -69,7 +72,7 @@ function advancedSearch() {
     console.log(search_info);
   
     $.ajax({
-      url: '/your-endpoint-here',
+      url: '/search/advanced',
       type: 'POST',
       contentType: 'application/json',
       data: JSON.stringify(search_info),
@@ -90,8 +93,29 @@ function advancedSearch() {
     });
   });
   
-  
+  $('#advancedSearchToggleButton').click(function() {
+    $("#simpleSearch").hide();
+    $("#advancedSearch").show();
+  });
+  $('#simpleSearchToggleButton').click(function() {
+    $("#advancedSearch").hide();
+    $("#simpleSearch").show();
+  });
 
 $("#searchButton").on("click", function(){
     searchOuter();
+});
+
+$('#addParameterButton').click(function() {
+  var parameterCount = parseInt($('#countParams').val()) + 1;
+  $('#countParams').val(parameterCount);
+  
+  var newParameter = '<div class="input-group mb-3">';
+  newParameter += '<input type="text" class="form-control form-input" placeholder="Parameter Name" id="parameterName' + parameterCount + '">';
+  newParameter += '<select class="form-control" id="operators' + parameterCount + '">';
+  newParameter += '<option>=</option><option>></option><option>>=</option><option><</option><option><=</option><option><></option>';
+  newParameter += '</select>';
+  newParameter += '<input type="text" class="form-control form-input" placeholder="Search Value" id="searchValue' + parameterCount + '">';
+  newParameter += '</div>';
+  $('#searchParameters').append(newParameter);
 });

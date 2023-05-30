@@ -31,9 +31,9 @@ def search():
 def search_simple():
     return search_os.simple_search(client, request.args.get('searchString'))
 
-@app.route('/search/advanced')
+@app.route('/search/advanced',methods=['POST'])
 def search_advanced():
-    return search_os.advanced_search(client, request.args.get('searchInfo'))
+    return search_os.advanced_search(client, request.form)
 
 @app.route('/files_type_chart')
 def files_type_chart():
