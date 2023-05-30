@@ -1,9 +1,14 @@
 from opensearchpy import OpenSearch
 import json
-from backend import connection_os
+import connection_os
 
 
-def simple_search(client: OpenSearch, search_text):
+def simple_search(client: OpenSearch, search_text) -> any:
+    """ A function that performs a simple search in OpenSearch.
+    :param client: OpenSearch client that connects to the OpenSearch node
+    :param search_text: The search text that will be searched for
+    :return: returns an OpenSearch response
+    """
     query = {
         "query": {
             "match": {
@@ -20,11 +25,21 @@ def simple_search(client: OpenSearch, search_text):
 
 
 def get_datatype(client: OpenSearch, field_name: str) -> str:
+    """ Function that returns the datatype to a specific field in OpenSearch
+    :param client: OpenSearch client that connects to the OpenSearch node
+    :param field_name: The name of the field the datatype is wished for
+    :return: returns the name of the datatype of the field
+    """
     mapping = client.indices.get_mapping(index='amoscore')
     return mapping['amoscore']['mappings']['properties'][field_name]['type']
 
 
-def advanced_search(client: OpenSearch, search_info):
+def advanced_search(client: OpenSearch, search_info: dict) -> any:
+    """ Function that performs an advanced search in OpenSearch
+    :param client: OpenSearch client that connects to the OpenSearch node
+    :param search_info: a dictionary containing the different fields and operators for the advanced search
+    :return:
+    """
     sub_queries = []
     for search_field in search_info:
         data_type = get_datatype(client, search_field)
@@ -40,7 +55,11 @@ def advanced_search(client: OpenSearch, search_info):
     return response
 
 
-def get_query(sub_queries: list[tuple]):
+def get_query(sub_queries: list[tuple]) -> dict:
+    """ Function that creates a query that can be used to sesrch in OpenSearch
+    :param sub_queries: a list of tuples that contains the sub query and either the value must or must_not
+    :return: retuns a query that can be used to search in OpenSearch
+    """
     query = {'query': {'bool': {}}}
     for sub_query, functionality in sub_queries:
         if functionality not in query['query']['bool']:
@@ -51,6 +70,13 @@ def get_query(sub_queries: list[tuple]):
 
 
 def get_sub_query(data_type: str, operator: str, search_field: str, search_content: any) -> tuple:
+    """ Function that returns a subquery thsat can be used to create a complete query
+    :param data_type: the datatype of the field of the subquery
+    :param operator: the operator of the query
+    :param search_field: the field in which should be searched in this suquery
+    :param search_content: the content of the search
+    :return: returns a tuple consisting of a subquery and either the value must or must_not
+    """
     if data_type == 'float' or data_type == 'date':
         if operator == 'EQUALS':
             return {'term': {search_field: {'value': search_content}}}, 'must'
@@ -74,68 +100,7 @@ def get_sub_query(data_type: str, operator: str, search_field: str, search_conte
         else:
             return {'match': {search_field: search_content}}, 'must'
 
-# This is just a sample idea of how to pass search information from frontend to backend
-search_info = {
-    'FileName': {
-        'search_content': 'image',
-        'operator': 'EQUALS',
-    },
-    'FileSize': {
-        'search_content': 500,
-        'operator': 'GREATER_THAN',
-    },
-}
 
 
-# The method iterates over the search information and generates the corresponding query clauses
-# based on the provided search criteria.
-# The resulting query follows the structure required for querying the specified index.
-# This method provides a flexible and reusable approach for constructing queries in an OpenSearch environment.
-def construct_query(index_name, search_info):
-    # Construct the query
-    query = {
-        'query': {
-            'bool': {
-                'must': [],
-                'filter': []
-            }
-        }
-    }
-
-    for field, field_info in search_info.items():
-        if field == 'operator':
-            query['query']['bool'][field] = field_info
-            continue
-
-        field_query = {
-            'term': {
-                field: {
-                    'value': field_info['search_content'],
-                    'boost': field_info.get('boost', 1)
-                }
-            }
-        }
-
-        if 'operator' in field_info:
-            operator_mapping = {
-                '=': 'must',
-                '>': 'gt',
-                '<': 'lt',
-                '>=': 'gte',
-                '<=': 'lte'
-            }
-            operator = operator_mapping.get(field_info['operator'])
-            if operator:
-                field_query['term'][field].update({operator: field_info['search_content']})
-
-        if field_query:
-            query['query']['bool']['must'].append(field_query)
-
-    return query
 
 
-# Usage
-index_name = 'your_index_name'
-query = construct_query(index_name, search_info)
-
-print(advanced_search(connection_os.connect_to_os(), search_info))
