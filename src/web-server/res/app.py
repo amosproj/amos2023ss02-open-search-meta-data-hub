@@ -33,7 +33,7 @@ def search_simple():
 
 @app.route('/search/advanced')
 def search_advanced():
-    return
+    return search_os.advanced_search(client, request.args.get('searchInfo'))
 
 @app.route('/files_type_chart')
 def files_type_chart():

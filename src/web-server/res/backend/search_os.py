@@ -1,6 +1,6 @@
 from opensearchpy import OpenSearch
 import json
-from backend import connection_os
+import connection_os
 
 
 def simple_search(client: OpenSearch, search_text):
@@ -51,21 +51,28 @@ def get_query(sub_queries: list[tuple]):
 
 
 def get_sub_query(data_type: str, operator: str, search_field: str, search_content: any) -> tuple:
-    if data_type == 'integer':
+    if data_type == 'float' or data_type == 'date':
         if operator == 'EQUALS':
-            return {'term': {search_field: {'value': int(search_content)}}}, 'must'
+            return {'term': {search_field: {'value': search_content}}}, 'must'
         elif operator == 'GREATER_THAN':
-            return {'range': {search_field: {'gt': int(search_content)}}}, 'must'
+            return {'range': {search_field: {'gt': search_content}}}, 'must'
         elif operator == 'LOWER_THAN':
-            return {'range': {search_field: {'lt': int(search_content)}}}, 'must'
+            return {'range': {search_field: {'lt': search_content}}}, 'must'
+        elif operator == 'GREATER_THAN_OR_EQUALS':
+            return {'range': {search_field: {'gte': search_content}}}, 'must'
+        elif operator == 'LOWER_THAN_OR_EQUALS':
+            return {'range': {search_field: {'lte': search_content}}}, 'must'
         elif operator == 'NOT_EQUALS':
-            return {'term': {search_field: {'value': int(search_content)}}}, 'must_not'
+            return {'term': {search_field: {'value': search_content}}}, 'must_not'
+        else:
+            return {'term': {search_field: {'value': search_content}}}, 'must'
     elif data_type == 'text':
         if operator == 'EQUALS':
             return {'match': {search_field: search_content}}, 'must'
         elif operator == 'NOT_EQUALS':
             return {'match': {search_field: search_content}}, 'must_not'
-
+        else:
+            return {'match': {search_field: search_content}}, 'must'
 
 # This is just a sample idea of how to pass search information from frontend to backend
 search_info = {
