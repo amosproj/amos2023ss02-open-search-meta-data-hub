@@ -69,27 +69,32 @@ function advancedSearch() {
   
   $('#advancedSearchButton').click(function() {
     let search_info = advancedSearch();
+    let search_info_prep = JSON.stringify(search_info);
+
     console.log(search_info);
-  
+    console.log(JSON.stringify(search_info));
+
     $.ajax({
-      url: '/search/advanced',
-      type: 'POST',
-      contentType: 'application/json',
-      data: JSON.stringify(search_info),
-      success: function(result) {
-        var actualHits = result.hits.hits;
-        console.log(actualHits);
-        var counter = 1;
-        $("#resBody").html("");
-        actualHits.forEach(function(hit) {
-          $("#resBody").append("<tr><td>"+counter+"</td><td>" + hit._source.FileName +"</td><td>" + hit._source.FileInodeChangeDate +"</td></tr>");
-          counter = counter + 1;
-        }); 
-        $("#resTable").show();
-      },
-      error: function(error) {
-        console.error(error);
-      }
+      url: "/search/advanced?searchString="+search_info_prep,
+      
+      success: function( result ) {
+          //result Parsen -> hits,hits
+
+          //var parsedRes = JSON.parse(result);
+          //console.log(parsedRes);
+          var actualHits = result.hits.hits;
+          console.log(actualHits);
+          var counter = 1;
+          $("#resBody").html("");
+          actualHits.forEach(function(hit) {
+              //an Tabelle anhängen
+              $("#resBody").append("<tr><td>"+counter+"</td><td>" + hit._source.FileName +"</td><td>" + hit._source.FileInodeChangeDate +"</td></tr>");
+              //console.log(this.SourceFile);    
+              counter = counter +1;
+          }); 
+          $("#resTable").show();
+      } 
+      
     });
   });
   
