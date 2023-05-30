@@ -40,6 +40,7 @@ def field_exists(client: OpenSearch, field_name: str) -> bool:
     :param field_name: the field name
     :return: returns true if the field exists or at least one document has a value for it or false otherwise
     """
+    print(field_name)
     query = {
       "query": {
         "exists": {
@@ -62,17 +63,21 @@ def advanced_search(client: OpenSearch, search_info: dict) -> any:
     print("Search_info: ", search_info)
     sub_queries = []
     for search_field in search_info:
+        print(field_exists(client, search_field))
         if field_exists(client, search_field):
             data_type = get_datatype(client, search_field)
             search_content = search_info[search_field]['search_content']
             operator = search_info[search_field]['operator']
             sub_queries.append(get_sub_query(data_type, operator, search_field, search_content))
-    query = get_query(sub_queries)
-    print("query: ", query)
+    if sub_queries:
+        query = get_query(sub_queries)
+    else:
+        query = {"query": {"exists": {"field": " "}}}
     response = client.search(
         body=query,
         index='amoscore'
     )
+
     return response
 
 
@@ -103,11 +108,11 @@ def get_sub_query(data_type: str, operator: str, search_field: str, search_conte
             return {'term': {search_field: {'value': search_content}}}, 'must'
         elif operator == 'GREATER_THAN':
             return {'range': {search_field: {'gt': search_content}}}, 'must'
-        elif operator == 'LOWER_THAN':
+        elif operator == 'LESS_THAN':
             return {'range': {search_field: {'lt': search_content}}}, 'must'
         elif operator == 'GREATER_THAN_OR_EQUALS':
             return {'range': {search_field: {'gte': search_content}}}, 'must'
-        elif operator == 'LOWER_THAN_OR_EQUALS':
+        elif operator == 'LESS_THAN_OR_EQUALS':
             return {'range': {search_field: {'lte': search_content}}}, 'must'
         elif operator == 'NOT_EQUALS':
             return {'term': {search_field: {'value': search_content}}}, 'must_not'

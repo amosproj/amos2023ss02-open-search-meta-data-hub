@@ -1,3 +1,5 @@
+import json
+
 from flask import Flask
 from flask import render_template
 from flask import request
@@ -34,8 +36,8 @@ def search_simple():
 
 @app.route('/search/advanced')
 def search_advanced():
-    print(urllib.parse.unquote(request.args.get('searchString')))
-    return search_os.advanced_search(client, urllib.parse.unquote(request.args.get('searchString')))
+    search_info = json.loads(urllib.parse.unquote(request.args.get('searchString')))
+    return search_os.advanced_search(client, search_info)
 
 
 @app.route('/files_type_chart')
