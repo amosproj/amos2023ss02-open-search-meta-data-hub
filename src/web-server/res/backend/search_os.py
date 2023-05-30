@@ -34,20 +34,41 @@ def get_datatype(client: OpenSearch, field_name: str) -> str:
     return mapping['amoscore']['mappings']['properties'][field_name]['type']
 
 
+def field_exists(client: OpenSearch, field_name: str) -> bool:
+    """ Function checks if a field exists or at least one document has a value for it
+    :param client: OpenSearch client that connects to the OpenSearch node
+    :param field_name: the field name
+    :return: returns true if the field exists or at least one document has a value for it or false otherwise
+    """
+    query = {
+      "query": {
+        "exists": {
+          "field": field_name
+        }
+      }
+    }
+    response = client.search(
+        body=query,
+        index='amoscore'
+    )
+    return bool(response['hits']['hits'])
+
 def advanced_search(client: OpenSearch, search_info: dict) -> any:
     """ Function that performs an advanced search in OpenSearch
     :param client: OpenSearch client that connects to the OpenSearch node
     :param search_info: a dictionary containing the different fields and operators for the advanced search
     :return:
     """
+    print("Search_info: ", search_info)
     sub_queries = []
     for search_field in search_info:
-        data_type = get_datatype(client, search_field)
-        search_content = search_info[search_field]['search_content']
-        operator = search_info[search_field]['operator']
-        sub_queries.append(get_sub_query(data_type, operator, search_field, search_content))
+        if field_exists(client, search_field):
+            data_type = get_datatype(client, search_field)
+            search_content = search_info[search_field]['search_content']
+            operator = search_info[search_field]['operator']
+            sub_queries.append(get_sub_query(data_type, operator, search_field, search_content))
     query = get_query(sub_queries)
-    print(query)
+    print("query: ", query)
     response = client.search(
         body=query,
         index='amoscore'
@@ -58,7 +79,7 @@ def advanced_search(client: OpenSearch, search_info: dict) -> any:
 def get_query(sub_queries: list[tuple]) -> dict:
     """ Function that creates a query that can be used to sesrch in OpenSearch
     :param sub_queries: a list of tuples that contains the sub query and either the value must or must_not
-    :return: retuns a query that can be used to search in OpenSearch
+    :return: returns a query that can be used to search in OpenSearch
     """
     query = {'query': {'bool': {}}}
     for sub_query, functionality in sub_queries:
@@ -70,7 +91,7 @@ def get_query(sub_queries: list[tuple]) -> dict:
 
 
 def get_sub_query(data_type: str, operator: str, search_field: str, search_content: any) -> tuple:
-    """ Function that returns a subquery thsat can be used to create a complete query
+    """ Function that returns a subquery that can be used to create a complete query
     :param data_type: the datatype of the field of the subquery
     :param operator: the operator of the query
     :param search_field: the field in which should be searched in this suquery
