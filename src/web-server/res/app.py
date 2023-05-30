@@ -1,11 +1,13 @@
+import json
+
 from flask import Flask
 from flask import render_template
 from flask import request
 from opensearchpy import OpenSearch
-
 from backend import connection_os
 from backend import search_os
 from backend import files_type
+import urllib
 
 app = Flask(__name__)
 # TODO: find a better solution
@@ -31,6 +33,11 @@ def search():
 @app.route('/search/simple')
 def search_simple():
     return search_os.simple_search(client, request.args.get('searchString'))
+
+@app.route('/search/advanced')
+def search_advanced():
+    search_info = json.loads(urllib.parse.unquote(request.args.get('searchString')))
+    return search_os.advanced_search(client, search_info)
 
 
 @app.route('/files_type_chart')

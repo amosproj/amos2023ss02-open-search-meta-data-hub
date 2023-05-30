@@ -4,8 +4,8 @@ import random
 
 def connect_to_os():
     """ connect to OpenSearch """
-    host = 'opensearch-node'  # container name of the opensearch node docker container
-
+    #host = 'localhost'  # container name of the opensearch node docker container
+    host = 'opensearch-node'
     port = 9200  # port on which the opensearch node runs
     auth = ('admin', 'admin')  # For testing only. Don't store credentials in code.
 
