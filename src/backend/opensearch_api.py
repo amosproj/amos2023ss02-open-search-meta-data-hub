@@ -21,7 +21,7 @@ class OpenSearchManager:
         else:
             self._host = 'opensearch-node'  # connection to docker container
 
-    def _connect_to_open_search(self) :
+    def _connect_to_open_search(self):
         """ connecting to Opensearch """
 
         # Create the client with SSL/TLS and hostname verification disabled
@@ -44,6 +44,27 @@ class OpenSearchManager:
             except ConnectionError:
                 time.sleep(2)  # Take a short break to give the OpenSearch node time to be fully set up
 
+    def get_all_indices(self) -> list[str]:
+        """
+        :rtype: List of index_names contained in the OpenSearch node
+        """
+        indices = []
+        for index in self._client.indices.get('*'):
+            if not str(index) == '.kibana_1' and not str(index) == '.opensearch-observability':
+                indices.append(index)
+        return indices
+
+    def get_all_fields(self, index_name: str) -> list[str]:
+        """ Get all field that belong to an index
+        :param index_name: The name of the index that is looked for
+        :return: Returns a list of field names of the corresponding index
+        """
+        fields = []
+        fields_mapping = self._client.indices.get_mapping(index_name)
+        for field in fields_mapping[index_name]["mappings"]["properties"]:
+            fields.append(field)
+        return fields
+
     def get_datatype(self, field_name: str, index_name: str) -> str:
         """ Get the datatype of a specific field for a specific index
         :param field_name: The name of the specific field
@@ -52,16 +73,6 @@ class OpenSearchManager:
         """
         mapping = self._client.indices.get_mapping(index=index_name)
         return mapping[index_name]['mappings']['properties'][field_name]['type']
-
-    def get_all_fields(self, index_name: str, is_used: bool = True) -> list[str]:
-        """ Get all field that belong to an index
-        :param index_name: The name of the index that is looked for
-        :param is_used: A bool value, if true only fields that have a value in at least one document will be returned
-        :return: Returns a list of field names of the corresponding index
-        """
-        # TODO: create a method that is able to get all fields of an index. if is_used == True only the fields that
-        #  have assigned values will be returned otherwise every field
-        return
 
     def field_exists(self, index_name: str, field_name: str) -> bool:
         """ Function checks if a field exists or at least one document has a value for it
@@ -219,3 +230,9 @@ class OpenSearchManager:
                 return {'match': {search_field: search_content}}, 'must_not'
             else:
                 return {'match': {search_field: search_content}}, 'must'
+
+
+os_manager = OpenSearchManager(True)
+print(os_manager.get_all_fields('amoscore'))
+print(os_manager.get_all_indices())
+print(os_manager.set_index_fields('amoscore', {}))

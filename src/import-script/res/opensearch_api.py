@@ -1,7 +1,6 @@
 import time
 from opensearchpy import OpenSearch
-from opensearchpy.exceptions import ConnectionError
-
+from opensearchpy import ConnectionError
 
 class OpenSearchManager:
 

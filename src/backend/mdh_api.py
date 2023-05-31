@@ -1,23 +1,32 @@
 import os
+import pathlib
 import mdh
 from dotenv import load_dotenv
 
 
 class MetaDataHubManager:
 
-    def __init__(self):
-        """ creating a new MetaDataHubManager for handling the connection to the MetaDataHub """
-        self._request_path_file = os.path.join(os.getcwd(), "request.gql") # define where to find the GraphQL request
-        MetaDataHubManager._set_environment() # set the MetaDataHub environment
+    def __init__(self, request_path_file: str, localhost=False):
+        """ creating a new MetaDataHubManager for handling the connection to the MetaDataHub
+        :param localhost: Bool variable: if true, connect to environment on device, otherwise on docker-container
+        """
+        self._request_path_file = request_path_file # define where to find the GraphQL request
+        MetaDataHubManager._set_environment(localhost) # set the MetaDataHub environment
         MetaDataHubManager._connect_to_mdh() # connect to the MetaDataHub
         self.result = {} # dictionary containing the data from the last request
         self._download_data() # downloading the data in the result-dictionary
 
     @staticmethod
-    def _set_environment():
-        """ set the environment and tell the manager where to find the .env file containing the credentials """
+    def _set_environment(localhost: bool):
+        """ set the environment and tell the manager where to find the .env file containing the credentials
+        :param localhost: Bool variable: if true, connect to environment on device, otherwise on docker-container
+        """
         load_dotenv() # load the environment
-        os.environ['MDH_HOME'] = '/WORK_REPO/mdh_home' # set the path to the .env file
+        if localhost:
+            env_path = str(pathlib.Path(__file__).parents[1])
+            os.environ['MDH_HOME'] = env_path  # set the path to the .env file
+        else:
+            os.environ['MDH_HOME'] = '/WORK_REPO/mdh_home' # set the path to the .env file
 
     @staticmethod
     def _connect_to_mdh():
@@ -52,3 +61,4 @@ class MetaDataHubManager:
         mdh_search = self.result["mdhSearch"]
         data_types = mdh_search.get("dataTypes", [])
         return data_types
+

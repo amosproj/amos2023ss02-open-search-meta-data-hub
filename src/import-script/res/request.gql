@@ -1,7 +1,6 @@
 query {
   mdhSearch(
     filterFunctions: []
-    limit: 100
   ) {
     totalFilesCount
     returnedFilesCount
