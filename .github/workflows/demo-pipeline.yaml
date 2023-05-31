@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [feature/CI_CD_pipeline]
+    branches: [main]
     paths:
       - 'test.py'
       - 'lint.py'
