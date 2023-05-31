@@ -231,8 +231,3 @@ class OpenSearchManager:
             else:
                 return {'match': {search_field: search_content}}, 'must'
 
-
-os_manager = OpenSearchManager(True)
-print(os_manager.get_all_fields('amoscore'))
-print(os_manager.get_all_indices())
-print(os_manager.set_index_fields('amoscore', {}))

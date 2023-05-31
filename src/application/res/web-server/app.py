@@ -1,17 +1,13 @@
 import json
-
 from flask import Flask
 from flask import render_template
 from flask import request
-from opensearchpy import OpenSearch
-from backend import connection_os
-from backend import search_os
+from backend.opensearch_api import OpenSearchManager
 from backend import files_type
 import urllib
 
 app = Flask(__name__)
-# TODO: find a better solution
-client: OpenSearch = connection_os.connect_to_os()
+os_manager: OpenSearchManager = OpenSearchManager()
 
 """Rendering start page of the website"""
 
@@ -32,13 +28,13 @@ def search():
 
 @app.route('/search/simple')
 def search_simple():
-    return search_os.simple_search(client, request.args.get('searchString'))
+    return os_manager.simple_search(request.args.get('searchString'))
 
 
 @app.route('/search/advanced')
 def search_advanced():
     search_info = json.loads(urllib.parse.unquote(request.args.get('searchString')))
-    return search_os.advanced_search(client, search_info)
+    return os_manager.advanced_search(search_info)
 
 
 @app.route('/files_type_chart')

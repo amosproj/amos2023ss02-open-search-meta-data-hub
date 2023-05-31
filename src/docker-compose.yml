@@ -44,27 +44,17 @@ services:
       - "DISABLE_SECURITY_DASHBOARDS_PLUGIN=true" # disables security dashboards plugin in OpenSearch Dashboards
     networks:
       - opensearch-net
-  import-script:
+  application:
     env_file:
       - .env
     build:
-      context: import-script
-      dockerfile: Dockerfile
-      # image: import-script
-    depends_on:
-      - opensearch-node # defining that the import-script container is depending on the opensearch-node container
-    container_name: import-script
-    networks:
-      - opensearch-net
-  web-server:
-    build:
-      context: web-server
+      context: application
     stop_signal: SIGINT
     ports:
       - "8000:8000"
     depends_on:
       - opensearch-node # defining that the import-script container is depending on the opensearch-node container
-      - import-script
+    container_name: application
     networks:
       - opensearch-net
 volumes:
