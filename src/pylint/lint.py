@@ -29,37 +29,3 @@ if average_score < THRESHOLD:
     print("Linter failed: Average score < threshold value="+str(THRESHOLD))
     sys.exit(1)
 sys.exit(0)
-
-
-#-------------------------------
-
-# import os
-# import sys
-# from pylint import lint
-
-# THRESHOLD = 5
-# folder_path = "src/import-script/res"
-
-# # Get a list of all Python files in the folder
-# file_list = [os.path.join(folder_path, filename) for filename in os.listdir(folder_path) if filename.endswith(".py")]
-
-# # Run pylint on each file
-# lint_output = []
-# for file_path in file_list:
-#     run = lint.Run(["--rcfile=.pylintrc", file_path], do_exit=False)
-#     score = run.linter.stats.global_note
-#     lint_output.append(score)
-
-# print(lint_output)
-# # Calculate the average score
-# scores = [float(output) for output in lint_output]
-
-# print("Scores: ", scores)
-# print("Length: ", len(scores))
-# average_score = sum(scores) / len(scores)
-
-# print("Average score: ", average_score)
-# if average_score < THRESHOLD:
-#     print("Linter failed: Average score < threshold value")
-#     sys.exit(1)
-# sys.exit(0)
