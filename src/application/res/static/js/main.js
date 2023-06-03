@@ -1,125 +1,129 @@
+// Function to display an alert with "Hello World!"
 function sendAlert() {
-    alert("Hello World!");
+  alert("Hello World!");
 }
 
-function searchOuter() {
-    $.ajax({
-        url: "/search/simple?searchString=" + $("#searchField").val(),
-
-        success: function (result) {
-            //result Parsen -> hits,hits
-
-            //var parsedRes = JSON.parse(result);
-            //console.log(parsedRes);
-            var actualHits = result.hits.hits;
-            console.log(actualHits);
-            var counter = 1;
-            $("#resBody").html("");
-            actualHits.forEach(function (hit) {
-                //an Tabelle anhängen
-                $("#resBody").append("<tr><td>" + counter + "</td><td>" + hit._source.FileName + "</td><td>" + hit._source.FileInodeChangeDate + "</td></tr>");
-                //console.log(this.SourceFile);    
-                counter = counter + 1;
-            });
-            $("#resTable").show();
-        }
-
-    });
-}
-
-function advancedSearch() {
-    let search_info = {};
-    let parameterCount = parseInt($('#countParams').val());
-    console.log(parameterCount);
-    for (let i = 0; i <= parameterCount; i++) {
-        let parameterName = $('#parameterName' + i).val();
-        let operator = $('#operators' + i).val();
-        let searchValue = $('#searchValue' + i).val();
-
-        let operatorName;
-        switch (operator) {
-            case "=":
-                operatorName = "EQUALS";
-                break;
-            case ">":
-                operatorName = "GREATER_THAN";
-                break;
-            case ">=":
-                operatorName = "GREATER_THAN_OR_EQUALS";
-                break;
-            case "<":
-                operatorName = "LESS_THAN";
-                break;
-            case "<=":
-                operatorName = "LESS_THAN_OR_EQUALS";
-                break;
-            case "<>":
-                operatorName = "NOT_EQUALS";
-                break;
-        }
-
-        search_info[parameterName] = {
-            'search_content': searchValue,
-            'operator': operatorName
-        };
+// Function to perform a simple search
+function performSearch(searchString) {
+  $.ajax({
+    url: "/search/simple", // URL for the search API
+    data: { searchString: searchString }, // Search query parameters
+    success: function (result) { // Callback function on successful response
+      displaySearchResults(result.hits.hits); // Display the search results
     }
-    return search_info;
+  });
 }
 
-$('#advancedSearchButton').click(function () {
-    let search_info = advancedSearch();
-    let search_info_prep = JSON.stringify(search_info);
+// Function to perform an advanced search
+function performAdvancedSearch(searchInfo) {
+  $.ajax({
+    url: "/search/advanced", // URL for the advanced search API
+    data: { searchString: JSON.stringify(searchInfo) }, // Convert searchInfo to JSON and send as query parameter
+    success: function (result) { // Callback function on successful response
+      displaySearchResults(result.hits.hits); // Display the search results
+    }
+  });
+}
 
-    console.log(search_info);
-    console.log(JSON.stringify(search_info));
+// Function to display the search results
+function displaySearchResults(hits) {
+  var counter = 1;
+  $("#resBody").html(""); // Clear the search results table body
+  hits.forEach(function (hit) { // Iterate over each search result
+    // Append a new row to the search results table
+    $("#resBody").append("<tr><td>" + counter + "</td><td>" + hit._source.FileName + "</td><td>" + hit._source.FileInodeChangeDate + "</td></tr>");
+    counter++;
+  });
+  $("#resTable").show(); // Show the search results table
+}
 
-    $.ajax({
-        url: "/search/advanced?searchString=" + search_info_prep,
+// Function to extract search information from the input fields
+function extractSearchInfo() {
+  var searchInfo = {};
+  var parameterCount = parseInt($('#countParams').val());
 
-        success: function (result) {
-            //result Parsen -> hits,hits
+  for (var i = 0; i <= parameterCount; i++) {
+    var parameterName = $('#parameterName' + i).val(); // Get the parameter name from the input field
+    var operator = $('#operators' + i).val(); // Get the operator from the select field
+    var searchValue = $('#searchValue' + i).val(); // Get the search value from the input field
 
-            //var parsedRes = JSON.parse(result);
-            //console.log(parsedRes);
-            var actualHits = result.hits.hits;
-            console.log(actualHits);
-            var counter = 1;
-            $("#resBody").html("");
-            actualHits.forEach(function (hit) {
-                //an Tabelle anhängen
-                $("#resBody").append("<tr><td>" + counter + "</td><td>" + hit._source.FileName + "</td><td>" + hit._source.FileInodeChangeDate + "</td></tr>");
-                //console.log(this.SourceFile);
-                counter = counter + 1;
-            });
-            $("#resTable").show();
-        }
+    var operatorName;
+    switch (operator) { // Convert the operator to a readable format
+      case "=":
+        operatorName = "EQUALS";
+        break;
+      case ">":
+        operatorName = "GREATER_THAN";
+        break;
+      case ">=":
+        operatorName = "GREATER_THAN_OR_EQUALS";
+        break;
+      case "<":
+        operatorName = "LESS_THAN";
+        break;
+      case "<=":
+        operatorName = "LESS_THAN_OR_EQUALS";
+        break;
+      case "<>":
+        operatorName = "NOT_EQUALS";
+        break;
+    }
 
-    });
-});
+    // Add the parameter and its search information to the searchInfo object
+    searchInfo[parameterName] = {
+      search_content: searchValue,
+      operator: operatorName
+    };
+  }
 
-$('#advancedSearchToggleButton').click(function () {
-    $("#simpleSearch").hide();
-    $("#advancedSearch").show();
-});
-$('#simpleSearchToggleButton').click(function () {
-    $("#advancedSearch").hide();
-    $("#simpleSearch").show();
-});
+  return searchInfo; // Return the searchInfo object
+}
 
-$("#searchButton").on("click", function () {
-    searchOuter();
-});
+$(document).ready(function () {
+  // Event handler for the simple search button
+  $("#searchButton").on("click", function () {
+    var searchString = $("#searchField").val(); // Get the search query from the input field
+    performSearch(searchString); // Perform the simple search
+  });
 
-$('#addParameterButton').click(function () {
-    var parameterCount = parseInt($('#countParams').val()) + 1;
-    $('#countParams').val(parameterCount);
+  // Event handler for the advanced search button
+  $("#advancedSearchButton").on("click", function () {
+    var searchInfo = extractSearchInfo(); // Extract the search information from the input fields
+    performAdvancedSearch(searchInfo); // Perform the advanced search
+  });
 
-    var newParameter = '<div class="input-group mb-3">';
-    newParameter += '<input type="text" class="form-control form-input" placeholder="Parameter Name" id="parameterName' + parameterCount + '">';
-    newParameter += '<select class="form-control" id="operators' + parameterCount + '">';
-    newParameter += '<option>=</option><option>></option><option>>=</option><option><</option><option><=</option><option><></option>';
-    newParameter += '</select>';
-    newParameter += '<input type="text" class="form-control form-input" placeholder="Search Value" id="searchValue' + parameterCount + '">';
-    newParameter += '</div>';
-    $('#searchParameters').append(newParameter);
+  // Event handler for the advanced search toggle button
+  $("#advancedSearchToggleButton").on("click", function () {
+    $("#simpleSearch").hide(); // Hide the simple search section
+    $("#advancedSearch").show(); // Show the advanced search section
+  });
+
+  // Event handler for the simple search toggle button
+  $("#simpleSearchToggleButton").on("click", function () {
+    $("#advancedSearch").hide(); // Hide the advanced search section
+    $("#simpleSearch").show(); // Show the simple search section
+  });
+
+  // Event handler for the "Add Parameter" button
+  $("#addParameterButton").on("click", function () {
+    var parameterCount = parseInt($('#countParams').val()) + 1; // Increment the parameter count
+    $('#countParams').val(parameterCount); // Update the parameter count input field
+
+    // Create a new parameter input field group
+    var newParameter = `
+      <div class="input-group mb-3">
+        <input type="text" class="form-control form-input" placeholder="Parameter Name" id="parameterName${parameterCount}">
+        <select class="form-control" id="operators${parameterCount}">
+          <option>=</option>
+          <option>></option>
+          <option>>=</option>
+          <option><</option>
+          <option><=</option>
+          <option><></option>
+        </select>
+        <input type="text" class="form-control form-input" placeholder="Search Value" id="searchValue${parameterCount}">
+      </div>`;
+
+    $('#searchParameters').append(newParameter); // Append the new parameter input field group
+  });
 });
