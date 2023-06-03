@@ -18,5 +18,5 @@ RUN mkdir mdh_home
 
 ENTRYPOINT ["python3"]
 CMD ["import-script/data_transfer.py"]
-CMD ["web-server/app.py"]
+CMD ["app.py"]
 

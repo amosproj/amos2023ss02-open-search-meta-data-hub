@@ -1,6 +1,6 @@
 from opensearchpy import OpenSearch
 import random
-from . import connection_os
+# from . import connection_os TODO: deleteTODO: delete??
 
 
 def fetch_all_MIMEType(client: OpenSearch, index_name):
