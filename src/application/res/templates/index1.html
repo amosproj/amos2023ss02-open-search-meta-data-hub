@@ -15,91 +15,121 @@
             integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
             crossorigin="anonymous"
     />
-	
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <!-- Custom CSS -->
     <link
             rel="stylesheet"
             href="{{ url_for('static', filename='css/main.css')}}"
     />
-	
+
     <style>
-	body{
-	background-color:#F8F8F8;
-	
-	
-	}
-	.myclass{
-	 list-style-type: none;
-     margin: 0;
-     padding: 0;
-    overflow: hidden;
+        body {
+            background-color: #F8F8F8;
 
-	background-color:	#F5F5F5;
-	}
-	.item{
-	 float: left;
-  display: block;
- 
-  text-align: center;
-  padding: 14px 10px;
-  cursor:pointer;
-  margin-left:12px;
-  margin-bottom:0px;
- 
-	}
-	
-.item4 button{
-border-radius: 4px;
-color:white;
-border: none;
-background-color: #4CAF50;
-padding:7px auto;
-}
 
-.item3 button{
-border-radius: 4px;
-color:white;
-border: none;
-background-color: #555555;
+        }
 
-padding:7px auto;
-}
+        .myclass {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
 
-.item1{
-background-color:white;
-border-radius: 6px;
+            background-color: #F5F5F5;
+        }
 
-}
+        .item {
+            float: left;
+            display: block;
 
-.example input[type=text]{
+            text-align: center;
+            padding: 14px 10px;
+            cursor: pointer;
+            margin-left: 12px;
+            margin-bottom: 0px;
 
-  padding: 7px;
-  font-size: 13px;
-  border: 1px solid #D8D8D8;
-  float: left;
-  width: 80%;
-  border-radius: 4px;
-  background: white;
-  margin-right:30px;
+        }
 
-}
+        .item4 button {
+            border-radius: 4px;
+            color: white;
+            border: none;
+            background-color: #4CAF50;
+            padding: 7px auto;
+        }
 
-.example button{
-border-radius: 4px;
-padding:6px;
-color:black;
-border: none;
-background-color:#D8D8D8;
-margin:auto;
-}
+        .item3 button {
+            border-radius: 4px;
+            color: white;
+            border: none;
+            background-color: #555555;
 
-.adv_search{
-display:none;
-}
+            padding: 7px auto;
+        }
 
-	
-	</style>
+        .item1 {
+            background-color: white;
+            border-radius: 6px;
+
+        }
+
+        .example input[type=text] {
+
+            padding: 7px;
+            font-size: 13px;
+            border: 1px solid #D8D8D8;
+            float: left;
+            width: 80%;
+            border-radius: 4px;
+            background: white;
+            margin-right: 30px;
+
+        }
+
+        .example button {
+            border-radius: 4px;
+            padding: 6px;
+            color: black;
+            border: none;
+            background-color: #D8D8D8;
+            margin: auto;
+        }
+
+        .adv_search {
+            display: none;
+            text-align: center;
+        }
+
+        .adv_search form {
+            margin-top: 20px;
+        }
+
+        .adv_search input {
+            width: 35%;
+            padding: 7px;
+            font-size: 13px;
+            border: 1px solid #D8D8D8;
+            border-radius: 4px;
+            background: white;
+
+        }
+
+        .adv_search select {
+            width: 17%;
+            padding: 7px;
+            font-size: 13px;
+            border: 1px solid #D8D8D8;
+            border-radius: 4px;
+            background: white;
+
+
+        }
+
+
+    </style>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
 </head>
 <body>
 <nav class="navbar navbar-expand-md navbar-dark bg-dark">
@@ -135,76 +165,133 @@ display:none;
 </nav>
 <div class="mycontent">
 
-<ul class="myclass">
-  <li class="item item1" onclick="func2()" id="li1"><span>Simple Search</span></li>
-  <li class="item item2" onclick="func1()" id="li2"><span>Advenced Search</span></li>
-  <li class="item item3" style="float:right" onclick="document.getElementById('myInput').value = ''"><button>Clear</button></li>
-  <li class="item item4" style="float:right"><button>Search</button></li>
-</ul>
+    <ul class="myclass">
+        <li class="item item1" onclick="func2()" id="li1"><span>Simple Search</span></li>
+        <li class="item item2" onclick="func1()" id="li2"><span>Advenced Search</span></li>
+        <li class="item item3" style="float:right" onclick="document.getElementById('myInput').value = ''">
+            <button>Clear</button>
+        </li>
+        <li class="item item4" style="float:right">
+            <button>Search</button>
+        </li>
+    </ul>
 
-<div class="search" id='it1'>
-<form class="example" action="" style="margin:auto;max-width:600px; margin-top:5%;">
-
-
- <input type="text" placeholder="your input please" name="search2" id='myInput' />
- <button>help</button>
-</form>
-
+    <div class="search" id='it1'>
+        <form class="example" action="" style="margin:auto;max-width:600px; margin-top:5%;">
 
 
-
-</div>
-
-<div class="adv_search" id='it2'>
-
-<center>here we do advenced search</center>
-<div>
+            <input type="text" placeholder="your input please" name="search2" id='myInput'/>
+            <button>help</button>
+        </form>
 
 
-</div>
+    </div>
 
-<!-- Optional JavaScript -->
-<!-- jQuery first, then Popper.js, then Bootstrap JS -->
-<script
-        src="https://code.jquery.com/jquery-3.7.0.min.js"
-        integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
-        crossorigin="anonymous"
-></script>
-<script
-        src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
-        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
-        crossorigin="anonymous"
-></script>
-<script
-        src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
-        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
-        crossorigin="anonymous"
-></script>
-<!--script src="{{ url_for('static', filename='js/main.js')}}"></script-->
+    <div class="adv_search" id='it2' onkeyup="func3()">
 
-<script>
-function func1() {
-         document.getElementById('it1').style.display = 'none'
-		 document.getElementById('it2').style.display = "block";
-		 document.getElementById('li1').style.backgroundColor ='#F5F5F5';
-		 document.getElementById('li2').style.backgroundColor ='white';
-		document.getElementById('li2').style.borderRadius="4px";
-		  
-		  
-		  
-		 
-      }
+        <form class="myform">
+            <input type="text" placeholder="Metadata tag"/>
+            <select>
+                <option value="tag_exists">tag exists</option>
+                <option value="tag_not_exist">tag not exists</option>
+                <option disabled style="text-align:center;">────────────────</option>
+                <option value="field_is_empty">field is empty</option>
+                <option value="field_is_not_empty">field is not empty</option>
+                <option disabled style="text-align:center;">────────────────</option>
+                <option value="contains" selected>contains</option>
+                <option value="not_contains">not contains</option>
+                <option disabled style="text-align:center;">────────────────</option>
+                <option value="is_equal">is equal</option>
+                <option value="is_not_equal">is not equal</option>
+                <option disabled style="text-align:center;">────────────────</option>
+                <option value="is_greater">is greater</option>
+                <option value="is_smaller">is smaller</option>
+            </select>
+            <input type="text" placeholder="Value"/>
+        </form>
 
-function func2() {
-         document.getElementById('it2').style.display = 'none'
-		 document.getElementById('it1').style.display = "block";
-		 document.getElementById('li2').style.backgroundColor ='#F5F5F5';
-		 document.getElementById('li1').style.backgroundColor ='white';
-		document.getElementById('li1').style.borderRadius="4px";
-      }
-	  
 
-</script>
+        <div>
+
+
+        </div>
+
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script
+                src="https://code.jquery.com/jquery-3.7.0.min.js"
+                integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
+                crossorigin="anonymous"
+        ></script>
+        <script
+                src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+                integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+                crossorigin="anonymous"
+        ></script>
+        <script
+                src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+                integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+                crossorigin="anonymous"
+        ></script>
+        <!--script src="{{ url_for('static', filename='js/main.js')}}"></script-->
+
+        <script>
+            function func1() {
+                document.getElementById('it1').style.display = 'none'
+                document.getElementById('it2').style.display = "block";
+                document.getElementById('li1').style.backgroundColor = '#F5F5F5';
+                document.getElementById('li2').style.backgroundColor = 'white';
+                document.getElementById('li2').style.borderRadius = "4px";
+
+
+            }
+
+            function func2() {
+                document.getElementById('it2').style.display = 'none'
+                document.getElementById('it1').style.display = "block";
+                document.getElementById('li2').style.backgroundColor = '#F5F5F5';
+                document.getElementById('li1').style.backgroundColor = 'white';
+                document.getElementById('li1').style.borderRadius = "4px";
+            }
+
+
+            element = document.getElementById("it2")
+            var allGood = true;
+
+            function func3() {
+
+                formp = element.getElementsByTagName("form");
+                var inputs = formp[formp.length - 1].getElementsByTagName("input");
+                console.log(inputs)
+                allGood = true;
+                var lastInputField = 0;
+
+                Array.from(inputs).forEach((input) => {
+                    if (input.value == "") {
+                        allGood = false;
+                        return false;
+                    }
+                    lastInputField++;
+                });
+                var node = document.createElement("form");
+                console.log(allGood)
+                node.innerHTML = '<input type="text" placeholder="Metadata tag" /> <select> <option value="tag_exists">tag exists</option>  <option value="tag_not_exist">tag not exists</option>  <option disabled style="text-align:center;">────────────────</option>  <option value="field_is_empty">field is empty</option>  <option value="field_is_not_empty">field is not empty</option><option disabled style="text-align:center;">────────────────</option> <option value="contains" selected>contains</option><option value="not_contains">not contains</option> <option disabled style="text-align:center;">────────────────</option><option value="is_equal">is equal</option> <option value="is_not_equal">is not equal</option><option disabled style="text-align:center;">────────────────</option> <option value="is_greater">is greater</option>  <option value="is_smaller">is smaller</option></select><input type="text" placeholder="Value" />';
+                node.classList.add("myform");
+                if (allGood) {
+
+                    element.appendChild(node);
+                }
+
+            }
+
+
+        </script>
+
+        <script>
+
+
+        </script>
+
 
 </body>
 
