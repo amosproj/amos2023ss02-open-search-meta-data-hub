@@ -56,51 +56,78 @@ class OpenSearchManager:
         return indices
 
     def get_all_fields(self, index_name: str) -> list[str]:
-        """ Get all field that belong to an index
-        :param index_name: The name of the index that is looked for
-        :return: Returns a list of field names of the corresponding index
+        """Get all fields that belong to an index.
+
+        Args:
+            index_name (str): The name of the index to look for.
+
+        Returns:
+            list[str]: A list of field names of the corresponding index.
         """
-        fields = []
-        fields_mapping = self._client.indices.get_mapping(index_name)
-        for field in fields_mapping[index_name]["mappings"]["properties"]:
-            fields.append(field)
+        try:
+            index_mapping = self._client.indices.get_mapping(index=index_name)
+            properties = index_mapping[index_name]["mappings"]["properties"]
+            fields = list(properties.keys())
+
+        except Exception as e:
+            print(f"Error occurred while retrieving fields for index '{index_name}': {str(e)}")
+
         return fields
 
     def get_datatype(self, field_name: str, index_name: str) -> str:
-        """ Get the datatype of a specific field for a specific index
-        :param field_name: The name of the specific field
-        :param index_name: The name of the index in which the field is stored
-        :return: A string containing the name of the corresponding datatype
-        """
-        mapping = self._client.indices.get_mapping(index=index_name)
-        return mapping[index_name]['mappings']['properties'][field_name]['type']
+        """Get the datatype of a specific field for a specific index.
+
+         Args:
+             field_name (str): The name of the specific field.
+             index_name (str): The name of the index in which the field is stored.
+
+         Returns:
+             str: A string containing the name of the corresponding datatype.
+         """
+        try:
+            mapping = self._client.indices.get_mapping(index=index_name)
+            datatype = mapping[index_name]['mappings']['properties'][field_name]['type']
+            return datatype
+
+        except Exception as e:
+            print(
+                f"Error occurred while retrieving datatype for field '{field_name}' in index '{index_name}': {str(e)}")
+            return ""
 
     def field_exists(self, index_name: str, field_name: str) -> bool:
-        """ Function checks if a field exists or at least one document has a value for it
-        :param index_name: The name of the index in which is looked for the field
-        :param field_name: The name of the field that is been looked for
-        :return: returns true if the field exists or at least one document has a value for it or false otherwise
+        """Check if a field exists or if at least one document has a value for it.
+
+        Args:
+            index_name (str): The name of the index in which the field is being searched.
+            field_name (str): The name of the field that is being searched.
+
+        Returns:
+            bool: True if the field exists or at least one document has a value for it, False otherwise.
         """
-        print(field_name)
-        query = {
-            "query": {
-                "exists": {
-                    "field": field_name
+        try:
+            query = {
+                "query": {
+                    "exists": {
+                        "field": field_name
+                    }
                 }
             }
-        }
-        response = self._client.search(
-            body=query,
-            index=index_name
-        )
-        return bool(response['hits']['hits'])
+            response = self._client.search(body=query, index=index_name)
+            return bool(response['hits']['hits'])
+
+        except Exception as e:
+            print(f"Error occurred while checking field '{field_name}' in index '{index_name}': {str(e)}")
+            return False
 
     def create_index(self, index_name: str, data_types: dict):
-        """ Create new index with non-default settings
-        :param index_name: the name of the new index
-        :param data_types: a dictionary containing all fields and corresponding datatypes that should be added to the new index
+        """Create a new index with non-default settings.
+
+        Args:
+            index_name (str): The name of the new index.
+            data_types (dict): A dictionary containing all fields and their corresponding data types.
+
         """
-        # the body of the new index creation
+        # The body of the new index creation
         index_body = {
             'settings': {
                 'index': {
@@ -111,17 +138,25 @@ class OpenSearchManager:
                 'properties': {}
             }
         }
-        for key in data_types:  # loop over every entry in the datatypes dictionary
-            if data_types[key] == "date":  # special handling for datetime-types
-                property = {"type": data_types[key], "format": "strict_date_hour_minute_second||epoch_millis"}
-            else:
-                property = {"type": data_types[key]}
-            index_body['mappings']['properties'][
-                key] = property  # add the fields and corresponding datatypes to the index body
 
-        if not self._client.indices.exists(index=index_name):  # check if index already exists
-            response = self._client.indices.create(index=index_name,
-                                                   body=index_body)  # create the index in the OpenSearch node
+        for key, datatype in data_types.items():
+            if datatype == "date":
+                # Special handling for datetime types
+                property = {"type": datatype, "format": "strict_date_hour_minute_second||epoch_millis"}
+            else:
+                property = {"type": datatype}
+            index_body['mappings']['properties'][key] = property
+
+        if not self._client.indices.exists(index=index_name):
+            # Check if the index already exists
+            response = self._client.indices.create(index=index_name, body=index_body)
+            if response["acknowledged"]:
+                print(f"Index '{index_name}' created successfully.")
+            else:
+                print(f"Failed to create index '{index_name}'.")
+
+        else:
+            print(f"Index '{index_name}' already exists.")
 
     def perform_bulk(self, index_name: str, data: list[dict]) -> object:
         """ Inserting multiple documents into opensearch via a bulk API
