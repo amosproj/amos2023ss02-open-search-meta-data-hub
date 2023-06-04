@@ -6,8 +6,10 @@ from opensearchpy.exceptions import ConnectionError
 class OpenSearchManager:
 
     def __init__(self, localhost: bool = False):
-        """ creating a new OpenSearchManager for handling the connection to OpenSearch
-        :param localhost: a bool variable that defines whether to connect to a local instance or the docker container. If not set to true it will automatically connect to the docker-container
+        """
+         Create a new OpenSearchManager for handling the connection to OpenSearch.
+        :param localhost: A boolean variable that defines whether to connect to a local instance or
+        the docker container.  If not set to True, it will automatically connect to the docker container.
         """
         self._set_host(localhost)  # set the host for the OpenSearch connection
         self._connect_to_open_search()
@@ -20,15 +22,16 @@ class OpenSearchManager:
             self._host = 'localhost'  # connection to localhost (testing purposes)
         else:
             self._host = 'opensearch-node'  # connection to docker container
+        self.port = 9200
 
     def _connect_to_open_search(self):
         """ connecting to Opensearch """
 
         # Create the client with SSL/TLS and hostname verification disabled
-        port = 9200  # Port on which the OpenSearch node runs
+        # Port on which the OpenSearch node runs
         auth = ('admin', 'admin')  # For testing only. Don't store credentials in code.
         self._client = OpenSearch(
-            hosts=[{'host': self._host, 'port': port}],  # Host and port to connect with
+            hosts=[{'host': self._host, 'port': self.port}],  # Host and port to connect with
             http_auth=auth,  # Credentials
             use_ssl=False,  # Disable SSL
             verify_certs=False,  # Disable verification of certificates
@@ -46,12 +49,10 @@ class OpenSearchManager:
 
     def get_all_indices(self) -> list[str]:
         """
-        :rtype: List of index_names contained in the OpenSearch node
-        """
-        indices = []
-        for index in self._client.indices.get('*'):
-            if not str(index) == '.kibana_1' and not str(index) == '.opensearch-observability':
-                indices.append(index)
+         :rtype: List of index_names contained in the OpenSearch node
+           """
+        indices = [index for index in self._client.indices.get('*') if
+                   index not in ('.kibana_1', '.opensearch-observability')]
         return indices
 
     def get_all_fields(self, index_name: str) -> list[str]:
@@ -231,3 +232,47 @@ class OpenSearchManager:
             else:
                 return {'match': {search_field: search_content}}, 'must'
 
+
+# this is just another method optimized
+def get_sub_query(self, data_type: str, operator: str, search_field: str, search_content: any) -> tuple:
+    """ Function that returns a subquery that can be used to create a complete query
+    :param data_type: the datatype of the field of the subquery
+    :param operator: the operator of the query
+    :param search_field: the field in which should be searched in this subquery
+    :param search_content: the content of the search
+    :return: returns a tuple consisting of a subquery and either the value must or must_not
+    """
+    sub_query = {}
+    if data_type == 'float' or data_type == 'date':
+        range_operator_mapping = {
+            'EQUALS': 'term',
+            'GREATER_THAN': 'range',
+            'LESS_THAN': 'range',
+            'GREATER_THAN_OR_EQUALS': 'range',
+            'LESS_THAN_OR_EQUALS': 'range',
+            'NOT_EQUALS': 'term'
+        }
+        range_operator = range_operator_mapping.get(operator, 'term')
+        if range_operator == 'term':
+            sub_query = {'term': {search_field: {'value': search_content}}}
+        elif range_operator == 'range':
+            range_query = {'range': {search_field: {}}}
+            if operator == 'GREATER_THAN':
+                range_query['range'][search_field]['gt'] = search_content
+            elif operator == 'LESS_THAN':
+                range_query['range'][search_field]['lt'] = search_content
+            elif operator == 'GREATER_THAN_OR_EQUALS':
+                range_query['range'][search_field]['gte'] = search_content
+            elif operator == 'LESS_THAN_OR_EQUALS':
+                range_query['range'][search_field]['lte'] = search_content
+            sub_query = range_query
+    elif data_type == 'text':
+        text_operator_mapping = {
+            'EQUALS': 'match',
+            'NOT_EQUALS': 'match'
+        }
+        text_operator = text_operator_mapping.get(operator, 'match')
+        sub_query = {text_operator: {search_field: search_content}}
+
+    functionality = 'must' if operator != 'NOT_EQUALS' else 'must_not'
+    return sub_query, functionality
