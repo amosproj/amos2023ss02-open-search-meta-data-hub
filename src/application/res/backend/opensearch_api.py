@@ -237,13 +237,18 @@ class OpenSearchManager:
 
     @staticmethod
     def _get_sub_query(data_type: str, operator: str, search_field: str, search_content: any) -> tuple:
-        """ Function that returns a subquery that can be used to create a complete query
-        :param data_type: the datatype of the field of the subquery
-        :param operator: the operator of the query
-        :param search_field: the field in which should be searched in this suquery
-        :param search_content: the content of the search
-        :return: returns a tuple consisting of a subquery and either the value must or must_not
-        """
+        """Returns a subquery that can be used to create a complete query.
+
+          Args:
+              data_type (str): The datatype of the field of the subquery.
+              operator (str): The operator of the query.
+              search_field (str): The field in which the search should be performed in this subquery.
+              search_content (any): The content of the search.
+
+          Returns:
+              tuple: A tuple consisting of a subquery and the value 'must' or 'must_not'.
+
+          """
         if data_type == 'float' or data_type == 'date':
             if operator == 'EQUALS':
                 return {'term': {search_field: {'value': search_content}}}, 'must'
@@ -270,14 +275,20 @@ class OpenSearchManager:
 
 # this is just another method optimized
 def get_sub_query(self, data_type: str, operator: str, search_field: str, search_content: any) -> tuple:
-    """ Function that returns a subquery that can be used to create a complete query
-    :param data_type: the datatype of the field of the subquery
-    :param operator: the operator of the query
-    :param search_field: the field in which should be searched in this subquery
-    :param search_content: the content of the search
-    :return: returns a tuple consisting of a subquery and either the value must or must_not
+    """Returns a subquery that can be used to create a complete query.
+
+    Args:
+        data_type (str): The datatype of the field of the subquery.
+        operator (str): The operator of the query.
+        search_field (str): The field in which the search should be performed in this subquery.
+        search_content (any): The content of the search.
+
+    Returns:
+        tuple: A tuple consisting of a subquery and the value 'must' or 'must_not'.
+
     """
     sub_query = {}
+
     if data_type == 'float' or data_type == 'date':
         range_operator_mapping = {
             'EQUALS': 'term',
@@ -288,10 +299,12 @@ def get_sub_query(self, data_type: str, operator: str, search_field: str, search
             'NOT_EQUALS': 'term'
         }
         range_operator = range_operator_mapping.get(operator, 'term')
+
         if range_operator == 'term':
             sub_query = {'term': {search_field: {'value': search_content}}}
         elif range_operator == 'range':
             range_query = {'range': {search_field: {}}}
+
             if operator == 'GREATER_THAN':
                 range_query['range'][search_field]['gt'] = search_content
             elif operator == 'LESS_THAN':
@@ -300,7 +313,9 @@ def get_sub_query(self, data_type: str, operator: str, search_field: str, search
                 range_query['range'][search_field]['gte'] = search_content
             elif operator == 'LESS_THAN_OR_EQUALS':
                 range_query['range'][search_field]['lte'] = search_content
+
             sub_query = range_query
+
     elif data_type == 'text':
         text_operator_mapping = {
             'EQUALS': 'match',
@@ -311,3 +326,4 @@ def get_sub_query(self, data_type: str, operator: str, search_field: str, search
 
     functionality = 'must' if operator != 'NOT_EQUALS' else 'must_not'
     return sub_query, functionality
+
