@@ -34,7 +34,7 @@ def search_simple():
 @app.route('/search/advanced')
 def search_advanced():
     search_info = json.loads(urllib.parse.unquote(request.args.get('searchString')))
-    return os_manager.advanced_search(search_info) #TODO First Argument missing
+    return os_manager.advanced_search(search_info)  # TODO First Argument missing
 
 
 @app.route('/files_type_chart')

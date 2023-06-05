@@ -4,13 +4,21 @@ from opensearchpy.exceptions import ConnectionError
 
 
 class OpenSearchManager:
+    """
+     Class for managing the connection to OpenSearch and perform simple and advanced search.
+     class is a basic skeleton, and you may need to add more methods and functionality based
+     on your specific requirements.
+     """
 
     def __init__(self, localhost: bool = False):
         """
-         Create a new OpenSearchManager for handling the connection to OpenSearch.
+        Create a new OpenSearchManager for handling the connection to OpenSearch.
+
         :param localhost: A boolean variable that defines whether to connect to a local instance or
-        the docker container.  If not set to True, it will automatically connect to the docker container.
+                          the docker container.
+                          If not set to True, it will automatically connect to the docker container.
         """
+
         self._set_host(localhost)  # set the host for the OpenSearch connection
         self._connect_to_open_search()
 
@@ -22,7 +30,7 @@ class OpenSearchManager:
             self._host = 'localhost'  # connection to localhost (testing purposes)
         else:
             self._host = 'opensearch-node'  # connection to docker container
-        self.port = 9200
+        self._port = 9200
 
     def _connect_to_open_search(self):
         """ connecting to Opensearch """
@@ -31,7 +39,7 @@ class OpenSearchManager:
         # Port on which the OpenSearch node runs
         auth = ('admin', 'admin')  # For testing only. Don't store credentials in code.
         self._client = OpenSearch(
-            hosts=[{'host': self._host, 'port': self.port}],  # Host and port to connect with
+            hosts=[{'host': self._host, 'port': self._port}],  # Host and port to connect with
             http_auth=auth,  # Credentials
             use_ssl=False,  # Disable SSL
             verify_certs=False,  # Disable verification of certificates
@@ -46,6 +54,14 @@ class OpenSearchManager:
                 self._client.cluster.health(wait_for_status="yellow")  # Make sure the cluster is available
             except ConnectionError:
                 time.sleep(2)  # Take a short break to give the OpenSearch node time to be fully set up
+
+    def disconnect(self):
+        """
+        Disconnects from OpenSearch.
+
+        :return: None
+        """
+        # Add your disconnection code here
 
     def get_all_indices(self) -> list[str]:
         """
@@ -159,10 +175,12 @@ class OpenSearchManager:
             print(f"Index '{index_name}' already exists.")
 
     def perform_bulk(self, index_name: str, data: list[dict]) -> object:
-        """ Inserting multiple documents into opensearch via a bulk API
-        :param index_name: The  name of the index the new data will be added to
-        :param data: a list of dictionaries containing all new data and its values in the right format
-        :return: returns the response of the bulk request
+        """
+        Insert multiple documents into OpenSearch via the bulk API.
+
+        :param index_name: The name of the index to which the new data will be added.
+        :param data: A list of dictionaries containing the new data and its values in the right format.
+        :return: The response of the bulk request.
         """
         index_operation = {
             "index": {"_index": index_name}
@@ -176,11 +194,14 @@ class OpenSearchManager:
         return self._client.bulk(body=bulk_data)
 
     def simple_search(self, index_name: str, search_text: str) -> any:
-        """ A function that performs a simple search in OpenSearch.
-        :param index_name: The name of the index in which the search should be performed in
-        :param search_text: The search text that will be searched for
-        :return: returns an OpenSearch response
         """
+        A function that performs a simple search in OpenSearch.
+
+        :param index_name: The name of the index in which the search should be performed.
+        :param search_text: The search text that will be searched for.
+        :return: Returns an OpenSearch response.
+        """
+
         query = {
             "query": {
                 "match": {
@@ -196,11 +217,14 @@ class OpenSearchManager:
         return response
 
     def advanced_search(self, index_name: str, search_info: dict) -> any:
-        """ Function that performs an advanced search in OpenSearch
-        :param index_name: the name of the index in which the search should be performed in
-        :param search_info: a dictionary containing the different fields and operators for the advanced search
-        :return:
         """
+        Function that performs an advanced search in OpenSearch.
+
+        :param index_name: The name of the index in which the search should be performed.
+        :param search_info: A dictionary containing the different fields and operators for the advanced search.
+        :return: None (or specify the return type if applicable).
+        """
+
         print("Search_info: ", search_info)
         sub_queries = []
         for search_field in search_info:
@@ -223,10 +247,13 @@ class OpenSearchManager:
 
     @staticmethod
     def _get_query(sub_queries: list[tuple]) -> dict:
-        """ Function that creates a query that can be used to sesrch in OpenSearch
-        :param sub_queries: a list of tuples that contains the sub query and either the value must or must_not
-        :return: returns a query that can be used to search in OpenSearch
         """
+        Function that creates a query that can be used to search in OpenSearch.
+
+        :param sub_queries: A list of tuples that contains the subquery and either the value 'must' or 'must_not'.
+        :return: Returns a query that can be used to search in OpenSearch.
+        """
+
         query = {'query': {'bool': {}}}
         for sub_query, functionality in sub_queries:
             if functionality not in query['query']['bool']:
@@ -326,4 +353,3 @@ def get_sub_query(self, data_type: str, operator: str, search_field: str, search
 
     functionality = 'must' if operator != 'NOT_EQUALS' else 'must_not'
     return sub_query, functionality
-
