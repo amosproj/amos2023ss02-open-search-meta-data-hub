@@ -4,9 +4,11 @@ from backend.opensearch_api import OpenSearchManager
 
 
 def modify_datatypes(mdh_datatypes: dict) -> dict:
-    """ reformatting the mdh_datatypes dictionary, so it can be stored in OpenSearch
-    :param mdh_datatypes: a dictionary containing the corresponding datatypes to the metadata-tags from a MetaDataHub request
-    :return: this function returns a dictionary containing the corresponding OpenSearch datatypes for the metadata-tags
+    """
+    Reformatting the mdh_datatypes dictionary for storage in OpenSearch.
+
+    :param mdh_datatypes: A dictionary containing the corresponding datatypes to the metadata-tags from a MetaDataHub request.
+    :return: A dictionary containing the corresponding OpenSearch datatypes for the metadata-tags.
     """
     modified_datatypes = {}  # init the resulting dictionary
     for mdh_datatype in mdh_datatypes:  # loop over all entries of the mdh_datatypes dictionary
@@ -26,11 +28,14 @@ def modify_datatypes(mdh_datatypes: dict) -> dict:
 
 
 def modify_data(mdh_data: list[dict], data_types: dict) -> list[dict]:
-    """ reformatting the mdh_data dictionary, so it can be stored in OpenSearch
-    :param mdh_data: a list of dictionaries that contains all metadata-tags for every file of a MetaDataHub request
-    :param data_types: a dictionary containing the modified OpenSearch datatypes
-    :return: this function returns a list of dictionaries containing the modified metadata tags and their corresponding values
     """
+    Reformatting the mdh_data dictionary for storage in OpenSearch.
+
+    :param mdh_data: A list of dictionaries that contains all metadata-tags for every file of a MetaDataHub request.
+    :param data_types: A dictionary containing the modified OpenSearch datatypes.
+    :return: A list of dictionaries containing the modified metadata tags and their corresponding values.
+    """
+
     modified_data = []  # init the resulting list
     for index, file_data in enumerate(mdh_data, start=1):  # Loop over all files of mdh_data
         metadata = file_data.get("metadata", [])  # get the metadata for each file
