@@ -1,74 +1,94 @@
 {% extends 'base.html' %} {% block content %}
-<br />
+<br/>
 <head>
-  <meta charset="utf-8" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.5.0/chart.min.js"></script>
+    <meta charset="utf-8"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.5.0/chart.min.js"></script>
 </head>
 
 <body>
-  <canvas id="chart" width="600" height="400"></canvas>
-  <script>
+<canvas id="chart" width="600" height="400"></canvas>
+<script>
     var doughnutData = [
-      {% for item, label, colors in set %}
-        {
-          value: {{ item }},
-          label: "{{ label }}",
-          backgroundColor: "{{ colors }}",
-          borderWidth: 0
-        },
-      {% endfor %}
-    ];
+        { %
+    for item, label, colors in set %}
+    {
+        value: {
+            {
+                item
+            }
+        }
+    ,
+        label: "{{ label }}",
+            backgroundColor
+    :
+        "{{ colors }}",
+            borderWidth
+    :
+        0
+    }
+    ,
+    {%
+        endfor %
+    }
+    ]
+    ;
 
     // get doughnut chart canvas
     var chartCanvas = document.getElementById("chart").getContext("2d");
 
     // calculate total value
-    var totalValue = doughnutData.reduce(function(sum, item) {
-      return sum + item.value;
+    var totalValue = doughnutData.reduce(function (sum, item) {
+        return sum + item.value;
     }, 0);
 
     // draw doughnut chart
     var doughnutChart = new Chart(chartCanvas, {
-      type: 'doughnut',
-      data: {
-        datasets: [{
-          data: doughnutData.map(function(item) { return item.value; }),
-          backgroundColor: doughnutData.map(function(item) { return item.backgroundColor; }),
-          borderWidth: doughnutData.map(function(item) { return item.borderWidth; })
-        }],
-        labels: doughnutData.map(function(item) {
-          var percentage = ((item.value / totalValue) * 100).toFixed(2);
-          return item.label + ' (' + percentage + '%)';
-        })
-      },
-      options: {
-        cutout: '66%',
-        responsive: true, // Set responsive to false
-        plugins: {
-          legend: {
-            position: 'top',
-            labels: {
-              font: {
-                size: 18
-              }
+        type: 'doughnut',
+        data: {
+            datasets: [{
+                data: doughnutData.map(function (item) {
+                    return item.value;
+                }),
+                backgroundColor: doughnutData.map(function (item) {
+                    return item.backgroundColor;
+                }),
+                borderWidth: doughnutData.map(function (item) {
+                    return item.borderWidth;
+                })
+            }],
+            labels: doughnutData.map(function (item) {
+                var percentage = ((item.value / totalValue) * 100).toFixed(2);
+                return item.label + ' (' + percentage + '%)';
+            })
+        },
+        options: {
+            cutout: '66%',
+            responsive: true, // Set responsive to false
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        font: {
+                            size: 18
+                        }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Doughnut Chart : OS-Files type', // Add the chart title here
+                    font: {
+                        size: 30
+                    }
+                },
+                tooltip: {
+                    enabled: true,
+                    bodyFont: {
+                        size: 20
+                    }
+                }
             }
-          },
-          title: {
-            display: true,
-            text: 'Doughnut Chart : OS-Files type', // Add the chart title here
-            font: {
-              size: 30
-            }
-          },
-          tooltip: {
-            enabled: true,
-            bodyFont: {
-              size: 20
-            }
-          }
         }
-      }
     });
-  </script>
+</script>
 </body>
 {% endblock %}

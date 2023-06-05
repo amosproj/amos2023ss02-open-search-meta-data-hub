@@ -26,6 +26,6 @@ average_score = sum(scores) / len(scores)
 
 print("Average score:", average_score)
 if average_score < THRESHOLD:
-    print("Linter failed: Average score < threshold value="+str(THRESHOLD))
+    print("Linter failed: Average score < threshold value=" + str(THRESHOLD))
     sys.exit(1)
 sys.exit(0)
