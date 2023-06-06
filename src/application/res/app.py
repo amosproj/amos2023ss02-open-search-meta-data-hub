@@ -43,5 +43,10 @@ def files_type_chart():
     return render_template('doughnut_chart.html', max=17000, set=zip(values, labels, colors))
 
 
+@app.route('/statistics')
+def statistics():
+    return render_template('statistics.html')
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)

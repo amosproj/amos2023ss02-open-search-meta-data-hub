@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br>
+<h1>{% block title %} Welcome to the OpenSearch-MetaDataHub! {% endblock %}</h1>
+<br>
+<iframe src="http://localhost:5601/app/visualize#/create?embed=true&type=horizontal_bar&indexPattern=d88603d0-046a-11ee-9713-6b34c4284e4f&_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-15m,to:now))&_a=(filters:!(),linked:!f,query:(language:kuery,query:''),uiState:(),vis:(aggs:!((enabled:!t,id:'1',params:(),schema:metric,type:count),(enabled:!t,id:'2',params:(field:FileSize,ranges:!((from:0,to:2000),(from:2000,to:4000))),schema:segment,type:range)),params:(addLegend:!t,addTimeMarker:!f,addTooltip:!t,categoryAxes:!((id:CategoryAxis-1,labels:(filter:!f,rotate:0,show:!t,truncate:200),position:left,scale:(type:linear),show:!t,style:(),title:(),type:category)),grid:(categoryLines:!f),labels:(),legendPosition:right,row:!t,seriesParams:!((data:(id:'1',label:Count),drawLinesBetweenPoints:!t,lineWidth:2,mode:normal,show:!t,showCircles:!t,type:histogram,valueAxis:ValueAxis-1)),thresholdLine:(color:%23E7664C,show:!f,style:full,value:10,width:1),times:!(),type:histogram,valueAxes:!((id:ValueAxis-1,labels:(filter:!t,rotate:75,show:!t,truncate:100),name:LeftAxis-1,position:bottom,scale:(mode:normal,type:linear),show:!t,style:(),title:(text:Count),type:value))),title:'',type:horizontal_bar))" height="600" width="800"></iframe>
+{% endblock %}
