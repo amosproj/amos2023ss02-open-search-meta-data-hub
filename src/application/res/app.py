@@ -1,26 +1,28 @@
+import secrets
 import json
 from flask import Flask
 from flask import render_template
 from flask import request
-from flask_wtf import FlaskForm
-from wtforms import StringField, SelectField, FieldList, FormField, Form
+from flask_bootstrap import Bootstrap5
+from flask_wtf import FlaskForm, CSRFProtect
+from wtforms import StringField, SelectField, FieldList, FormField, Form, SubmitField
 from wtforms.validators import DataRequired
 from backend.opensearch_api import OpenSearchManager
 from backend import files_type
 import urllib
 
 app = Flask(__name__)
-index_name = 'amoscore'
+app.config['SECRET_KEY'] = secrets.token_hex(16)
+
+bootstrap = Bootstrap5(app)
+csrf = CSRFProtect(app)
+
 os_manager: OpenSearchManager = OpenSearchManager()
 
 
-class ItemForm(Form):
-    tag = StringField('tag', validators=[DataRequired()])
-    searchOperator = SelectField('searchOperator', [('tag_exists', 'tag exists'),('tag_not_exist', 'tag not exists'),('', '────────────────'), ('field_is_empty', 'field is empty'),('field_is_not_empty', 'field is not empty'),('', '────────────────'),('contains', 'contains'),('not_contains', 'not contains'),('', '────────────────'),('is_equal', 'is equal'),('is_not_equal', 'is not equal'),('', '────────────────'),('is_greater', 'is greater'),('is_smaller', 'is smaller')], validators=[DataRequired()])
-    searchValue = StringField('searchValue', validators=[DataRequired()])
-
-class advancedSearchForm(FlaskForm):
-    items = FieldList(FormField(ItemForm), min_entries=1)
+class SimpleSearchForm(FlaskForm):
+    searchValue = StringField('Search Value', validators=[DataRequired()])
+    submit = SubmitField('Search')
 
 """Rendering start page of the website"""
 
@@ -38,6 +40,19 @@ def search():
     # response = search_os.simple_search(client = client, search_text = searchField)
     return render_template('search.html')
 
+@app.route('/simpleSearch', methods=['GET', 'POST'])
+def simpleSearch():
+    form = SimpleSearchForm()
+    result = ""
+    if form.validate_on_submit():
+        searchValue = form.searchValue.data
+        resultTmp = os_manager.simple_search("amoscore", searchValue)
+        if len(resultTmp)>0:
+            result=resultTmp
+        else:
+            result="No results found."
+        
+    return render_template('simpleSearch.html',form=form,result=result)
 
 @app.route('/search/simple')
 def search_simple():
@@ -48,13 +63,13 @@ def search_advanced():
     search_info = json.loads(urllib.parse.unquote(request.args.get('searchString'))) #ToDo use Flask Forms
     return os_manager.advanced_search("amoscore", search_info) #Hardcoded indexname
 
-@app.route('/search/advanced_v2')
-def advanced_search_v2():
-    form = advancedSearchForm()
-    if form.validate_on_submit():
+#@app.route('/search/advanced_v2')
+#def advanced_search_v2():
+ #   form = advancedSearchForm()
+  #  if form.validate_on_submit():
         # ... 
-        pass
-    return render_template('index1.html')
+   #     pass
+    #return render_template('index1.html')
 
 @app.route('/files_type_chart')
 def files_type_chart():
