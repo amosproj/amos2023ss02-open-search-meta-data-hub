@@ -10,11 +10,11 @@ class MetaDataHubManager:
         """ creating a new MetaDataHubManager for handling the connection to the MetaDataHub
         :param localhost: Bool variable: if true, connect to environment on device, otherwise on docker-container
         """
-        self._request_path_file = os.path.join(os.getcwd(), 'request.gql') # define where to find the GraphQL request
-        MetaDataHubManager._set_environment(localhost) # set the MetaDataHub environment
-        MetaDataHubManager._connect_to_mdh() # connect to the MetaDataHub
-        self.result = {} # dictionary containing the data from the last request
-        self._download_data() # downloading the data in the result-dictionary
+        self._request_path_file = os.path.join(os.getcwd(), 'request.gql')  # define where to find the GraphQL request
+        MetaDataHubManager._set_environment(localhost)  # set the MetaDataHub environment
+        MetaDataHubManager._connect_to_mdh()  # connect to the MetaDataHub
+        self.result = {}  # dictionary containing the data from the last request
+        self._download_data()  # downloading the data in the result-dictionary
 
     @staticmethod
     def _set_environment(localhost: bool):

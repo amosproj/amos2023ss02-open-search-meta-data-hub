@@ -16,13 +16,12 @@ def modify_datatypes(mdh_datatypes: dict) -> dict:
     """
     Reformatting the mdh_datatypes dictionary for storage in OpenSearch.
 
-    :param mdh_datatypes: A dictionary containing the corresponding datatypes to the metadata-tags from a MetaDataHub request.
-    :return: A dictionary containing the corresponding OpenSearch datatypes for the metadata-tags.
+    :param mdh_datatypes: A dictionary containing the corresponding datatypes to the metadata-tags from a MetaDataHub
+    request. :return: A dictionary containing the corresponding OpenSearch datatypes for the metadata-tags.
     """
     modified_datatypes = {}  # init the resulting dictionary
     for mdh_datatype in mdh_datatypes:  # loop over all entries of the mdh_datatypes dictionary
-        name = mdh_datatype.get("name").replace(".",
-                                                "_")  # get the name of the metadata-tag and replace the '.' with '_' to avoid parsing errors
+        name = mdh_datatype.get("name").replace(".", "_")  # get the metadata-tag and replace the '.' with '_'
         mdh_type = mdh_datatype.get("type")  # get the corresponding datatype
         # assign the correct OpenSearch datatype
         if mdh_type == 'num':
