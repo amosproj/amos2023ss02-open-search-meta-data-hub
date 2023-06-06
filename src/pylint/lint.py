@@ -24,6 +24,7 @@ print("Scores:", scores)
 print("Length:", len(scores))
 average_score = sum(scores) / len(scores)
 
+
 print("Average score:", average_score)
 if average_score < THRESHOLD:
     print("Linter failed: Average score < threshold value=" + str(THRESHOLD))
