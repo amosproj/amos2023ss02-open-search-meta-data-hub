@@ -52,5 +52,12 @@ def statistics():
     return render_template('statistics.html')
 
 
+@app.route('/display-iframe', methods=['POST'])
+def display_iframe():
+    iframe_code = request.form.get('iframe_code')
+    return render_template('statistics.html', iframe_code=iframe_code)
+
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)
