@@ -19,5 +19,5 @@ jobs:
           pip install pylint pytest
       - name: Lint with pylint
         run: |
+          pwd
           python src/pylint/lint.py
-          
