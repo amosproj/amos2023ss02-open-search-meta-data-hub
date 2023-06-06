@@ -2,7 +2,6 @@ on:
   push:
     branches: [backend_restructuring]
     paths:
-      - 'test.py'
       - 'lint.py'
 
 jobs:
