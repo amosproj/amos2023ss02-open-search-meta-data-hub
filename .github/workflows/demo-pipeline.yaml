@@ -20,4 +20,3 @@ jobs:
       - name: Lint with pylint
         run: |
           python lint
-          python src/pylint/lint.py
