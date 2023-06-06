@@ -2,7 +2,7 @@ on:
   push:
     branches: [backend_restructuring]
     paths:
-      - 'lint.py'
+      - 'src/pylint/lint.py'
 
 jobs:
   build:
