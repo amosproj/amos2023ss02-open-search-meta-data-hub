@@ -16,7 +16,7 @@ file_list = subprocess.check_output(["find", FOLDER_PATH, "-type", "f", "-name",
 
 scores = []
 for file_path in file_list:
-    run = lint.Run(["--rcfile=src/pylint/.pylintrc", file_path], do_exit=False)
+    run = lint.Run(["--rcfile=.pylintrc", file_path], do_exit=False)
     score = run.linter.stats.global_note
     scores.append(score)
 

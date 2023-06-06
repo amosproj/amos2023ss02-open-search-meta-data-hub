@@ -24,7 +24,8 @@ class OpenSearchManager:
 
     def _set_host(self, localhost: bool):
         """ Setting the host for the OpenSearch connection
-        :param localhost: A bool variable that defines whether to connect to a local instance or the docker container
+        :param localhost: A bool variable that defines whether 
+        to connect to a local instance or the docker container
         """
         if localhost:
             self._host = 'localhost'  # connection to localhost (testing purposes)
