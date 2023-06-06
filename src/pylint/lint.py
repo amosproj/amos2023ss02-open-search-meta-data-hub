@@ -29,5 +29,3 @@ if average_score < THRESHOLD:
     print("Linter failed: Average score < threshold value=" + str(THRESHOLD))
     sys.exit(1)
 sys.exit(0)
-
-
