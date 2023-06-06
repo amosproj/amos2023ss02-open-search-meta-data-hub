@@ -1,8 +1,7 @@
 on:
   push:
-    branches: [main]
+    branches: [backend_restructuring]
     paths:
-      - 'test.py'
       - 'lint.py'
 
 jobs:
@@ -20,4 +19,4 @@ jobs:
           pip install pylint pytest
       - name: Lint with pylint
         run: |
-          python src/pylint/lint.py
+          python lint.py
