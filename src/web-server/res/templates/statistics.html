@@ -1,17 +1,60 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<style>
+    .iframeContainer {
+        overflow: auto;
+        width: 100%;
+        height: 100vh; /* Adjust the height as needed */
+    }
+
+    .iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+</style>
+
 <br>
 <h1>{% block title %} Import your own visualizations! {% endblock %}</h1>
 <br>
 
 <form method="POST" action="/display-iframe">
-    <input type="text" name="iframe_code" class="form-control form-input" placeholder="Paste iframe code here..." id="searchField" required>
+    <input type="text" name="iframe_code[]" class="form-control form-input" placeholder="Paste iframe code here..." id="searchField" required>
+    <button type="button" class="add-iframe">Add Another Iframe</button>
+
+    <div id="iframeContainerWrapper">
+        {% for code in iframe_code %}
+        <div class="iframeContainer">
+            {% if code %}
+                <iframe srcdoc="{{ code }}" class="iframe" frameborder="0"></iframe>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <input type="submit" value="Submit">
 </form>
 
-<div id="iframeContainer">
-    {% if iframe_code %}
-        <iframe srcdoc="{{ iframe_code }}"></iframe>
-    {% endif %}
-</div>
+<script>
+    // JavaScript code to dynamically add more input fields
+    const addButton = document.querySelector('.add-iframe');
+    const form = document.querySelector('form');
+    const containerWrapper = document.getElementById('iframeContainerWrapper');
+
+    addButton.addEventListener('click', function() {
+        const container = document.createElement('div');
+        container.className = 'iframeContainer';
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.name = 'iframe_code[]';
+        input.className = 'form-control form-input';
+        input.placeholder = 'Paste iframe code here...';
+        input.required = true;
+
+        container.appendChild(input);
+        containerWrapper.appendChild(container);
+    });
+</script>
 {% endblock %}
