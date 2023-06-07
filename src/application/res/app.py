@@ -50,7 +50,7 @@ def statistics():
 
 @app.route('/display-iframe', methods=['POST'])
 def display_iframe():
-    iframe_code = request.form.get('iframe_code')
+    iframe_code = request.form.getlist('iframe_code[]')
     return render_template('statistics.html', iframe_code=iframe_code)
 
 
