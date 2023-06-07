@@ -16,7 +16,7 @@ file_list = subprocess.check_output(["find", FOLDER_PATH, "-type", "f", "-name",
 
 scores = []
 for file_path in file_list:
-    run = lint.Run(["--rcfile=src/pylint/.pylintrc", file_path], do_exit=False)
+    run = lint.Run(["--rcfile=.pylintrc", file_path], do_exit=False)
     score = run.linter.stats.global_note
     scores.append(score)
 
@@ -26,6 +26,6 @@ average_score = sum(scores) / len(scores)
 
 print("Average score:", average_score)
 if average_score < THRESHOLD:
-    print("Linter failed: Average score < threshold value="+str(THRESHOLD))
+    print("Linter failed: Average score < threshold value=" + str(THRESHOLD))
     sys.exit(1)
 sys.exit(0)

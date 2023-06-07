@@ -1,4 +1,4 @@
-FROM python:3
+FROM  python:3
 RUN mkdir WORK_REPO
 WORKDIR /WORK_REPO
 
@@ -9,16 +9,13 @@ ADD res .
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
-# add the graphql file to the work repo
-COPY /res/request.gql request.gql
-
 # download mdh-lib
 RUN wget https://metadatahub.de/cloud/s/JpgrZMQBMn6GWHs/download/mdh-2.3.1-py3-none-any.whl
 RUN pip install mdh-2.3.1-py3-none-any.whl
 
-
 # mdh-configurations
 RUN mkdir mdh_home
 
-# execute the python file to start transfer
-CMD python data_transfer.py
+CMD python3 import-script/data_transfer.py && python3 app.py
+
+
