@@ -4,6 +4,7 @@ from flask import render_template
 from flask import request
 from backend.opensearch_api import OpenSearchManager
 from backend import files_type
+from backend import get_all_iframes
 import urllib
 
 app = Flask(__name__)
@@ -45,7 +46,9 @@ def files_type_chart():
 
 @app.route('/statistics')
 def statistics():
-    return render_template('statistics.html')
+    iframe_codes = get_all_iframes.get_iframes()
+    print(iframe_codes)
+    return render_template('statistics.html', iframe_code=iframe_codes)
 
 
 @app.route('/display-iframe', methods=['POST'])
