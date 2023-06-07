@@ -19,10 +19,7 @@
 <h1>{% block title %} Import your own visualizations! {% endblock %}</h1>
 <br>
 
-<form method="POST" action="/display-iframe">
-    <input type="text" name="iframe_code[]" class="form-control form-input" placeholder="Paste iframe code here..." id="searchField" required>
-    <button type="button" class="add-iframe">Add Another Iframe</button>
-
+<form>
     <div id="iframeContainerWrapper">
         {% for code in iframe_code %}
         <div class="iframeContainer">
@@ -32,29 +29,6 @@
         </div>
         {% endfor %}
     </div>
-
-    <input type="submit" value="Submit">
 </form>
 
-<script>
-    // JavaScript code to dynamically add more input fields
-    const addButton = document.querySelector('.add-iframe');
-    const form = document.querySelector('form');
-    const containerWrapper = document.getElementById('iframeContainerWrapper');
-
-    addButton.addEventListener('click', function() {
-        const container = document.createElement('div');
-        container.className = 'iframeContainer';
-
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.name = 'iframe_code[]';
-        input.className = 'form-control form-input';
-        input.placeholder = 'Paste iframe code here...';
-        input.required = true;
-
-        container.appendChild(input);
-        containerWrapper.appendChild(container);
-    });
-</script>
 {% endblock %}
