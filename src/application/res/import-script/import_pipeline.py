@@ -166,6 +166,57 @@ def modify_data(mdh_data: list[dict], data_types: dict) -> list[dict]:
     return modified_data
 
 
+def generate_mdh_search_query(filter_functions=None, limit=2000):
+    """
+    Generate a dynamic MDH search query.
+
+    :param filter_functions: Optional list of filter functions.
+    :param limit: Limit on the number of files to return.
+    :return: Generated query string.
+    """
+    query = """
+    query {
+        mdhSearch(
+            filterFunctions: FILTER_FUNCTIONS
+            limit: LIMIT
+        ) {
+            TOTAL_FILES_COUNT
+            RETURNED_FILES_COUNT
+            INSTANCE_NAME
+            TIME_ZONE
+            FIXED_RETURN_COLUMN_SIZE
+            LIMITED_BY_LICENSING
+            QUERY_STATUS_AS_TEXT
+            dataTypes {
+                NAME
+                TYPE
+            }
+            files {
+                metadata {
+                    NAME
+                    VALUE
+                }
+            }
+        }
+    }
+    """
+
+    # Replace the placeholders with the provided values
+    query = query.replace("FILTER_FUNCTIONS", filter_functions or "[]")
+    query = query.replace("LIMIT", str(limit))
+
+    # Convert all keys to uppercase and replace in the query
+    query = query.replace("TOTAL_FILES_COUNT", "totalFilesCount")  # Replace key for total files count
+    query = query.replace("RETURNED_FILES_COUNT", "returnedFilesCount")  # Replace key for returned files count
+    query = query.replace("INSTANCE_NAME", "instanceName")  # Replace key for instance name
+    query = query.replace("TIME_ZONE", "timeZone")  # Replace key for time zone
+    query = query.replace("FIXED_RETURN_COLUMN_SIZE", "fixed")
+
+
+# example of usage
+# query_string = generate_mdh_search_query(filter_functions=["your", "filter", "functions"], limit=500)
+# print(query_string)
+
 if __name__ == "__main__":
     print("Start importing...")
 
