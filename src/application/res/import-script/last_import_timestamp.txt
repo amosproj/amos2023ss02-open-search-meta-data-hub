@@ -1,0 +1,19 @@
+#
+# The last_import_timestamp.txt file should store the timestamp value of the last import.
+# This file serves as a persistent record that allows the import process to track the latest import and determine
+# which data has been modified or added since then.
+#
+# In the update_last_import_timestamp method, the provided timestamp value is written
+# to the last_import_timestamp.txt file.
+# This ensures that the file always reflects the most recent import timestamp.
+#
+# The content of the last_import_timestamp.txt file should be a single line containing the timestamp value
+# in a suitable format. For example, it could be a string representation of the timestamp in a standardized format
+#  like ISO 8601 (e.g., "2023-06-08T15:30:00").
+#
+# When the import process is executed subsequently, it can read the value from the last_import_timestamp.txt file
+# to determine the timestamp of the last import. This allows it to identify the data that has been modified or added
+# since that timestamp and update the index accordingly.
+#
+# It's important to ensure proper error handling when reading from and writing to the last_import_timestamp.txt file
+# to handle cases such as file not found, permission issues, or incorrect file format.

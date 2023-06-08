@@ -67,6 +67,49 @@ def modify_data(mdh_data: list[dict], data_types: dict) -> list[dict]:
     return modified_data
 
 
+def normalize_datatypes(mdh_datatypes):
+    """
+    Normalize the mdh_datatypes dictionary for storage in OpenSearch.
+
+    :param mdh_datatypes: A dictionary containing the corresponding datatypes to the metadata-tags from a MetaDataHub
+    request.
+    :return: A dictionary containing the corresponding OpenSearch datatypes for the metadata-tags.
+    """
+    normalized_datatypes = {}
+    for mdh_datatype in mdh_datatypes:
+        name = mdh_datatype.get("name").replace(".", "_")
+        mdh_type = mdh_datatype.get("type")
+        normalized_datatypes[name] = 'float' if mdh_type == 'num' else 'date' if mdh_type == 'ts' else 'text'
+    return normalized_datatypes
+
+
+def transform_data(mdh_data, data_types):
+    """
+    Transform the mdh_data dictionary for storage in OpenSearch.
+
+    :param mdh_data: A list of dictionaries that contains all metadata-tags for every file of a MetaDataHub request.
+    :param data_types: A dictionary containing the modified OpenSearch datatypes.
+    :return: A list of dictionaries containing the modified metadata tags and their corresponding values.
+    """
+
+    transformed_data = []
+    for file_data in mdh_data:
+        metadata = file_data.get("metadata", [])
+        file_info = {}
+        for meta in metadata:
+            name = str(meta.get("name")).replace(".", "_")
+            value = meta.get("value")
+            if data_types[name] == 'date':
+                date = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+                value = str(date.utcnow().strftime("%Y-%m-%d" "T" "%H:%M:%S"))
+            elif data_types[name] == 'float':
+                value = float(value)
+            if name and value:
+                file_info[name] = value
+        transformed_data.append(file_info)
+
+    return transformed_data
+
 if __name__ == "__main__":
     print("Start importing...")
     mdh_manager = MetaDataHubManager(localhost=False)  # create a manager for handling the MetaDataHub API
