@@ -1,6 +1,7 @@
 import time
 from opensearchpy import OpenSearch
 from opensearchpy.exceptions import ConnectionError
+from opensearchpy.exceptions import OpenSearchException
 
 
 class OpenSearchManager:
@@ -94,19 +95,19 @@ class OpenSearchManager:
     def get_datatype(self, field_name: str, index_name: str) -> str:
         """Get the datatype of a specific field for a specific index.
 
-         Args:
-             field_name (str): The name of the specific field.
-             index_name (str): The name of the index in which the field is stored.
+        Args:
+            field_name (str): The name of the specific field.
+            index_name (str): The name of the index in which the field is stored.
 
-         Returns:
-             str: A string containing the name of the corresponding datatype.
-         """
+        Returns:
+            str: A string containing the name of the corresponding datatype.
+        """
         try:
             mapping = self._client.indices.get_mapping(index=index_name)
             datatype = mapping[index_name]['mappings']['properties'][field_name]['type']
             return datatype
 
-        except Exception as e:
+        except OpenSearchException as e:
             print(
                 f"Error occurred while retrieving datatype for field '{field_name}' in index '{index_name}': {str(e)}")
             return ""
@@ -129,10 +130,10 @@ class OpenSearchManager:
                     }
                 }
             }
-            response = self._client.search(body=query, index=index_name)
+            response = self._client.search(index=index_name, body=query)
             return bool(response['hits']['hits'])
 
-        except Exception as e:
+        except OpenSearchException as e:
             print(f"Error occurred while checking field '{field_name}' in index '{index_name}': {str(e)}")
             return False
 
