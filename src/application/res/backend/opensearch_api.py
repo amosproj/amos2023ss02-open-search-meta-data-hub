@@ -108,7 +108,8 @@ class OpenSearchManager:
 
         except Exception as e:
             print(
-                f"Error occurred while retrieving datatype for field '{field_name}' in index '{index_name}': {str(e)}")
+                f"Error occurred while retrieving datatype for field '{field_name}' "
+                f"in index '{index_name}': {str(e)}")
             return ""
 
     def field_exists(self, index_name: str, field_name: str) -> bool:
@@ -222,7 +223,8 @@ class OpenSearchManager:
         Function that performs an advanced search in OpenSearch.
 
         :param index_name: The name of the index in which the search should be performed.
-        :param search_info: A dictionary containing the different fields and operators for the advanced search.
+        :param search_info: A dictionary containing the different fields and operators for
+        the advanced search.
         :return: None (or specify the return type if applicable).
         """
 
@@ -251,7 +253,8 @@ class OpenSearchManager:
         """
         Function that creates a query that can be used to search in OpenSearch.
 
-        :param sub_queries: A list of tuples that contains the subquery and either the value 'must' or 'must_not'.
+        :param sub_queries: A list of tuples that contains the subquery and either
+        the value 'must' or 'must_not'.
         :return: Returns a query that can be used to search in OpenSearch.
         """
 

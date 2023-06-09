@@ -16,10 +16,14 @@ def modify_datatypes(mdh_datatypes: dict) -> dict:
     """
     Reformatting the mdh_datatypes dictionary for storage in OpenSearch.
 
-    :param mdh_datatypes: A dictionary containing the corresponding datatypes to the metadata-tags from a MetaDataHub
-    request. :return: A dictionary containing the corresponding OpenSearch datatypes for the metadata-tags.
+    :param mdh_datatypes: A dictionary containing the corresponding datatypes to
+    he metadata-tags from a MetaDataHub
+    request. :return: A dictionary containing the corresponding OpenSearch datatypes
+    for the metadata-tags.
     """
     modified_datatypes = {}  # init the resulting dictionary
+    # Check if the file has been modified or added since the last import
+    ##if file_timestamp > last_import_timestamp:
     for mdh_datatype in mdh_datatypes:  # loop over all entries of the mdh_datatypes dictionary
         name = mdh_datatype.get("name").replace(".", "_")  # get the metadata-tag and replace the '.' with '_'
         mdh_type = mdh_datatype.get("type")  # get the corresponding datatype
@@ -35,11 +39,36 @@ def modify_datatypes(mdh_datatypes: dict) -> dict:
     return modified_datatypes
 
 
+def filter_modified_data(mdh_data, data_types, last_import_timestamp):
+    filtered_data = []
+    for file_data in mdh_data:
+        metadata = file_data.get("metadata", [])
+        file_info = {}
+        file_timestamp = file_data.get("timestamp")
+
+        # Check if the file has been modified or added since the last import
+        if file_timestamp > last_import_timestamp:
+            for meta in metadata:
+                name = str(meta.get("name")).replace(".", "_")
+                value = meta.get("value")
+                if data_types[name] == 'date':
+                    date = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+                    value = str(date.utcnow().strftime("%Y-%m-%d" "T" "%H:%M:%S"))
+                elif data_types[name] == 'float':
+                    value = float(value)
+                if name and value:
+                    file_info[name] = value
+            filtered_data.append(file_info)
+
+    return filtered_data
+
+
 def modify_data(mdh_data: list[dict], data_types: dict) -> list[dict]:
     """
     Reformatting the mdh_data dictionary for storage in OpenSearch.
 
-    :param mdh_data: A list of dictionaries that contains all metadata-tags for every file of a MetaDataHub request.
+    :param mdh_data: A list of dictionaries that contains all metadata-tags for
+    every file of a MetaDataHub request.
     :param data_types: A dictionary containing the modified OpenSearch datatypes.
     :return: A list of dictionaries containing the modified metadata tags and their corresponding values.
     """
@@ -71,7 +100,8 @@ def normalize_datatypes(mdh_datatypes):
     """
     Normalize the mdh_datatypes dictionary for storage in OpenSearch.
 
-    :param mdh_datatypes: A dictionary containing the corresponding datatypes to the metadata-tags from a MetaDataHub
+    :param mdh_datatypes: A dictionary containing the corresponding datatypes to the
+     metadata-tags from a MetaDataHub
     request.
     :return: A dictionary containing the corresponding OpenSearch datatypes for the metadata-tags.
     """
@@ -87,7 +117,8 @@ def transform_data(mdh_data, data_types):
     """
     Transform the mdh_data dictionary for storage in OpenSearch.
 
-    :param mdh_data: A list of dictionaries that contains all metadata-tags for every file of a MetaDataHub request.
+    :param mdh_data: A list of dictionaries that contains all metadata-tags for every file
+    of a MetaDataHub request.
     :param data_types: A dictionary containing the modified OpenSearch datatypes.
     :return: A list of dictionaries containing the modified metadata tags and their corresponding values.
     """
