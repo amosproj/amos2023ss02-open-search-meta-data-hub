@@ -62,7 +62,7 @@ class OpenSearchManager:
 
         :return: None
         """
-        # Add your disconnection code here
+        self._client.close()
 
     def get_all_indices(self) -> list[str]:
         """
@@ -265,6 +265,55 @@ class OpenSearchManager:
             else:
                 query['query']['bool'][functionality].append(sub_query)
         return query
+
+    def generate_search_query(data_type, operator, search_field, search_content):
+        """
+        Generate a search query based on the given parameters.
+
+        :param data_type: The data type of the search field ('float', 'date', or 'text').
+        :param operator: The operator for the search query ('EQUALS', 'GREATER_THAN', 'LESS_THAN', 'GREATER_THAN_OR_EQUALS',
+                         'LESS_THAN_OR_EQUALS', or 'NOT_EQUALS').
+        :param search_field: The field to search within.
+        :param search_content: The content to search for.
+        :return: A dictionary representing the search query and a flag indicating whether it is a must or must_not condition.
+        """
+
+        query_type = 'must'
+        query = {}
+
+        if data_type == 'float' or data_type == 'date':
+            range_operators = {
+                'EQUALS': 'term',
+                'GREATER_THAN': 'gt',
+                'LESS_THAN': 'lt',
+                'GREATER_THAN_OR_EQUALS': 'gte',
+                'LESS_THAN_OR_EQUALS': 'lte',
+                'NOT_EQUALS': 'term'
+            }
+            query_type = 'must_not' if operator == 'NOT_EQUALS' else 'must'
+            query = {
+                range_operators.get(operator, 'term'): {
+                    search_field: {'value': search_content}
+                }
+            }
+        elif data_type == 'text':
+            query = {
+                'match': {
+                    search_field: search_content
+                }
+            }
+
+        return query, query_type
+
+    #  data_type = 'float'  # Replace with the actual data type
+    # operator = 'GREATER_THAN'  # Replace with the actual operator
+    # search_field = 'price'  # Replace with the actual search field
+    #  search_content = 100  # Replace with the actual search content
+
+    #  query, query_type = generate_search_query(data_type, operator, search_field, search_content)
+
+    #  usage in an OpenSearch API call
+    # result = client.search(index='your_index', body={'query': {query_type: query}})
 
     @staticmethod
     def _get_sub_query(data_type: str, operator: str, search_field: str, search_content: any) -> tuple:
