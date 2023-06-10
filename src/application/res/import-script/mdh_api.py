@@ -1,7 +1,9 @@
+import json
 import os
 import pathlib
 import mdh
 from dotenv import load_dotenv
+import graphene
 
 
 class MetaDataHubManager:
@@ -10,15 +12,18 @@ class MetaDataHubManager:
         """ creating a new MetaDataHubManager for handling the connection to the MetaDataHub
         :param localhost: Bool variable: if true, connect to environment on device, otherwise on docker-container
         """
+        MetaDataHubManager._set_environment(localhost)  # set the MetaDataHub environment
+        MetaDataHubManager._connect_to_mdh()  # connect to the MetaDataHub
+        self._set_request_path(localhost)
+        self.result = {}  # dictionary containing the data from the last request
+
+
+    def _set_request_path(self, localhost: bool):
         if localhost:
             gql_path = 'request.gql'
         else:
             gql_path = 'import-script/request.gql'
         self._request_path_file = os.path.join(os.getcwd(), gql_path)  # define where to find the GraphQL request
-        MetaDataHubManager._set_environment(localhost)  # set the MetaDataHub environment
-        MetaDataHubManager._connect_to_mdh()  # connect to the MetaDataHub
-        self.result = {}  # dictionary containing the data from the last request
-        self._download_data()  # downloading the data in the result-dictionary
 
     @staticmethod
     def _set_environment(localhost: bool):
@@ -45,7 +50,25 @@ class MetaDataHubManager:
         except mdh.errors.MdhStateError:  # if a connection already exists
             print("Core already exists")
 
-    def _download_data(self):
+
+    def modify_graphql(self, timestamp):
+        filer_function = '{tag: "MdHTimestamp", value: "' + timestamp + '", operation: GREATER, dataType: TS}'
+        try:
+            with open(self._request_path_file, 'r') as file:
+                query = file.read().strip()
+                query = query.replace("filterFunctions: []", "filterFunctions [" + str(filer_function) + "]")
+                print(query)
+            #with open(self._request_path_file, 'w') as file:
+                #file.write(query)
+                #pass
+        except FileNotFoundError:
+            raise FileNotFoundError("GraphQL file not found")
+
+
+    def reset_graphql(self):
+        pass
+
+    def download_data(self, timestamp):
         """ download the data from the request and store it """
         for core in mdh.core.main.get():
             self.result = mdh.core.main.execute(core, self._request_path_file)
@@ -69,3 +92,6 @@ class MetaDataHubManager:
         mdh_search = self.result["mdhSearch"]
         data_types = mdh_search.get("dataTypes", [])
         return data_types
+
+mdm = MetaDataHubManager(True)
+mdm.modify_graphql("t")

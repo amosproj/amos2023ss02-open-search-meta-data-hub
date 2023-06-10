@@ -1,6 +1,6 @@
 import time
 from opensearchpy import OpenSearch
-from opensearchpy.exceptions import ConnectionError
+from opensearchpy.exceptions import ConnectionError, NotFoundError
 
 
 class OpenSearchManager:
@@ -266,55 +266,6 @@ class OpenSearchManager:
                 query['query']['bool'][functionality].append(sub_query)
         return query
 
-    def generate_search_query(data_type, operator, search_field, search_content):
-        """
-        Generate a search query based on the given parameters.
-
-        :param data_type: The data type of the search field ('float', 'date', or 'text').
-        :param operator: The operator for the search query ('EQUALS', 'GREATER_THAN', 'LESS_THAN', 'GREATER_THAN_OR_EQUALS',
-                         'LESS_THAN_OR_EQUALS', or 'NOT_EQUALS').
-        :param search_field: The field to search within.
-        :param search_content: The content to search for.
-        :return: A dictionary representing the search query and a flag indicating whether it is a must or must_not condition.
-        """
-
-        query_type = 'must'
-        query = {}
-
-        if data_type == 'float' or data_type == 'date':
-            range_operators = {
-                'EQUALS': 'term',
-                'GREATER_THAN': 'gt',
-                'LESS_THAN': 'lt',
-                'GREATER_THAN_OR_EQUALS': 'gte',
-                'LESS_THAN_OR_EQUALS': 'lte',
-                'NOT_EQUALS': 'term'
-            }
-            query_type = 'must_not' if operator == 'NOT_EQUALS' else 'must'
-            query = {
-                range_operators.get(operator, 'term'): {
-                    search_field: {'value': search_content}
-                }
-            }
-        elif data_type == 'text':
-            query = {
-                'match': {
-                    search_field: search_content
-                }
-            }
-
-        return query, query_type
-
-    #  data_type = 'float'  # Replace with the actual data type
-    # operator = 'GREATER_THAN'  # Replace with the actual operator
-    # search_field = 'price'  # Replace with the actual search field
-    #  search_content = 100  # Replace with the actual search content
-
-    #  query, query_type = generate_search_query(data_type, operator, search_field, search_content)
-
-    #  usage in an OpenSearch API call
-    # result = client.search(index='your_index', body={'query': {query_type: query}})
-
     @staticmethod
     def _get_sub_query(data_type: str, operator: str, search_field: str, search_content: any) -> tuple:
         """Returns a subquery that can be used to create a complete query.
@@ -352,57 +303,34 @@ class OpenSearchManager:
             else:
                 return {'match': {search_field: search_content}}, 'must'
 
-
-# this is just another method optimized
-def get_sub_query(self, data_type: str, operator: str, search_field: str, search_content: any) -> tuple:
-    """Returns a subquery that can be used to create a complete query.
-
-    Args:
-        data_type (str): The datatype of the field of the subquery.
-        operator (str): The operator of the query.
-        search_field (str): The field in which the search should be performed in this subquery.
-        search_content (any): The content of the search.
-
-    Returns:
-        tuple: A tuple consisting of a subquery and the value 'must' or 'must_not'.
-
-    """
-    sub_query = {}
-
-    if data_type == 'float' or data_type == 'date':
-        range_operator_mapping = {
-            'EQUALS': 'term',
-            'GREATER_THAN': 'range',
-            'LESS_THAN': 'range',
-            'GREATER_THAN_OR_EQUALS': 'range',
-            'LESS_THAN_OR_EQUALS': 'range',
-            'NOT_EQUALS': 'term'
+    def get_latest_timestamp(self, index_name) -> str:
+        query = {
+            "size": 1,
+            "query": {
+                "exists": {
+                    "field": "MdHTimestamp"
+                },
+            },
+            "sort": [
+                {
+                    "MdHTimestamp": "desc"
+                }
+            ]
         }
-        range_operator = range_operator_mapping.get(operator, 'term')
+        try:
+            response = self._client.search(
+                body=query,
+                index=index_name
+            )
+            print(response)
+            mdh_timestamp = response['hits']['hits'][0]['_source']['MdHTimestamp']
+            return mdh_timestamp.replace("T", " ")
+        except KeyError:
+            print(f"No data for the index '{index_name}' is stored.")
+            return "0000-00-00 00:00:00"
+        except NotFoundError:
+            print(f"No index with name '{index_name}' found.")
+            return "0000-00-00 00:00:00"
 
-        if range_operator == 'term':
-            sub_query = {'term': {search_field: {'value': search_content}}}
-        elif range_operator == 'range':
-            range_query = {'range': {search_field: {}}}
 
-            if operator == 'GREATER_THAN':
-                range_query['range'][search_field]['gt'] = search_content
-            elif operator == 'LESS_THAN':
-                range_query['range'][search_field]['lt'] = search_content
-            elif operator == 'GREATER_THAN_OR_EQUALS':
-                range_query['range'][search_field]['gte'] = search_content
-            elif operator == 'LESS_THAN_OR_EQUALS':
-                range_query['range'][search_field]['lte'] = search_content
 
-            sub_query = range_query
-
-    elif data_type == 'text':
-        text_operator_mapping = {
-            'EQUALS': 'match',
-            'NOT_EQUALS': 'match'
-        }
-        text_operator = text_operator_mapping.get(operator, 'match')
-        sub_query = {text_operator: {search_field: search_content}}
-
-    functionality = 'must' if operator != 'NOT_EQUALS' else 'must_not'
-    return sub_query, functionality

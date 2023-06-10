@@ -1,7 +1,14 @@
 query {
     mdhSearch(
-        filterFunctions: []
-        filterLogicOption: AND,
+        filterFunctions: [
+          {
+            tag: "MdHTimestamp",
+            value: "00",
+            operation: EQUAL,
+            dataType: TS
+          },
+        ]
+          filterLogicOption: AND,
         limit: 2
     ) {
         totalFilesCount

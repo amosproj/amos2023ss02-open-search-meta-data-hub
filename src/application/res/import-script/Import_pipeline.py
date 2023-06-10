@@ -11,12 +11,6 @@ sys.path.append(parent_dir)
 
 from backend.opensearch_api import OpenSearchManager
 
-def safe_timestamp() -> str:
-    pass
-
-def get_timestamp() -> str:
-    pass
-
 def modify_datatypes(mdh_datatypes: dict) -> dict:
     """
     Reformatting the mdh_datatypes dictionary for storage in OpenSearch.
@@ -54,6 +48,7 @@ def modify_data(mdh_data: list[dict], data_types: dict) -> list[dict]:
     :return: A list of dictionaries containing the modified metadata tags and their corresponding values.
     """
 
+
     modified_data = []  # init the resulting list
     for index, file_data in enumerate(mdh_data, start=1):  # Loop over all files of mdh_data
         metadata = file_data.get("metadata", [])  # get the metadata for each file
@@ -65,7 +60,7 @@ def modify_data(mdh_data: list[dict], data_types: dict) -> list[dict]:
             # set correct datatypes
             if data_types[name] == 'date':
                 date = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")  # get the correct datetime format
-                value = str(date.utcnow().strftime(
+                value = str(date.strftime(
                     "%Y-%m-%d" "T" "%H:%M:%S"))  # make the datetime a string so it can be stored in OpenSearch
             elif data_types[name] == 'float':
                 value = float(value)
@@ -77,16 +72,34 @@ def modify_data(mdh_data: list[dict], data_types: dict) -> list[dict]:
     return modified_data
 
 
-if __name__ == "__main__":
+def execute_pipeline():
     print("Start importing...")
-    mdh_manager = MetaDataHubManager(localhost=False)  # create a manager for handling the MetaDataHub API
-    instance_name = mdh_manager.get_instance_name()  # get the instance (core name) of the MetaDataHub request
+
+    # the instance of the MetaDataHub in which the search is performed
+    instance_name = "amoscore"
+
+    # getting the manager to handle the APIs
+    mdh_manager = MetaDataHubManager(localhost=True)  # create a manager for handling the MetaDataHub API
+    os_manager = OpenSearchManager(localhost=True)  # create a manager for handling the OpenSearch API
+
+    # get the timestamp of the latest data import
+    latest_timestamp = os_manager.get_latest_timestamp(index_name=instance_name)
+
+    # MdH data extraction
     mdh_datatypes = mdh_manager.get_datatypes()  # get all mdh_datatypes of the request
     mdh_data = mdh_manager.get_data()  # get all mdh_data from the request
+
+    # Modifying the data into correct format
     data_types = modify_datatypes(mdh_datatypes=mdh_datatypes)  # modify the datatypes so they fit in OpenSearch
     data = modify_data(mdh_data=mdh_data, data_types=data_types)  # modify the data so it fits in OpenSearch
-    os_manager = OpenSearchManager(localhost=False)  # create a manager for handling the OpenSearch API
+
+    # Loading the data into OpenSearch
     os_manager.create_index(index_name=instance_name, data_types=data_types)  # create an index for the new data
     os_manager.perform_bulk(index_name=instance_name,
                             data=data)  # perform a bulk request to store the new data in OpenSearch
+
     print("Finished!")
+
+execute_pipeline()
+os_manager: OpenSearchManager = OpenSearchManager(localhost=True)
+print(os_manager.get_latest_timestamp("amoscore"))

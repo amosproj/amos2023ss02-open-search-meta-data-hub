@@ -12,6 +12,38 @@ sys.path.append(parent_dir)
 from backend.opensearch_api import OpenSearchManager
 from mdh_api import MetaDataHubManager
 
+def update_last_import_timestamp(timestamp):
+    """
+    Update the last import timestamp with the provided value.
+
+    :param timestamp: The new timestamp value to be stored as the last import timestamp.
+    :return: None
+    """
+    try:
+        with open('last_import_timestamp.txt', 'w') as file:
+            file.write(str(timestamp))
+    except IOError:
+        # Handle the case when an error occurs while writing the timestamp file
+        # You can choose to raise an exception or handle the error gracefully
+        # Example: raise IOError("Error occurred while writing the last import timestamp file")
+        print("Error occurred while writing the last import timestamp file")
+
+
+def load_last_import_timestamp() -> str:
+    """
+    Load the last import timestamp from a file.
+
+    :return: The last import timestamp as a datetime object, or None if it couldn't be loaded.
+    """
+    try:
+        with open('last_import_timestamp.txt', 'r') as file:
+            timestamp_str = file.read().strip()
+            timestamp = datetime.strptime(timestamp_str, '%Y-%m-%d %H:%M:%S')
+            return str(timestamp)
+    except FileNotFoundError:
+        raise FileNotFoundError("Last import timestamp file not found")
+    except ValueError:
+        raise ValueError("Invalid timestamp format in the file")
 
 
 def modify_datatypes(mdh_datatypes: dict) -> dict:
@@ -109,6 +141,45 @@ def compare_dates(opensearch_date: datetime, py_date: datetime) -> bool:
     """
     return opensearch_date > py_date
 
+    def generate_search_query(data_type, operator, search_field, search_content):
+        """
+        Generate a search query based on the given parameters.
+
+        :param data_type: The data type of the search field ('float', 'date', or 'text').
+        :param operator: The operator for the search query ('EQUALS', 'GREATER_THAN', 'LESS_THAN', 'GREATER_THAN_OR_EQUALS',
+                         'LESS_THAN_OR_EQUALS', or 'NOT_EQUALS').
+        :param search_field: The field to search within.
+        :param search_content: The content to search for.
+        :return: A dictionary representing the search query and a flag indicating whether it is a must or must_not condition.
+        """
+
+        query_type = 'must'
+        query = {}
+
+        if data_type == 'float' or data_type == 'date':
+            range_operators = {
+                'EQUALS': 'term',
+                'GREATER_THAN': 'gt',
+                'LESS_THAN': 'lt',
+                'GREATER_THAN_OR_EQUALS': 'gte',
+                'LESS_THAN_OR_EQUALS': 'lte',
+                'NOT_EQUALS': 'term'
+            }
+            query_type = 'must_not' if operator == 'NOT_EQUALS' else 'must'
+            query = {
+                range_operators.get(operator, 'term'): {
+                    search_field: {'value': search_content}
+                }
+            }
+        elif data_type == 'text':
+            query = {
+                'match': {
+                    search_field: search_content
+                }
+            }
+
+        return query, query_type
+
 
 if __name__ == "__main__":
     print("Start importing...")
@@ -129,3 +200,54 @@ if __name__ == "__main__":
                             data=filtered_data)  # perform a bulk request to store the new data in OpenSearch
 
     print("Finished!")
+
+def generate_mdh_search_query(filter_functions=None, limit=2000):
+    """
+    Generate a dynamic MDH search query.
+
+    :param filter_functions: Optional list of filter functions.
+    :param limit: Limit on the number of files to return.
+    :return: Generated query string.
+    """
+    query = """
+    query {
+        mdhSearch(
+            filterFunctions: FILTER_FUNCTIONS
+            limit: LIMIT
+        ) {
+            TOTAL_FILES_COUNT
+            RETURNED_FILES_COUNT
+            INSTANCE_NAME
+            TIME_ZONE
+            FIXED_RETURN_COLUMN_SIZE
+            LIMITED_BY_LICENSING
+            QUERY_STATUS_AS_TEXT
+            dataTypes {
+                NAME
+                TYPE
+            }
+            files {
+                metadata {
+                    NAME
+                    VALUE
+                }
+            }
+        }
+    }
+    """
+
+    # Replace the placeholders with the provided values
+    query = query.replace("FILTER_FUNCTIONS", filter_functions or "[]")
+    query = query.replace("LIMIT", str(limit))
+
+    # Convert all keys to uppercase and replace in the query
+    query = query.replace("TOTAL_FILES_COUNT", "totalFilesCount")  # Replace key for total files count
+    query = query.replace("RETURNED_FILES_COUNT", "returnedFilesCount")  # Replace key for returned files count
+    query = query.replace("INSTANCE_NAME", "instanceName")  # Replace key for instance name
+    query = query.replace("TIME_ZONE", "timeZone")  # Replace key for time zone
+    query = query.replace("FIXED_RETURN_COLUMN_SIZE", "fixed")
+
+
+# example of usage
+# query_string = generate_mdh_search_query(filter_functions=["your", "filter", "functions"], limit=500)
+# print(query_string)
