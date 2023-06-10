@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [ backend_restructuring ]
+    branches: [backend_restructuring]
     paths:
       - 'lint.py'
 
