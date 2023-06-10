@@ -10,7 +10,11 @@ class MetaDataHubManager:
         """ creating a new MetaDataHubManager for handling the connection to the MetaDataHub
         :param localhost: Bool variable: if true, connect to environment on device, otherwise on docker-container
         """
-        self._request_path_file = os.path.join(os.getcwd(), 'import-script/request.gql')  # define where to find the GraphQL request
+        if localhost:
+            gql_path = 'request.gql'
+        else:
+            gql_path = 'import-script/request.gql'
+        self._request_path_file = os.path.join(os.getcwd(), gql_path)  # define where to find the GraphQL request
         MetaDataHubManager._set_environment(localhost)  # set the MetaDataHub environment
         MetaDataHubManager._connect_to_mdh()  # connect to the MetaDataHub
         self.result = {}  # dictionary containing the data from the last request
@@ -45,6 +49,10 @@ class MetaDataHubManager:
         """ download the data from the request and store it """
         for core in mdh.core.main.get():
             self.result = mdh.core.main.execute(core, self._request_path_file)
+
+    def new_data_exists(self) -> bool:
+        """check if since last update new data was added in mdh"""
+        pass
 
     def get_instance_name(self) -> str:
         """ get the instance (core name) from the last request """
