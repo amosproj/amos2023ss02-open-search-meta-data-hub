@@ -2,7 +2,7 @@ from datetime import datetime
 from mdh_api import MetaDataHubManager
 import sys
 import os
-
+from datetime import datetime
 # Get the path to the parent directory
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -37,7 +37,6 @@ def load_last_import_timestamp():
     except FileNotFoundError:
         # Handle the case when the file is not found
         return datetime.utcnow()  # Return the current timestamp as the default value
-
 
 def modify_datatypes(mdh_datatypes):
     modified_datatypes = {}
@@ -160,6 +159,19 @@ def generate_mdh_search_query(filter_functions=None, limit=2000):
 # example of usage
 # query_string = generate_mdh_search_query(filter_functions=["your", "filter", "functions"], limit=500)
 # print(query_string)
+from datetime import datetime
+
+def compare_dates(opensearch_date, python_date_str):
+    # Convert OpenSearch date to Python datetime object
+    opensearch_datetime = datetime.strptime(opensearch_date, "%Y-%m-%dT%H:%M:%SZ")
+
+    # Convert Python date string to Python datetime object
+    python_datetime = datetime.strptime(python_date_str, "%Y-%m-%d")
+
+    # Compare the dates
+    return opensearch_datetime == python_datetime
+
+
 def modify_data(mdh_data: list[dict], data_types: dict, last_import_timestamp: datetime) -> list[dict]:
     """
     Reformatting the mdh_data dictionary for storage in OpenSearch.
@@ -175,7 +187,8 @@ def modify_data(mdh_data: list[dict], data_types: dict, last_import_timestamp: d
         metadata = file_data.get("metadata", [])  # get the metadata for each file
         file_info = {}  # init the dictionary in which the metadata will be stored
         file_timestamp = file_data.get("timestamp")
-
+        print("file_timestamp",file_timestamp)
+        print("last_import_timestamp",last_import_timestamp)
         # Check if the file has been modified or added since the last import
         if file_timestamp > last_import_timestamp:
             for meta in metadata:  # loop over every metadata-tag
@@ -184,9 +197,8 @@ def modify_data(mdh_data: list[dict], data_types: dict, last_import_timestamp: d
                 value = meta.get("value")  # get the corresponding value for the metadata-tag
                 # set correct datatypes
                 if data_types[name] == 'date':
-                    date = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")  # get the correct datetime format
-                    value = str(date.utcnow().strftime(
-                        "%Y-%m-%d" "T" "%H:%M:%S"))  # make the datetime a string so it can be stored in OpenSearch
+                    if compare_dates(value, last_import_timestamp.strftime("%Y-%m-%d")):
+                        value = str(last_import_timestamp.strftime("%Y-%m-%dT%H:%M:%SZ"))
                 elif data_types[name] == 'float':
                     value = float(value)
                 if name and value:
