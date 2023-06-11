@@ -46,8 +46,8 @@ def files_type_chart():
 
 @app.route('/statistics')
 def statistics():
-    iframe_codes = get_all_iframes.get_iframes()
-    return render_template('statistics.html', iframe_code=iframe_codes)
+    iframe_data = get_all_iframes.get_iframes()
+    return render_template('statistics.html', iframe_data=iframe_data)
 
 
 
