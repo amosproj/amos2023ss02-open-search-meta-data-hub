@@ -1,6 +1,6 @@
 import time
 from opensearchpy import OpenSearch
-from opensearchpy.exceptions import ConnectionError, NotFoundError
+from opensearchpy.exceptions import ConnectionError, NotFoundError, TransportError, RequestError
 
 
 class OpenSearchManager:
@@ -137,12 +137,11 @@ class OpenSearchManager:
             print(f"Error occurred while checking field '{field_name}' in index '{index_name}': {str(e)}")
             return False
 
-    def create_index(self, index_name: str, data_types: dict):
+    def create_index(self, index_name: str):
         """Create a new index with non-default settings.
 
         Args:
             index_name (str): The name of the new index.
-            data_types (dict): A dictionary containing all fields and their corresponding data types.
 
         """
         # The body of the new index creation
@@ -157,14 +156,6 @@ class OpenSearchManager:
             }
         }
 
-        for key, datatype in data_types.items():
-            if datatype == "date":
-                # Special handling for datetime types
-                property = {"type": datatype, "format": "strict_date_hour_minute_second||epoch_millis"}
-            else:
-                property = {"type": datatype}
-            index_body['mappings']['properties'][key] = property
-
         if not self._client.indices.exists(index=index_name):
             # Check if the index already exists
             response = self._client.indices.create(index=index_name, body=index_body)
@@ -176,7 +167,39 @@ class OpenSearchManager:
         else:
             print(f"Index '{index_name}' already exists.")
 
-    def perform_bulk(self, index_name: str, data: list[dict]) -> object:
+    def update_index(self, index_name: str, data_types: dict) -> any:
+        """ This function adds properties (datatypes for fields) to an existing index
+
+        :param index_name: The name of the index that will be updated
+        :param data_types: A dictionary containing all fields and their corresponding datatypes
+        :return: Returns a OpenSearch response of the index update action
+        """
+        # create a mapping body for the new properties
+        mapping_body = {"properties":{}}
+
+        try:
+            # get all existing properties of this index
+            response = self._client.indices.get_mapping(index_name)
+
+            for key, datatype in data_types.items(): # iterate over all item pairs in data_types
+                # if this field is not already in the properties, add it
+                if key not in response[index_name]['mappings']['properties']:
+                    if datatype == "date":
+                        # Special handling for datetime types
+                        property = {"type": datatype, "format": "strict_date_hour_minute_second||epoch_millis"}
+                    else:
+                        property = {"type": datatype}
+                    mapping_body['properties'][key] = property
+
+            return self._client.indices.put_mapping(index=index_name, body=mapping_body)
+
+        except NotFoundError:
+            print(f"Index '{index_name}' not found.")
+        except KeyError:
+            print(f"No mapping found for index '{index_name}.'")
+
+
+    def perform_bulk(self, index_name: str, data: list[(dict, id)]) -> object:
         """
         Insert multiple documents into OpenSearch via the bulk API.
 
@@ -184,16 +207,24 @@ class OpenSearchManager:
         :param data: A list of dictionaries containing the new data and its values in the right format.
         :return: The response of the bulk request.
         """
-        index_operation = {
-            "index": {"_index": index_name}
-        }
         create_operation = {
             "create": {"_index": index_name}
         }
-        bulk_data = (str(index_operation) +
-                     '\n' + ('\n' + str(create_operation) +
-                             '\n').join(str(d) for d in data)).replace("'", "\"")
-        return self._client.bulk(body=bulk_data)
+
+        bulk_data = []
+        for doc, id in data:
+            if not id == "default_id":
+                create_operation['create']['_id'] = id
+            bulk_data.append(str(create_operation))
+            bulk_data.append(str(doc))
+
+
+        bulk_request = "\n".join(bulk_data).replace("'", "\"")
+
+        try:
+            return self._client.bulk(body=bulk_request)
+        except TransportError:
+            print("Bulk data oversteps the amount of allowed bytes")
 
     def simple_search(self, index_name: str, search_text: str) -> any:
         """
@@ -203,14 +234,19 @@ class OpenSearchManager:
         :param search_text: The search text that will be searched for.
         :return: Returns an OpenSearch response.
         """
-
+        fields = self.get_all_fields(index_name)
         query = {
             "query": {
-                "match": {
-                    "FileName": search_text
+                "bool": {
+                    "should": []
                 }
             }
         }
+        for field in fields:
+            data_type = self.get_datatype(field_name=field, index_name=index_name)
+            if data_type == "text":
+                sub_query = {"wildcard": {field: {"value": "*"+search_text+"*"}}}
+                query['query']['bool']['should'].append(sub_query)
 
         response = self._client.search(
             body=query,
@@ -297,11 +333,11 @@ class OpenSearchManager:
                 return {'term': {search_field: {'value': search_content}}}, 'must'
         elif data_type == 'text':
             if operator == 'EQUALS':
-                return {'match': {search_field: search_content}}, 'must'
+                return {"wildcard": {search_field: {"value": "*"+search_content+"*"}}}, 'must'
             elif operator == 'NOT_EQUALS':
-                return {'match': {search_field: search_content}}, 'must_not'
+                return {"wildcard": {search_field: {"value": "*"+search_content+"*"}}}, 'must_not'
             else:
-                return {'match': {search_field: search_content}}, 'must'
+                return {"wildcard": {search_field: {"value": "*"+search_content+"*"}}}, 'must'
 
     def get_latest_timestamp(self, index_name) -> str:
         query = {
@@ -322,15 +358,20 @@ class OpenSearchManager:
                 body=query,
                 index=index_name
             )
-            print(response)
             mdh_timestamp = response['hits']['hits'][0]['_source']['MdHTimestamp']
             return mdh_timestamp.replace("T", " ")
         except KeyError:
             print(f"No data for the index '{index_name}' is stored.")
-            return "0000-00-00 00:00:00"
+            return "1111-11-11 11:11:11"
         except NotFoundError:
             print(f"No index with name '{index_name}' found.")
-            return "0000-00-00 00:00:00"
+            return "1111-11-11 11:11:11"
+        except IndexError:
+            return "1111-11-11 11:11:11"
+        except RequestError:
+            return "1111-11-11 11:11:11"
 
 
 
+o = OpenSearchManager(True)
+print(o.simple_search('amoscore', "0"))

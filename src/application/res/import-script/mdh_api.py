@@ -3,7 +3,7 @@ import os
 import pathlib
 import mdh
 from dotenv import load_dotenv
-import graphene
+from pathlib import Path
 
 
 class MetaDataHubManager:
@@ -49,119 +49,78 @@ class MetaDataHubManager:
         except mdh.errors.MdhStateError:  # if a connection already exists
             print("Core already exists")
 
-    def modify_graphql(self, timestamp):
-        filer_function = '{tag: "MdHTimestamp", value: "' + timestamp + '", operation: GREATER, dataType: TS}'
-        try:
-            with open(self._request_path_file, 'r') as file:
-                query = file.read().strip()
-                query = query.replace("filterFunctions: []", "filterFunctions [" + str(filer_function) + "]")
-                print(query)
-            # with open(self._request_path_file, 'w') as file:
-            # file.write(query)
-            # pass
-        except FileNotFoundError:
-            raise FileNotFoundError("GraphQL file not found")
+    def _read_file(self):
+        path = Path(self._request_path_file)
+        with path.open(mode='r') as file:
+            contents = file.read()
+        return contents
 
+    def _write_file(self, contents):
+        path = Path(self._request_path_file)
+        with path.open(mode='w') as file:
+            file.write(contents)
 
-def generate_query(filter_tag, filter_value, filter_operation, filter_data_type, limit):
-    write_file("request.gql","")
-    query = """
-        query {
-            mdhSearch(
-                filterFunctions: [
-                    {
-                        tag: "%s",
-                        value: "%s",
-                        operation: %s,
-                        dataType: %s
-                    }
-                ],
-                filterLogicOption: AND,
-                limit: %d
-            ) {
-                totalFilesCount
-                returnedFilesCount
-                instanceName
-                timeZone
-                fixedReturnColumnSize
-                limitedByLicensing
-                queryStatusAsText
-                dataTypes {
-                    name
-                    type
-                }
-                files {
-                    metadata {
+    def _generate_query(self, timestamp, limit):
+        gql_query = """
+            query {
+                mdhSearch(
+                    filterFunctions: [
+                        {
+                            tag: "MdHTimestamp",
+                            value: "%s",
+                            operation: GREATER,
+                            dataType: TS
+                        }
+                    ],
+                    filterLogicOption: AND,
+                    limit: %d
+                ) {
+                    totalFilesCount
+                    returnedFilesCount
+                    instanceName
+                    timeZone
+                    fixedReturnColumnSize
+                    limitedByLicensing
+                    queryStatusAsText
+                    dataTypes {
                         name
-                        value
+                        type
+                    }
+                    files {
+                        metadata {
+                            name
+                            value
+                        }
                     }
                 }
             }
-        }
-        """ % (filter_tag, filter_value, filter_operation, filter_data_type, limit)
+            """ % (timestamp, limit)
 
-    write_file("request.gql",query)
+        self._write_file(gql_query)
 
-    return query
+        return gql_query
 
+    def download_data(self, timestamp: str, limit: int = 10000000):
+        """ download the data from the request and store it """
+        self._generate_query(timestamp, limit)
+        for core in mdh.core.main.get():
+            self.result = mdh.core.main.execute(core, self._request_path_file)
 
-from pathlib import Path
+    def get_instance_name(self) -> str:
+            """ get the instance (core name) from the last request """
+            return self.result['mdhSearch']['instanceName'].lower()
 
+    def get_data(self) -> list[dict]:
+            """ get data from the result-dictionary """
+            mdh_search = self.result["mdhSearch"]
+            files = mdh_search.get("files", [])
+            return files
 
-def read_file(file_path):
-    path = Path(file_path)
-    with path.open(mode='r') as file:
-        contents = file.read()
-    return contents
-
-
-def write_file(file_path, contents):
-    path = Path(file_path)
-    with path.open(mode='w') as file:
-        file.write(contents)
-
-
-def reset_graphql(self):
-    pass
-
-
-def download_data(self, timestamp):
-    """ download the data from the request and store it """
-    for core in mdh.core.main.get():
-        self.result = mdh.core.main.execute(core, self._request_path_file)
+    def get_datatypes(self, ) -> dict:
+            """ get the datatypes of the regarding metadata tags form the result-dictionary"""
+            mdh_search = self.result["mdhSearch"]
+            data_types = mdh_search.get("dataTypes", [])
+            return data_types
 
 
-def new_data_exists(self) -> bool:
-    """check if since last update new data was added in mdh"""
-    pass
 
-
-def get_instance_name(self) -> str:
-    """ get the instance (core name) from the last request """
-    return self.result['mdhSearch']['instanceName'].lower()
-
-
-def get_data(self) -> list[dict]:
-    """ get data from the result-dictionary """
-    mdh_search = self.result["mdhSearch"]
-    files = mdh_search.get("files", [])
-    return files
-
-
-def get_datatypes(self, ) -> dict:
-    """ get the datatypes of the regarding metadata tags form the result-dictionary"""
-    mdh_search = self.result["mdhSearch"]
-    data_types = mdh_search.get("dataTypes", [])
-    return data_types
-
-
-mdm = MetaDataHubManager(True)
-# mdm.modify_graphql("t")
-filter_tag = "MdHTimestamp"
-filter_value = "2023-06-10 15:23:43"
-filter_operation = "EQUAL"
-filter_data_type = "TS"
-limit = 2
-
-query = generate_query(filter_tag, filter_value, filter_operation, filter_data_type, limit)
-print(query)

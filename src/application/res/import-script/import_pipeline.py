@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 from mdh_api import MetaDataHubManager
 import sys
@@ -38,7 +39,7 @@ def modify_datatypes(mdh_datatypes: dict) -> dict:
     return modified_datatypes
 
 
-def modify_data(mdh_data: list[dict], data_types: dict) -> list[dict]:
+def modify_data(mdh_data: list[dict], data_types: dict) -> list[(dict, id)]:
     """
     Reformatting the mdh_data dictionary for storage in OpenSearch.
 
@@ -47,7 +48,8 @@ def modify_data(mdh_data: list[dict], data_types: dict) -> list[dict]:
     :param data_types: A dictionary containing the modified OpenSearch datatypes.
     :return: A list of dictionaries containing the modified metadata tags and their corresponding values.
     """
-
+    # Signal that there is no specific id
+    id = "default_id"
 
     modified_data = []  # init the resulting list
     for index, file_data in enumerate(mdh_data, start=1):  # Loop over all files of mdh_data
@@ -58,6 +60,10 @@ def modify_data(mdh_data: list[dict], data_types: dict) -> list[dict]:
                                                  "_")  # get the name and replace '. with '_' to avoid parsing errors
             value = meta.get("value")  # get the corresponding value for the metadata-tag
             # set correct datatypes
+
+            if name == "SourceFile":
+                id = str(value)
+
             if data_types[name] == 'date':
                 date = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")  # get the correct datetime format
                 value = str(date.strftime(
@@ -67,13 +73,15 @@ def modify_data(mdh_data: list[dict], data_types: dict) -> list[dict]:
             if name and value:
                 file_info[name] = value
 
-        modified_data.append(file_info)
+        modified_data.append((file_info, id))
 
     return modified_data
 
 
 def execute_pipeline():
-    print("Start importing...")
+    print("----------- Import-Pipeline -----------")
+    print("Import started ...")
+    start_time = time.time()
 
     # the instance of the MetaDataHub in which the search is performed
     instance_name = "amoscore"
@@ -86,20 +94,34 @@ def execute_pipeline():
     latest_timestamp = os_manager.get_latest_timestamp(index_name=instance_name)
 
     # MdH data extraction
+    print(f"Starting to download data from '{instance_name}' in MdH that was added after {latest_timestamp}.")
+    mdh_manager.download_data(timestamp=latest_timestamp, limit=1)
     mdh_datatypes = mdh_manager.get_datatypes()  # get all mdh_datatypes of the request
     mdh_data = mdh_manager.get_data()  # get all mdh_data from the request
+    files_amount = len(mdh_data) # amounts of files downloaded from MdH
+    print(f"Finished to download data from MdH!")
+    print(f"{files_amount} files with a total of {len(mdh_datatypes)} metadata-tags have been downloaded.")
 
     # Modifying the data into correct format
+    print("Starting to modify the data.")
     data_types = modify_datatypes(mdh_datatypes=mdh_datatypes)  # modify the datatypes so they fit in OpenSearch
     data = modify_data(mdh_data=mdh_data, data_types=data_types)  # modify the data so it fits in OpenSearch
+    print("Finished to modify the data!")
+
 
     # Loading the data into OpenSearch
-    os_manager.create_index(index_name=instance_name, data_types=data_types)  # create an index for the new data
-    os_manager.perform_bulk(index_name=instance_name,
-                            data=data)  # perform a bulk request to store the new data in OpenSearch
+    print("Starting to store data in OpenSearch.")
+    os_manager.create_index(index_name=instance_name)  # create an index for the new data
+    os_manager.update_index(index_name=instance_name, data_types=data_types)
+    # due to performance reasons big amounts of data have to be split into smaller peaces
+    chunk_size = int(files_amount/10000)+1 # size of peaces the data will be split into
+    for i in range(0, files_amount, chunk_size): # loop over every new data-peace
+        os_manager.perform_bulk(index_name=instance_name,
+                        data=data[i:i + chunk_size])  # perform a bulk request to store the new data in OpenSearch
+    print("Finished to store data in OpenSearch!")
 
-    print("Finished!")
+    print("Complete import finished!")
+    print("Pipeline took ", "%s seconds" % (time.time() - start_time), " to execute!")
+    print("----------- Import-Pipeline -----------")
 
 execute_pipeline()
-os_manager: OpenSearchManager = OpenSearchManager(localhost=True)
-print(os_manager.get_latest_timestamp("amoscore"))
