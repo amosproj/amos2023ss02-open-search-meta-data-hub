@@ -57,6 +57,7 @@ services:
       - "8000:8000"
     depends_on:
       - opensearch-node  # Defines that the application container depends on the opensearch-node container
+      - opensearch-dashboards
     container_name: application
     networks:
       - opensearch-net
