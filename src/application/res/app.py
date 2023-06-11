@@ -44,10 +44,10 @@ def files_type_chart():
     return render_template('doughnut_chart.html', max=17000, set=zip(values, labels, colors))
 
 
-@app.route('/statistics')
-def statistics():
+@app.route('/visualizations')
+def visualizations():
     iframe_data = get_all_iframes.get_iframes()
-    return render_template('statistics.html', iframe_data=iframe_data)
+    return render_template('visualizations.html', iframe_data=iframe_data)
 
 
 
