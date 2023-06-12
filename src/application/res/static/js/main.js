@@ -127,3 +127,21 @@ $(document).ready(function () {
     $('#searchParameters').append(newParameter); // Append the new parameter input field group
   });
 });
+
+function showDetails(button) {
+  // Get the hit details from the button's data-hit attribute
+  var hit = JSON.parse(button.dataset.hit);
+
+  // Create a table with the details
+  var table = '<table class="table">';
+  for (var key in hit) {
+      table += '<tr><th>' + key + '</th><td>' + hit[key] + '</td></tr>';
+  }
+  table += '</table>';
+
+  // Insert the table into the modal
+  document.getElementById('detailsTable').innerHTML = table;
+
+  // Show the modal
+  $('#myModal').modal('show');
+}

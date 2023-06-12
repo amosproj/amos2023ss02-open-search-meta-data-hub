@@ -15,7 +15,7 @@
 
 <div id="simpleSearch" class="mt-3 text-end">
     {{ render_form(form) }}
-    <p class="pt-5"><strong>{{ result }}</strong></p>
+    {{ result | safe }}
 
 </div>
 
@@ -38,6 +38,23 @@
     <button class="btn btn-secondary" type="button" id="addParameterButton">Add Parameter</button>
     <button class="btn btn-primary" type="button" id="advancedSearchButton">Search...</button>
 </div>
+
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Hit Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="detailsTable">
+          <!-- The JavaScript function will insert the details table here -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 <table class="table" id="resTable">
     <thead>

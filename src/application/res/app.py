@@ -9,6 +9,7 @@ from wtforms import StringField, SelectField, FieldList, FormField, Form, Submit
 from wtforms.validators import DataRequired
 from backend.opensearch_api import OpenSearchManager
 from backend import files_type
+import pandas as pd
 import urllib
 
 app = Flask(__name__)
@@ -23,6 +24,26 @@ os_manager: OpenSearchManager = OpenSearchManager()
 class SimpleSearchForm(FlaskForm):
     searchValue = StringField('Search Value', validators=[DataRequired()])
     submit = SubmitField('Search')
+
+
+def renderResult(input):
+    # Extract the relevant list from the dictionary
+    hits_list = input['hits']['hits']
+
+    # Create a DataFrame with only FileName, FileSize, FileInodeChangeDate and a button
+    df = pd.DataFrame([{
+        'HitCount': idx + 1, 
+        'FileName': item['_source']['FileName'], 
+        'FileSize': item['_source']['FileSize'], 
+        'ChangeDate': item['_source']['FileInodeChangeDate'], 
+        'Details': '<button class="btn btn-info" onclick="showDetails(this)" data-hit=\'{}\'>Show Details</button>'.format(json.dumps(item['_source']))
+    } for idx, item in enumerate(hits_list)])
+
+    # Convert the DataFrame to HTML and apply Bootstrap classes
+    html_output = df.to_html(index=False, classes="table table-striped", escape=False)
+    
+    return html_output
+
 
 """Rendering start page of the website"""
 
@@ -48,7 +69,7 @@ def simpleSearch():
         searchValue = form.searchValue.data
         resultTmp = os_manager.simple_search("amoscore", searchValue)
         if len(resultTmp)>0:
-            result=resultTmp
+            result=renderResult(resultTmp)
         else:
             result="No results found."
         
@@ -63,13 +84,9 @@ def search_advanced():
     search_info = json.loads(urllib.parse.unquote(request.args.get('searchString'))) #ToDo use Flask Forms
     return os_manager.advanced_search("amoscore", search_info) #Hardcoded indexname
 
-#@app.route('/search/advanced_v2')
-#def advanced_search_v2():
- #   form = advancedSearchForm()
-  #  if form.validate_on_submit():
-        # ... 
-   #     pass
-    #return render_template('index1.html')
+@app.route('/search/advanced_v2')
+def advanced_search_v2():
+    return render_template('index1.html')
 
 @app.route('/files_type_chart')
 def files_type_chart():
