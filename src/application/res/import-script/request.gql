@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
             query {
                 mdhSearch(
@@ -30,5 +31,37 @@
                         }
                     }
                 }
+=======
+query {
+    mdhSearch(
+        filterFunctions: [
+            {
+                tag: "MdHTimestamp",
+                value: "2023-05-26 13:44:00",
+                operation: GREATER,
+                dataType: TS
+>>>>>>> 8a01a0f28905bb298ce8f88199117c38aedef779
             }
-            
+        ],
+        filterLogicOption: AND,
+        limit: 1
+    ) {
+        totalFilesCount
+        returnedFilesCount
+        instanceName
+        timeZone
+        fixedReturnColumnSize
+        limitedByLicensing
+        queryStatusAsText
+        dataTypes {
+            name
+            type
+        }
+        files {
+            metadata {
+                name
+                value
+            }
+        }
+    }
+}

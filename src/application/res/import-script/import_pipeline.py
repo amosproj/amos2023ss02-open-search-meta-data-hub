@@ -129,8 +129,7 @@ def execute_pipeline():
 if __name__ == "__main__":
     print("---------------------- Import-Pipeline ----------------------")
     start_time = time.time()
-    #execute_pipeline()
-    
+    execute_pipeline()
     print("--> Pipeline execution finished!")
     print("--> Pipeline took ", "%s seconds" % (time.time() - start_time), " to execute!")
     print("---------------------- Import-Pipeline ----------------------")

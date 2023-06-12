@@ -1,6 +1,8 @@
 import json
 import os
 import pathlib
+import subprocess
+
 import mdh
 from dotenv import load_dotenv
 from pathlib import Path
@@ -95,10 +97,15 @@ class MetaDataHubManager:
                 }
             }
             """ % (timestamp, limit)
-
-        self._write_file(gql_query)
-
+        self._write_file(self.format_query(gql_query))
         return gql_query
+
+
+    def format_query(query):
+        lines = query.strip().split('\n')
+        min_indentation = min(len(line) - len(line.lstrip()) for line in lines if line.strip())
+        formatted_query = '\n'.join(line[min_indentation:] for line in lines)
+        return formatted_query
 
     def download_data(self, timestamp: str, limit: int = 10000000):
         """ download the data from the request and store it """
