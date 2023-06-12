@@ -5,6 +5,7 @@ from flask import request
 from backend.opensearch_api import OpenSearchManager
 from backend import files_type
 import urllib
+from forms import *
 
 app = Flask(__name__)
 os_manager: OpenSearchManager = OpenSearchManager()
@@ -36,6 +37,10 @@ def search_advanced():
     search_info = json.loads(urllib.parse.unquote(request.args.get('searchString')))
     return os_manager.advanced_search(search_info)  # TODO First Argument missing
 
+@app.route('/search/advanced_alt')
+def search_advanced():
+    search_info = json.loads(urllib.parse.unquote(request.args.get('searchString')))
+    return os_manager.advanced_search(search_info)  # TODO First Argument missing
 
 @app.route('/files_type_chart')
 def files_type_chart():

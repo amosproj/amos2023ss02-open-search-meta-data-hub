@@ -79,9 +79,8 @@ def modify_data(mdh_data: list[dict], data_types: dict) -> list[(dict, id)]:
 
 
 def execute_pipeline():
-    print("----------- Import-Pipeline -----------")
-    print("Import started ...")
-    start_time = time.time()
+
+    print("1. Pipeline execution started ")
 
     # the instance of the MetaDataHub in which the search is performed
     instance_name = "amoscore"
@@ -94,23 +93,28 @@ def execute_pipeline():
     latest_timestamp = os_manager.get_latest_timestamp(index_name=instance_name)
 
     # MdH data extraction
-    print(f"Starting to download data from '{instance_name}' in MdH that was added after {latest_timestamp}.")
-    mdh_manager.download_data(timestamp=latest_timestamp, limit=1)
+    print(f"2. Starting to download data from '{instance_name}' in MdH that was added after "
+          f"{(latest_timestamp, 'begin')[latest_timestamp=='1111-11-11 11:11:11']}.")
+    start_time_extracting = time.time()
+    mdh_manager.download_data(timestamp=latest_timestamp, limit=10000)
     mdh_datatypes = mdh_manager.get_datatypes()  # get all mdh_datatypes of the request
     mdh_data = mdh_manager.get_data()  # get all mdh_data from the request
     files_amount = len(mdh_data) # amounts of files downloaded from MdH
-    print(f"Finished to download data from MdH!")
-    print(f"{files_amount} files with a total of {len(mdh_datatypes)} metadata-tags have been downloaded.")
+    print(f"--> Finished to download data from MdH!")
+    print(f"--> {files_amount} files with a total of {len(mdh_datatypes)} metadata-tags have been downloaded.")
+    print("--> Time needed: %s seconds!" % (time.time() - start_time_extracting))
 
     # Modifying the data into correct format
-    print("Starting to modify the data.")
+    print("3. Starting to modify the data.")
+    start_time_modifying = time.time()
     data_types = modify_datatypes(mdh_datatypes=mdh_datatypes)  # modify the datatypes so they fit in OpenSearch
     data = modify_data(mdh_data=mdh_data, data_types=data_types)  # modify the data so it fits in OpenSearch
-    print("Finished to modify the data!")
-
+    print("--> Finished to modify the data!")
+    print("--> Time needed: %s seconds!" % (time.time() - start_time_modifying))
 
     # Loading the data into OpenSearch
-    print("Starting to store data in OpenSearch.")
+    print("4. Starting to store data in OpenSearch.")
+    start_time_loading = time.time()
     os_manager.create_index(index_name=instance_name)  # create an index for the new data
     os_manager.update_index(index_name=instance_name, data_types=data_types)
     # due to performance reasons big amounts of data have to be split into smaller peaces
@@ -118,10 +122,15 @@ def execute_pipeline():
     for i in range(0, files_amount, chunk_size): # loop over every new data-peace
         os_manager.perform_bulk(index_name=instance_name,
                         data=data[i:i + chunk_size])  # perform a bulk request to store the new data in OpenSearch
-    print("Finished to store data in OpenSearch!")
+    print("--> Finished to store data in OpenSearch!")
+    print("--> Time needed: %s seconds!" % (time.time() - start_time_loading))
 
-    print("Complete import finished!")
-    print("Pipeline took ", "%s seconds" % (time.time() - start_time), " to execute!")
-    print("----------- Import-Pipeline -----------")
 
-execute_pipeline()
+if __name__ == "__main__":
+    print("---------------------- Import-Pipeline ----------------------")
+    start_time = time.time()
+    #execute_pipeline()
+    
+    print("--> Pipeline execution finished!")
+    print("--> Pipeline took ", "%s seconds" % (time.time() - start_time), " to execute!")
+    print("---------------------- Import-Pipeline ----------------------")
