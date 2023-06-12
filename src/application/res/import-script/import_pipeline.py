@@ -36,6 +36,8 @@ def modify_datatypes(mdh_datatypes: dict) -> dict:
             modified_datatypes[name] = 'text'
         else:
             modified_datatypes[name] = 'text'
+        if len(modified_datatypes) >= 900:
+            break
     return modified_datatypes
 
 
@@ -60,18 +62,19 @@ def modify_data(mdh_data: list[dict], data_types: dict) -> list[(dict, id)]:
                                                  "_")  # get the name and replace '. with '_' to avoid parsing errors
             value = meta.get("value")  # get the corresponding value for the metadata-tag
             # set correct datatypes
+            if name in data_types:
+                if name == "SourceFile":
+                    id = str(value)
 
-            if name == "SourceFile":
-                id = str(value)
 
-            if data_types[name] == 'date':
-                date = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")  # get the correct datetime format
-                value = str(date.strftime(
-                    "%Y-%m-%d" "T" "%H:%M:%S"))  # make the datetime a string so it can be stored in OpenSearch
-            elif data_types[name] == 'float':
-                value = float(value)
-            if name and value:
-                file_info[name] = value
+                if data_types[name] == 'date':
+                    date = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")  # get the correct datetime format
+                    value = str(date.strftime(
+                        "%Y-%m-%d" "T" "%H:%M:%S"))  # make the datetime a string so it can be stored in OpenSearch
+                elif data_types[name] == 'float':
+                    value = float(value)
+                if name and value:
+                    file_info[name] = value
 
         modified_data.append((file_info, id))
 
@@ -86,8 +89,8 @@ def execute_pipeline():
     instance_name = "amoscore"
 
     # getting the manager to handle the APIs
-    mdh_manager = MetaDataHubManager(localhost=True)  # create a manager for handling the MetaDataHub API
-    os_manager = OpenSearchManager(localhost=True)  # create a manager for handling the OpenSearch API
+    mdh_manager = MetaDataHubManager(localhost=False)  # create a manager for handling the MetaDataHub API
+    os_manager = OpenSearchManager(localhost=False)  # create a manager for handling the OpenSearch API
 
     # get the timestamp of the latest data import
     latest_timestamp = os_manager.get_latest_timestamp(index_name=instance_name)
@@ -96,7 +99,7 @@ def execute_pipeline():
     print(f"2. Starting to download data from '{instance_name}' in MdH that was added after "
           f"{(latest_timestamp, 'begin')[latest_timestamp=='1111-11-11 11:11:11']}.")
     start_time_extracting = time.time()
-    mdh_manager.download_data(timestamp=latest_timestamp, limit=10000)
+    mdh_manager.download_data(timestamp=latest_timestamp, limit=500000)
     mdh_datatypes = mdh_manager.get_datatypes()  # get all mdh_datatypes of the request
     mdh_data = mdh_manager.get_data()  # get all mdh_data from the request
     files_amount = len(mdh_data) # amounts of files downloaded from MdH

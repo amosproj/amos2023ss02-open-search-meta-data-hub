@@ -101,8 +101,8 @@ class MetaDataHubManager:
         return gql_query
 
 
-    def format_query(query):
-        lines = query.strip().split('\n')
+    def format_query(self, gql_query):
+        lines = gql_query.strip().split('\n')
         min_indentation = min(len(line) - len(line.lstrip()) for line in lines if line.strip())
         formatted_query = '\n'.join(line[min_indentation:] for line in lines)
         return formatted_query

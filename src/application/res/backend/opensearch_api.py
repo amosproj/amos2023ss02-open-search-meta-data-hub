@@ -152,7 +152,7 @@ class OpenSearchManager:
                 }
             },
             'mappings': {
-                'properties': {}
+                'properties': {},
             }
         }
 
@@ -373,5 +373,3 @@ class OpenSearchManager:
 
 
 
-o = OpenSearchManager(True)
-print(o.simple_search('amoscore', "0"))
