@@ -91,8 +91,8 @@ def execute_pipeline():
     # getting the manager to handle the APIs
     print("2. Start to connect to the OpenSearch Node and the MetaDataHub API.")
     start_time_connecting = time.time()
-    mdh_manager = MetaDataHubManager(localhost=True)  # create a manager for handling the MetaDataHub API
-    os_manager = OpenSearchManager(localhost=True)  # create a manager for handling the OpenSearch API
+    mdh_manager = MetaDataHubManager(localhost=False)  # create a manager for handling the MetaDataHub API
+    os_manager = OpenSearchManager(localhost=False)  # create a manager for handling the OpenSearch API
     print("--> Finished to connect to the OpenSearch Node and the MetaDataHub API!")
     print("--> Time needed: %s seconds!" % (time.time() - start_time_connecting))
 
