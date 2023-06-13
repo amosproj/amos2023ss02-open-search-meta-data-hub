@@ -5,9 +5,9 @@ from flask import request
 from backend.opensearch_api import OpenSearchManager
 from backend import files_type
 import urllib
-from forms import *
 
 app = Flask(__name__)
+index_name = 'amoscore'
 os_manager: OpenSearchManager = OpenSearchManager()
 
 """Rendering start page of the website"""
@@ -29,18 +29,14 @@ def search():
 
 @app.route('/search/simple')
 def search_simple():
-    return os_manager.simple_search(request.args.get('searchString'))
+    return os_manager.simple_search(index_name, request.args.get('searchString'))
 
 
 @app.route('/search/advanced')
 def search_advanced():
     search_info = json.loads(urllib.parse.unquote(request.args.get('searchString')))
-    return os_manager.advanced_search(search_info)  # TODO First Argument missing
+    return os_manager.advanced_search(index_name, search_info)
 
-@app.route('/search/advanced_alt')
-def search_advanced():
-    search_info = json.loads(urllib.parse.unquote(request.args.get('searchString')))
-    return os_manager.advanced_search(search_info)  # TODO First Argument missing
 
 @app.route('/files_type_chart')
 def files_type_chart():

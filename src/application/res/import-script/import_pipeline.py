@@ -89,17 +89,21 @@ def execute_pipeline():
     instance_name = "amoscore"
 
     # getting the manager to handle the APIs
-    mdh_manager = MetaDataHubManager(localhost=False)  # create a manager for handling the MetaDataHub API
-    os_manager = OpenSearchManager(localhost=False)  # create a manager for handling the OpenSearch API
+    print("2. Start to connect to the OpenSearch Node and the MetaDataHub API.")
+    start_time_connecting = time.time()
+    mdh_manager = MetaDataHubManager(localhost=True)  # create a manager for handling the MetaDataHub API
+    os_manager = OpenSearchManager(localhost=True)  # create a manager for handling the OpenSearch API
+    print("--> Finished to connect to the OpenSearch Node and the MetaDataHub API!")
+    print("--> Time needed: %s seconds!" % (time.time() - start_time_connecting))
 
     # get the timestamp of the latest data import
     latest_timestamp = os_manager.get_latest_timestamp(index_name=instance_name)
 
     # MdH data extraction
-    print(f"2. Starting to download data from '{instance_name}' in MdH that was added after "
+    print(f"3. Starting to download data from '{instance_name}' in MdH that was added after "
           f"{(latest_timestamp, 'begin')[latest_timestamp=='1111-11-11 11:11:11']}.")
     start_time_extracting = time.time()
-    mdh_manager.download_data(timestamp=latest_timestamp, limit=500000)
+    mdh_manager.download_data(timestamp=latest_timestamp, limit=1000)
     mdh_datatypes = mdh_manager.get_datatypes()  # get all mdh_datatypes of the request
     mdh_data = mdh_manager.get_data()  # get all mdh_data from the request
     files_amount = len(mdh_data) # amounts of files downloaded from MdH
@@ -108,7 +112,7 @@ def execute_pipeline():
     print("--> Time needed: %s seconds!" % (time.time() - start_time_extracting))
 
     # Modifying the data into correct format
-    print("3. Starting to modify the data.")
+    print("4. Starting to modify the data.")
     start_time_modifying = time.time()
     data_types = modify_datatypes(mdh_datatypes=mdh_datatypes)  # modify the datatypes so they fit in OpenSearch
     data = modify_data(mdh_data=mdh_data, data_types=data_types)  # modify the data so it fits in OpenSearch
@@ -116,7 +120,7 @@ def execute_pipeline():
     print("--> Time needed: %s seconds!" % (time.time() - start_time_modifying))
 
     # Loading the data into OpenSearch
-    print("4. Starting to store data in OpenSearch.")
+    print("5. Starting to store data in OpenSearch.")
     start_time_loading = time.time()
     os_manager.create_index(index_name=instance_name)  # create an index for the new data
     os_manager.update_index(index_name=instance_name, data_types=data_types)

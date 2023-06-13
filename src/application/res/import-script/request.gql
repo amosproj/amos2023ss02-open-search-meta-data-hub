@@ -3,13 +3,13 @@ query {
                     filterFunctions: [
                         {
                             tag: "MdHTimestamp",
-                            value: "1111-11-11 11:11:11",
+                            value: "2023-05-26 14:11:00",
                             operation: GREATER,
                             dataType: TS
                         }
                     ],
                     filterLogicOption: AND,
-                    limit: 500000
+                    limit: 1000
                 ) {
                     totalFilesCount
                     returnedFilesCount
