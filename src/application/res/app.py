@@ -18,7 +18,7 @@ app.config['SECRET_KEY'] = secrets.token_hex(16)
 bootstrap = Bootstrap5(app)
 csrf = CSRFProtect(app)
 
-os_manager: OpenSearchManager = OpenSearchManager(localhost=True)
+os_manager: OpenSearchManager = OpenSearchManager(localhost=False)
 
     
 class SimpleSearchForm(FlaskForm):
