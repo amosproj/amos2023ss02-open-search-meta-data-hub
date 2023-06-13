@@ -11,15 +11,24 @@ sys.path.append(parent_dir)
 
 from backend.opensearch_api import OpenSearchManager
 
+def safe_timestamp() -> str:
+    pass
+
+def get_timestamp() -> str:
+    pass
 
 def modify_datatypes(mdh_datatypes: dict) -> dict:
     """
     Reformatting the mdh_datatypes dictionary for storage in OpenSearch.
 
-    :param mdh_datatypes: A dictionary containing the corresponding datatypes to the metadata-tags from a MetaDataHub
-    request. :return: A dictionary containing the corresponding OpenSearch datatypes for the metadata-tags.
+    :param mdh_datatypes: A dictionary containing the corresponding datatypes to
+    he metadata-tags from a MetaDataHub
+    request. :return: A dictionary containing the corresponding OpenSearch datatypes
+    for the metadata-tags.
     """
     modified_datatypes = {}  # init the resulting dictionary
+    # Check if the file has been modified or added since the last import
+    ##if file_timestamp > last_import_timestamp:
     for mdh_datatype in mdh_datatypes:  # loop over all entries of the mdh_datatypes dictionary
         name = mdh_datatype.get("name").replace(".", "_")  # get the metadata-tag and replace the '.' with '_'
         mdh_type = mdh_datatype.get("type")  # get the corresponding datatype
@@ -39,7 +48,8 @@ def modify_data(mdh_data: list[dict], data_types: dict) -> list[dict]:
     """
     Reformatting the mdh_data dictionary for storage in OpenSearch.
 
-    :param mdh_data: A list of dictionaries that contains all metadata-tags for every file of a MetaDataHub request.
+    :param mdh_data: A list of dictionaries that contains all metadata-tags for
+    every file of a MetaDataHub request.
     :param data_types: A dictionary containing the modified OpenSearch datatypes.
     :return: A list of dictionaries containing the modified metadata tags and their corresponding values.
     """

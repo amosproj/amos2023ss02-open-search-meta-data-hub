@@ -16,6 +16,6 @@ RUN pip install mdh-2.3.1-py3-none-any.whl
 # mdh-configurations
 RUN mkdir mdh_home
 
-CMD python3 import-script/data_transfer.py && python3 app.py
+CMD python3 import-script/import_pipeline.py && python3 app.py
 
 

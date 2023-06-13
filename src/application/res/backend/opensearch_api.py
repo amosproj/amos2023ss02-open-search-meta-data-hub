@@ -1,6 +1,6 @@
 import time
 from opensearchpy import OpenSearch
-from opensearchpy.exceptions import ConnectionError
+from opensearchpy.exceptions import ConnectionError, NotFoundError, TransportError, RequestError
 
 
 class OpenSearchManager:
@@ -62,7 +62,7 @@ class OpenSearchManager:
 
         :return: None
         """
-        # Add your disconnection code here
+        self._client.close()
 
     def get_all_indices(self) -> list[str]:
         """
@@ -108,7 +108,8 @@ class OpenSearchManager:
 
         except Exception as e:
             print(
-                f"Error occurred while retrieving datatype for field '{field_name}' in index '{index_name}': {str(e)}")
+                f"Error occurred while retrieving datatype for field '{field_name}' "
+                f"in index '{index_name}': {str(e)}")
             return ""
 
     def field_exists(self, index_name: str, field_name: str) -> bool:
@@ -136,12 +137,11 @@ class OpenSearchManager:
             print(f"Error occurred while checking field '{field_name}' in index '{index_name}': {str(e)}")
             return False
 
-    def create_index(self, index_name: str, data_types: dict):
+    def create_index(self, index_name: str):
         """Create a new index with non-default settings.
 
         Args:
             index_name (str): The name of the new index.
-            data_types (dict): A dictionary containing all fields and their corresponding data types.
 
         """
         # The body of the new index creation
@@ -152,17 +152,9 @@ class OpenSearchManager:
                 }
             },
             'mappings': {
-                'properties': {}
+                'properties': {},
             }
         }
-
-        for key, datatype in data_types.items():
-            if datatype == "date":
-                # Special handling for datetime types
-                property = {"type": datatype, "format": "strict_date_hour_minute_second||epoch_millis"}
-            else:
-                property = {"type": datatype}
-            index_body['mappings']['properties'][key] = property
 
         if not self._client.indices.exists(index=index_name):
             # Check if the index already exists
@@ -175,7 +167,39 @@ class OpenSearchManager:
         else:
             print(f"Index '{index_name}' already exists.")
 
-    def perform_bulk(self, index_name: str, data: list[dict]) -> object:
+    def update_index(self, index_name: str, data_types: dict) -> any:
+        """ This function adds properties (datatypes for fields) to an existing index
+
+        :param index_name: The name of the index that will be updated
+        :param data_types: A dictionary containing all fields and their corresponding datatypes
+        :return: Returns a OpenSearch response of the index update action
+        """
+        # create a mapping body for the new properties
+        mapping_body = {"properties":{}}
+
+        try:
+            # get all existing properties of this index
+            response = self._client.indices.get_mapping(index_name)
+
+            for key, datatype in data_types.items(): # iterate over all item pairs in data_types
+                # if this field is not already in the properties, add it
+                if key not in response[index_name]['mappings']['properties']:
+                    if datatype == "date":
+                        # Special handling for datetime types
+                        property = {"type": datatype, "format": "strict_date_hour_minute_second||epoch_millis"}
+                    else:
+                        property = {"type": datatype}
+                    mapping_body['properties'][key] = property
+
+            return self._client.indices.put_mapping(index=index_name, body=mapping_body)
+
+        except NotFoundError:
+            print(f"Index '{index_name}' not found.")
+        except KeyError:
+            print(f"No mapping found for index '{index_name}.'")
+
+
+    def perform_bulk(self, index_name: str, data: list[(dict, id)]) -> object:
         """
         Insert multiple documents into OpenSearch via the bulk API.
 
@@ -183,16 +207,24 @@ class OpenSearchManager:
         :param data: A list of dictionaries containing the new data and its values in the right format.
         :return: The response of the bulk request.
         """
-        index_operation = {
-            "index": {"_index": index_name}
-        }
         create_operation = {
             "create": {"_index": index_name}
         }
-        bulk_data = (str(index_operation) +
-                     '\n' + ('\n' + str(create_operation) +
-                             '\n').join(str(d) for d in data)).replace("'", "\"")
-        return self._client.bulk(body=bulk_data)
+
+        bulk_data = []
+        for doc, id in data:
+            if not id == "default_id":
+                create_operation['create']['_id'] = id
+            bulk_data.append(str(create_operation))
+            bulk_data.append(str(doc))
+
+
+        bulk_request = "\n".join(bulk_data).replace("'", "\"")
+
+        try:
+            return self._client.bulk(body=bulk_request)
+        except TransportError:
+            print("Bulk data oversteps the amount of allowed bytes")
 
     def simple_search(self, index_name: str, search_text: str) -> any:
         """
@@ -202,14 +234,19 @@ class OpenSearchManager:
         :param search_text: The search text that will be searched for.
         :return: Returns an OpenSearch response.
         """
-
+        fields = self.get_all_fields(index_name)
         query = {
             "query": {
-                "match": {
-                    "FileName": search_text
+                "bool": {
+                    "should": []
                 }
             }
         }
+        for field in fields:
+            data_type = self.get_datatype(field_name=field, index_name=index_name)
+            if data_type == "text":
+                sub_query = {"wildcard": {field: {"value": "*"+search_text+"*"}}}
+                query['query']['bool']['should'].append(sub_query)
 
         response = self._client.search(
             body=query,
@@ -222,7 +259,8 @@ class OpenSearchManager:
         Function that performs an advanced search in OpenSearch.
 
         :param index_name: The name of the index in which the search should be performed.
-        :param search_info: A dictionary containing the different fields and operators for the advanced search.
+        :param search_info: A dictionary containing the different fields and operators for
+        the advanced search.
         :return: None (or specify the return type if applicable).
         """
 
@@ -251,7 +289,8 @@ class OpenSearchManager:
         """
         Function that creates a query that can be used to search in OpenSearch.
 
-        :param sub_queries: A list of tuples that contains the subquery and either the value 'must' or 'must_not'.
+        :param sub_queries: A list of tuples that contains the subquery and either
+        the value 'must' or 'must_not'.
         :return: Returns a query that can be used to search in OpenSearch.
         """
 
@@ -294,63 +333,43 @@ class OpenSearchManager:
                 return {'term': {search_field: {'value': search_content}}}, 'must'
         elif data_type == 'text':
             if operator == 'EQUALS':
-                return {'match': {search_field: search_content}}, 'must'
+                return {"wildcard": {search_field: {"value": "*"+search_content+"*"}}}, 'must'
             elif operator == 'NOT_EQUALS':
-                return {'match': {search_field: search_content}}, 'must_not'
+                return {"wildcard": {search_field: {"value": "*"+search_content+"*"}}}, 'must_not'
             else:
-                return {'match': {search_field: search_content}}, 'must'
+                return {"wildcard": {search_field: {"value": "*"+search_content+"*"}}}, 'must'
 
-
-# this is just another method optimized
-def get_sub_query(self, data_type: str, operator: str, search_field: str, search_content: any) -> tuple:
-    """Returns a subquery that can be used to create a complete query.
-
-    Args:
-        data_type (str): The datatype of the field of the subquery.
-        operator (str): The operator of the query.
-        search_field (str): The field in which the search should be performed in this subquery.
-        search_content (any): The content of the search.
-
-    Returns:
-        tuple: A tuple consisting of a subquery and the value 'must' or 'must_not'.
-
-    """
-    sub_query = {}
-
-    if data_type == 'float' or data_type == 'date':
-        range_operator_mapping = {
-            'EQUALS': 'term',
-            'GREATER_THAN': 'range',
-            'LESS_THAN': 'range',
-            'GREATER_THAN_OR_EQUALS': 'range',
-            'LESS_THAN_OR_EQUALS': 'range',
-            'NOT_EQUALS': 'term'
+    def get_latest_timestamp(self, index_name) -> str:
+        query = {
+            "size": 1,
+            "query": {
+                "exists": {
+                    "field": "MdHTimestamp"
+                },
+            },
+            "sort": [
+                {
+                    "MdHTimestamp": "desc"
+                }
+            ]
         }
-        range_operator = range_operator_mapping.get(operator, 'term')
+        try:
+            response = self._client.search(
+                body=query,
+                index=index_name
+            )
+            mdh_timestamp = response['hits']['hits'][0]['_source']['MdHTimestamp']
+            return mdh_timestamp.replace("T", " ")
+        except KeyError:
+            print(f"No data for the index '{index_name}' is stored.")
+            return "1111-11-11 11:11:11"
+        except NotFoundError:
+            print(f"No index with name '{index_name}' found.")
+            return "1111-11-11 11:11:11"
+        except IndexError:
+            return "1111-11-11 11:11:11"
+        except RequestError:
+            return "1111-11-11 11:11:11"
 
-        if range_operator == 'term':
-            sub_query = {'term': {search_field: {'value': search_content}}}
-        elif range_operator == 'range':
-            range_query = {'range': {search_field: {}}}
 
-            if operator == 'GREATER_THAN':
-                range_query['range'][search_field]['gt'] = search_content
-            elif operator == 'LESS_THAN':
-                range_query['range'][search_field]['lt'] = search_content
-            elif operator == 'GREATER_THAN_OR_EQUALS':
-                range_query['range'][search_field]['gte'] = search_content
-            elif operator == 'LESS_THAN_OR_EQUALS':
-                range_query['range'][search_field]['lte'] = search_content
 
-            sub_query = range_query
-
-    elif data_type == 'text':
-        text_operator_mapping = {
-            'EQUALS': 'match',
-            'NOT_EQUALS': 'match'
-        }
-        text_operator = text_operator_mapping.get(operator, 'match')
-        sub_query = {text_operator: {search_field: search_content}}
-
-    functionality = 'must' if operator != 'NOT_EQUALS' else 'must_not'
-    return sub_query, functionality
