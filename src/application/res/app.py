@@ -26,7 +26,8 @@ class SimpleSearchForm(FlaskForm):
     submit = SubmitField('Search')
 
 class AdvancedEntryForm(FlaskForm):
-    metadata_tag = StringField('Metadata tag')
+    all_fields = os_manager.get_all_fields(index_name="amoscore")
+    metadata_tag = SelectField('Metadata tag', choices=all_fields)
     condition = SelectField('Condition', choices=[
         ('tag_exists', 'tag exists'), 
         ('tag_not_exist', 'tag not exists'),
