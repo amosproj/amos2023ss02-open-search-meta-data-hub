@@ -126,8 +126,14 @@ class GraphQLQuery:
         return operation.render()
 
 
-f = FilterFunction("MdhTimestamp", "1", "GREATER", "TS")
+# How to use:
+# 1. create one or more filter functions (optional)
+    # e.g.: f = FilterFunction(tag="MdhTimestamp", value="1", operation="GREATER", date_type="TS")
+# 2. create one or more sort functions (optional)
+    # e.g.: s = SortFunction(tag="FileName", operation="DESC")
+# 3. create a GraphQLQuery (parameters are optional)
+    # q = GraphQLQuery(filter_functions=[f], sort_functions=[s], limit=1000, filter_logic="AND")
+# 4. generate the query string
+    # query_string = q.generate_query()
+# finally the query_string can be written into a GraphQL file
 
-q = GraphQLQuery(filter_functions=[f])
-
-print(q.generate_query())
