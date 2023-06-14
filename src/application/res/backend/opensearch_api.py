@@ -91,7 +91,7 @@ class OpenSearchManager:
 
         return fields
 
-    def get_datatype(self, field_name: str, index_name: str) -> str:
+    def get_datatype(self, index_name: str, field_name: str) -> str:
         """Get the datatype of a specific field for a specific index.
 
          Args:
