@@ -100,7 +100,6 @@ class MetaDataHubManager:
         self._write_file(self.format_query(gql_query))
         return gql_query
 
-
     def format_query(self, gql_query):
         lines = gql_query.strip().split('\n')
         min_indentation = min(len(line) - len(line.lstrip()) for line in lines if line.strip())
@@ -114,20 +113,40 @@ class MetaDataHubManager:
             self.result = mdh.core.main.execute(core, self._request_path_file)
 
     def get_instance_name(self) -> str:
-            """ get the instance (core name) from the last request """
-            return self.result['mdhSearch']['instanceName'].lower()
+        """ get the instance (core name) from the last request """
+        return self.result['mdhSearch']['instanceName'].lower()
 
     def get_data(self) -> list[dict]:
-            """ get data from the result-dictionary """
+        """ get data from the result-dictionary """
+        mdh_search = self.result["mdhSearch"]
+        files = mdh_search.get("files", [])
+        return files
+
+    def get_datatypes(self) -> dict:
+        """ get the datatypes of the regarding metadata tags form the result-dictionary"""
+        mdh_search = self.result["mdhSearch"]
+        data_types = mdh_search.get("dataTypes", [])
+        return data_types
+
+    def get_total_files_count(self) -> int:
+        """
+        :return:
+        """
+        try:
             mdh_search = self.result["mdhSearch"]
-            files = mdh_search.get("files", [])
-            return files
+            return mdh_search['totalFilesCount']
+        except KeyError:
+            print("No files found. Please download the data first.")
+            return 0
 
-    def get_datatypes(self, ) -> dict:
-            """ get the datatypes of the regarding metadata tags form the result-dictionary"""
+    def get_return_files_count(self) -> int:
+        """
+        :return:
+        """
+        try:
             mdh_search = self.result["mdhSearch"]
-            data_types = mdh_search.get("dataTypes", [])
-            return data_types
-
-
+            return mdh_search["returnedFilesCount"]
+        except KeyError:
+            print("No files found. Please download the data first.")
+            return 0
 

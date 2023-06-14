@@ -225,6 +225,7 @@ class OpenSearchManager:
             return self._client.bulk(body=bulk_request)
         except TransportError:
             print("Bulk data oversteps the amount of allowed bytes")
+            return None
 
     def simple_search(self, index_name: str, search_text: str) -> any:
         """
@@ -340,6 +341,10 @@ class OpenSearchManager:
                 return {"wildcard": {search_field: {"value": "*"+search_content+"*"}}}, 'must'
 
     def get_latest_timestamp(self, index_name) -> str:
+        """
+        :param index_name:
+        :return:
+        """
         query = {
             "size": 1,
             "query": {
