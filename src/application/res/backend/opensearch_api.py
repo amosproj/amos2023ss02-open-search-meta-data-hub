@@ -175,13 +175,13 @@ class OpenSearchManager:
         :return: Returns a OpenSearch response of the index update action
         """
         # create a mapping body for the new properties
-        mapping_body = {"properties":{}}
+        mapping_body = {"properties": {}}
 
         try:
             # get all existing properties of this index
             response = self._client.indices.get_mapping(index_name)
 
-            for key, datatype in data_types.items(): # iterate over all item pairs in data_types
+            for key, datatype in data_types.items():  # iterate over all item pairs in data_types
                 # if this field is not already in the properties, add it
                 if key not in response[index_name]['mappings']['properties']:
                     if datatype == "date":
@@ -197,7 +197,6 @@ class OpenSearchManager:
             print(f"Index '{index_name}' not found.")
         except KeyError:
             print(f"No mapping found for index '{index_name}.'")
-
 
     def perform_bulk(self, index_name: str, data: list[(dict, id)]) -> object:
         """
@@ -217,7 +216,6 @@ class OpenSearchManager:
                 create_operation['create']['_id'] = id
             bulk_data.append(str(create_operation))
             bulk_data.append(str(doc))
-
 
         bulk_request = "\n".join(bulk_data).replace("'", "\"")
 
@@ -246,7 +244,7 @@ class OpenSearchManager:
         for field in fields:
             data_type = self.get_datatype(field_name=field, index_name=index_name)
             if data_type == "text":
-                sub_query = {"wildcard": {field: {"value": "*"+search_text+"*"}}}
+                sub_query = {"wildcard": {field: {"value": "*" + search_text + "*"}}}
                 query['query']['bool']['should'].append(sub_query)
 
         response = self._client.search(
@@ -334,16 +332,17 @@ class OpenSearchManager:
                 return {'term': {search_field: {'value': search_content}}}, 'must'
         elif data_type == 'text':
             if operator == 'EQUALS':
-                return {"wildcard": {search_field: {"value": "*"+search_content+"*"}}}, 'must'
+                return {"wildcard": {search_field: {"value": "*" + search_content + "*"}}}, 'must'
             elif operator == 'NOT_EQUALS':
-                return {"wildcard": {search_field: {"value": "*"+search_content+"*"}}}, 'must_not'
+                return {"wildcard": {search_field: {"value": "*" + search_content + "*"}}}, 'must_not'
             else:
-                return {"wildcard": {search_field: {"value": "*"+search_content+"*"}}}, 'must'
+                return {"wildcard": {search_field: {"value": "*" + search_content + "*"}}}, 'must'
 
     def get_latest_timestamp(self, index_name) -> str:
-        """
-        :param index_name:
-        :return:
+        """ This function gets the data of the newest file uploaded to the OpenSearch Node regarding the date of upload
+        into the MetaDataHub
+        :param index_name: the name of the index in which to search
+        :return: String thtat contains the timestamp
         """
         query = {
             "size": 1,
@@ -375,6 +374,3 @@ class OpenSearchManager:
             return "1111-11-11 11:11:11"
         except RequestError:
             return "1111-11-11 11:11:11"
-
-
-
