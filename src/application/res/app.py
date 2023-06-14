@@ -124,10 +124,10 @@ def search():
 def advanced_search_v2():
     return render_template('index1.html')
 
-@app.route('/files_type_chart')
-def files_type_chart():
-    labels, values, colors = files_type.get_files_type()
-    return render_template('doughnut_chart.html', max=17000, set=zip(values, labels, colors))
+#@app.route('/files_type_chart')
+#def files_type_chart():
+#    labels, values, colors = files_type.get_files_type()
+#    return render_template('doughnut_chart.html', max=17000, set=zip(values, labels, colors))
 
 
 @app.route('/visualizations')
