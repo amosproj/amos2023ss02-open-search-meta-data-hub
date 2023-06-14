@@ -73,13 +73,13 @@ def index():
 """rendering page to search in OS"""
 
 
-@app.route('/search')
-def search():
-    # response = search_os.simple_search(client = client, search_text = searchField)
-    return render_template('search.html')   
+#@app.route('/search')
+#def search():
+#    # response = search_os.simple_search(client = client, search_text = searchField)
+#    return render_template('search.html')   
 
-@app.route('/simpleSearch', methods=['GET', 'POST'])
-def simpleSearch():
+@app.route('/search', methods=['GET', 'POST'])
+def search():
     simpleSearchForm = SimpleSearchForm()
     simpleSearchResult = ""
     advancedSearchForm = AdvancedSearchForm()
@@ -111,14 +111,14 @@ def simpleSearch():
 
     return render_template('simpleSearch.html',simpleSearchForm=simpleSearchForm,simpleSearchResult=simpleSearchResult, advancedSearchForm=advancedSearchForm, advancedSearchResult=advancedSearchResult)
 
-@app.route('/search/simple')
-def search_simple():
-    return os_manager.simple_search("amoscore", request.args.get('searchString')) #Hardcoded indexname
-
-@app.route('/search/advanced')
-def search_advanced():
-    search_info = json.loads(urllib.parse.unquote(request.args.get('searchString'))) #ToDo use Flask Forms
-    return os_manager.advanced_search("amoscore", search_info) #Hardcoded indexname
+#@app.route('/search/simple')
+#def search_simple():
+#    return os_manager.simple_search("amoscore", request.args.get('searchString')) #Hardcoded indexname
+#
+#@app.route('/search/advanced')
+#def search_advanced():
+#    search_info = json.loads(urllib.parse.unquote(request.args.get('searchString'))) #ToDo use Flask Forms
+#    return os_manager.advanced_search("amoscore", search_info) #Hardcoded indexname
 
 @app.route('/search/advanced_v2')
 def advanced_search_v2():
