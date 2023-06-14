@@ -20,6 +20,10 @@ class MetaDataHubManager:
         self.result = {}  # dictionary containing the data from the last request
 
     def _set_request_path(self, localhost: bool):
+        """ Tbhis function initally sets the path to the graphQL file needed for the download from the MetaDataHub
+
+        :param localhost: bool variable for local execution that determines the path of the GraphQl file
+        """
         if localhost:
             gql_path = 'request.gql'
         else:
@@ -51,13 +55,22 @@ class MetaDataHubManager:
         except mdh.errors.MdhStateError:  # if a connection already exists
             print("Core already exists")
 
-    def _read_file(self):
+    def _read_file(self) -> str:
+        """ This function reads a local GraphQl file
+
+        :return: String containing the file input
+        """
         path = Path(self._request_path_file)
         with path.open(mode='r') as file:
             contents = file.read()
         return contents
 
     def _write_file(self, contents):
+        """ This functions t
+        writes to a local GraphQl file
+
+        :param contents: the content that will be written into the file
+        """
         path = Path(self._request_path_file)
         with path.open(mode='w') as file:
             file.write(contents)
@@ -100,7 +113,12 @@ class MetaDataHubManager:
         self._write_file(self.format_query(gql_query))
         return gql_query
 
-    def format_query(self, gql_query):
+    def format_query(self, gql_query: str) -> str:
+        """ Formatss the wuery in a readable format
+
+        :param gql_query: the original GraphQl query
+        :return: String containing the formatted query
+        """
         lines = gql_query.strip().split('\n')
         min_indentation = min(len(line) - len(line.lstrip()) for line in lines if line.strip())
         formatted_query = '\n'.join(line[min_indentation:] for line in lines)
@@ -113,24 +131,35 @@ class MetaDataHubManager:
             self.result = mdh.core.main.execute(core, self._request_path_file)
 
     def get_instance_name(self) -> str:
-        """ get the instance (core name) from the last request """
+        """ get the instance (core name) from the last request
+
+        : return: String containing the name of the instance on which the downloaded was executed
+        """
         return self.result['mdhSearch']['instanceName'].lower()
 
     def get_data(self) -> list[dict]:
-        """ get data from the result-dictionary """
+        """ get data from the result-dictionary
+
+        :return: list of dictionaries containing all metadata-tags and their values for each file
+        """
         mdh_search = self.result["mdhSearch"]
         files = mdh_search.get("files", [])
         return files
 
     def get_datatypes(self) -> dict:
-        """ get the datatypes of the regarding metadata tags form the result-dictionary"""
+        """ get the datatypes of the regarding metadata tags form the result-dictionary
+
+        :return: Dictionary containing all metadata-tags and their corresponding datatypes
+        """
         mdh_search = self.result["mdhSearch"]
         data_types = mdh_search.get("dataTypes", [])
         return data_types
 
     def get_total_files_count(self) -> int:
-        """
-        :return:
+        """ This function get the total amount of files that are stored in the MetaDataHub core
+        on which the download was executed
+
+        :return: Integer containing the total files count
         """
         try:
             mdh_search = self.result["mdhSearch"]
@@ -140,8 +169,9 @@ class MetaDataHubManager:
             return 0
 
     def get_return_files_count(self) -> int:
-        """
-        :return:
+        """ This function gets the amount of files that have been downloaded from the MetaDataHub
+
+        :return: Integer containing the returned files count
         """
         try:
             mdh_search = self.result["mdhSearch"]
@@ -149,4 +179,3 @@ class MetaDataHubManager:
         except KeyError:
             print("No files found. Please download the data first.")
             return 0
-
