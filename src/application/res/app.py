@@ -4,6 +4,7 @@ from flask import render_template
 from flask import request
 from backend.opensearch_api import OpenSearchManager
 from backend import files_type
+from backend import get_all_iframes
 import urllib
 
 app = Flask(__name__)
@@ -42,6 +43,14 @@ def search_advanced():
 def files_type_chart():
     labels, values, colors = files_type.get_files_type()
     return render_template('doughnut_chart.html', max=17000, set=zip(values, labels, colors))
+
+
+@app.route('/visualizations')
+def visualizations():
+    iframe_data = get_all_iframes.get_iframes()
+    return render_template('visualizations.html', iframe_data=iframe_data)
+
+
 
 
 if __name__ == '__main__':

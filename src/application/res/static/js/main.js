@@ -123,3 +123,10 @@ $('#addParameterButton').click(function () {
     newParameter += '</div>';
     $('#searchParameters').append(newParameter);
 });
+
+ $(document).ready(function() {
+    $('.title').click(function() {
+      var row = $(this).closest('tr');
+      row.next('.iframeRow').toggle();
+    });
+  });

@@ -1,3 +1,21 @@
+    .iframeContainer {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .iframeContainer iframe {
+        display: block;
+        width: 100%;
+        height: auto;
+        border: none;
+    }
+
+    .title {
+        color: blue;
+        cursor: pointer;
+    }
+
+
 body {
 
     background: #d1d5db;
@@ -56,4 +74,10 @@ body {
 
 #resTable {
     display: none;
+}
+
+#iframeContainer iframe {
+    width: 100%;
+    height: 700px;
+    border: none;
 }
