@@ -81,3 +81,12 @@ function showDetails(button) {
   // Show the modal
   $('#myModal').modal('show');
 }
+
+
+ $(document).ready(function() {
+    $('.title').click(function() {
+      var row = $(this).closest('tr');
+      row.next('.iframeRow').toggle();
+    });
+  });
+

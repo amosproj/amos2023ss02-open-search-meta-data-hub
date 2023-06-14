@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<br>
+<h1>{% block title %}Visualizations{% endblock %}</h1>
+<br>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col">Title</th>
+      <th scope="col">Type</th>
+      <th scope="col">Last Update</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in iframe_data %}
+    <tr>
+      <td class="title" >{{ item.title }}</td>
+      <td>{{ item.type }}</td>
+      <td>{{ item.updated_at }}</td>
+    </tr>
+    <tr class="iframeRow" style="display: none;">
+      <td colspan="3">
+        {% if item.iframe_code %}
+        {{ item.iframe_code | safe }}
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+
+{% endblock %}
