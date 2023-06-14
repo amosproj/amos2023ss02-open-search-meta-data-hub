@@ -1,40 +1,90 @@
 {% extends 'base.html' %}
+{% from 'bootstrap5/form.html' import render_form %}
+
 
 {% block content %}
 <br>
 <h1>{% block title %}Search for Metadata!{% endblock %}</h1>
 
 <div class="d-flex justify-content-center mb-3">
-    <div aria-label="Search options" class="btn-group" role="group">
-        <button class="btn btn-secondary" id="simpleSearchToggleButton" type="button">Simple Search</button>
-        <button class="btn btn-secondary" id="advancedSearchToggleButton" type="button">Advanced Search</button>
+    <div class="btn-group" role="group" aria-label="Search options">
+        <button type="button" class="btn btn-secondary" id="simpleSearchToggleButton">Simple Search</button>
+        <button type="button" class="btn btn-secondary" id="advancedSearchToggleButton">Advanced Search</button>
     </div>
 </div>
 
-<div class="mt-3 text-end" id="simpleSearch">
-    <input class="form-control form-input" id="searchField" placeholder="Search anything..." type="text">
-    <button class="btn btn-primary" id="searchButton" type="button">Search</button>
+<div id="simpleSearch" class="mt-3 text-end">
+
+    {{ render_form(simpleSearchForm) }}
+    {{ simpleSearchResult | safe }}
+
 </div>
 
-<div class="mt-3 text-end" id="advancedSearch" style="display: none;">
-    <div id="searchParameters">
-        <div class="input-group mb-3">
-            <input class="form-control form-input" id="parameterName0" placeholder="Parameter Name" type="text">
-            <select class="form-control" id="operators0">
-                <option>=</option>
-                <option>></option>
-                <option>>=</option>
-                <option><</option>
-                <option><=</option>
-                <option><></option>
-            </select>
-            <input class="form-control form-input" id="searchValue0" placeholder="Search Value" type="text">
+<div id="advancedSearch" class="mt-3 text-end" style="display: none;">
+
+  <form class="myform" method="POST">
+    {{ advancedSearchForm.hidden_tag() }}
+    <div class="form-container" id="form-container">
+        <div class="row" id="formRow">
+            <div class="col-md-3">
+                {{ advancedSearchForm.entry[0].metadata_tag.label }}<br>
+                {{ advancedSearchForm.entry[0].metadata_tag(class="form-control") }}
+            </div>
+            <div class="col-md-3">
+              <label for="entry-0-condition">Condition</label><br>
+              <select class="form-control" id="entry-0-condition" name="entry-0-condition">
+                <option value="tag_exists">tag exists</option>
+                  <option value="tag_not_exist">tag not exists</option>
+                  <option disabled style="text-align:center;">────────────────</option>
+                  <option value="field_is_empty">field is empty</option>
+                  <option value="field_is_not_empty">field is not empty</option>
+                  <option disabled style="text-align:center;">────────────────</option>
+                  <option value="contains" selected>contains</option>
+                  <option value="not_contains">not contains</option>
+                  <option disabled style="text-align:center;">────────────────</option>
+                  <option value="is_equal">is equal</option>
+                  <option value="is_not_equal">is not equal</option>
+                  <option disabled style="text-align:center;">────────────────</option>
+                  <option value="is_greater">is greater</option>
+                  <option value="is_smaller">is smaller</option>
+              </select>
+          </div>
+            
+            <div class="col-md-3">
+                {{ advancedSearchForm.entry[0].value.label }}<br>
+                {{ advancedSearchForm.entry[0].value(class="form-control") }}
+            </div>
+            <div class="col-md-3">
+            </div>
         </div>
     </div>
-    <input id="countParams" type="hidden" value="0"></input>
-    <button class="btn btn-secondary" id="addParameterButton" type="button">Add Parameter</button>
-    <button class="btn btn-primary" id="advancedSearchButton" type="button">Search...</button>
+    <div class="row">
+      <div class="col-md-3">
+      <button type="button" id="addRow" class="btn btn-secondary">Add row</button>
+      {{ advancedSearchForm.submit(class="btn btn-primary") }}
+    </div>
+    </div>
+</form>
+    {{ advancedSearchResult | safe }}
+    
 </div>
+
+<div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Hit Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="detailsTable">
+          <!-- The JavaScript function will insert the details table here -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 <table class="table" id="resTable">
     <thead>

@@ -109,7 +109,7 @@ def search():
         else:
             advancedSearchResult="No results found."
 
-    return render_template('simpleSearch.html',simpleSearchForm=simpleSearchForm,simpleSearchResult=simpleSearchResult, advancedSearchForm=advancedSearchForm, advancedSearchResult=advancedSearchResult)
+    return render_template('search.html',simpleSearchForm=simpleSearchForm,simpleSearchResult=simpleSearchResult, advancedSearchForm=advancedSearchForm, advancedSearchResult=advancedSearchResult)
 
 #@app.route('/search/simple')
 #def search_simple():
