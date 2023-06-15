@@ -1,15 +1,16 @@
+
 from graphql_query import Argument, Operation, Query, Field
 
 
 class FilterFunction:
-
     def __init__(self, tag: str, value: str, operation: str, data_type: str):
-        """ Creates a new object of class FilterFunction
+        """Creates a new object of class FilterFunction.
 
-        :param tag: the name of the MdH metadata-tag that this filter function is applied to
-        :param value: the value of the corresponding MdH metadata-tag
-        :param operation: the operation of the filter function, e.g. EQUALS, GREATER, ...
-        :param data_type: the datatype of the corresponding metadata-tag
+        Args:
+            tag (str): The name of the MdH metadata-tag that this filter function is applied to.
+            value (str): The value of the corresponding MdH metadata-tag.
+            operation (str): The operation of the filter function, e.g., EQUALS, GREATER, ...
+            data_type (str): The datatype of the corresponding metadata-tag.
         """
         self.tag = Argument(name="tag", value=f'"{tag}"')
         self.value = Argument(name="value", value=f'"{value}"')
@@ -17,41 +18,43 @@ class FilterFunction:
         self.data_type = Argument(name="dataType", value=data_type)
 
     def get_filter_function(self) -> list:
-        """ This function returns this filter function as a list for later processing
+        """Returns this filter function as a list for later processing.
 
-        :return: list of properties of filter function
+        Returns:
+            list: List of properties of the filter function.
         """
         return [self.tag, self.value, self.operation, self.data_type]
 
 
 class SortFunction:
-
     def __init__(self, tag: str, operation: str):
-        """ Creates a new object of class SortFunction
+        """Creates a new object of class SortFunction.
 
-        :param tag: the name of the MdH metadata-tag that this sort function is applied to
-        :param operation: the operation of the filter, e.g. EQUALS, GREATER, ...
+        Args:
+            tag (str): The name of the MdH metadata-tag that this sort function is applied to.
+            operation (str): The operation of the filter, e.g., EQUALS, GREATER, ...
         """
         self.tag = Argument(name="tag", value=f'"{tag}"')
         self.operation = Argument(name="operation", value=operation)
 
     def get_sort_function(self):
-        """ This function returns this sort function as a list for later processing
+        """Returns this sort function as a list for later processing.
 
-        :return: list of properties of sort function
+        Returns:
+            list: List of properties of the sort function.
         """
         return [self.tag, self.operation]
 
 
 class GraphQLQuery:
-
     def __init__(self, filter_functions: list = [], sort_functions: list = [], limit: int = False, filter_logic="AND"):
-        """ Creates a new object of  class GraphQLQuery
+        """Creates a new object of class GraphQLQuery.
 
-        :param filter_functions: a list of filter functions that will be applied to this GraphQL query
-        :param sort_functions: a list of sort functions that will be applied to this GraphQL query
-        :param limit: a limit that determines the amount of files that will be downloaded with this GraphQL query
-        :param filter_logic: the logic that will be used for all filters
+        Args:
+            filter_functions (list, optional): List of filter functions to be applied to the GraphQL query. Defaults to [].
+            sort_functions (list, optional): List of sort functions to be applied to the GraphQL query. Defaults to [].
+            limit (int, optional): Limit that determines the amount of files to be downloaded with the GraphQL query. Defaults to False.
+            filter_logic (str, optional): Logic to be used for all filters. Defaults to "AND".
         """
         self.filter_functions = filter_functions
         self.sort_functions = sort_functions
@@ -59,9 +62,10 @@ class GraphQLQuery:
         self.filter_logic = Argument(name="filterLogicOption", value=filter_logic)
 
     def _get_filter_functions(self) -> Argument:
-        """ This functions returns all filter functions as arguments for the GraphQL query
+        """Returns all filter functions as arguments for the GraphQL query.
 
-        :return: graphql_query Argument containing all filter functions
+        Returns:
+            graphql_query.Argument: Argument containing all filter functions.
         """
         filter_functions = Argument(
             name="filterFunctions",
@@ -70,9 +74,10 @@ class GraphQLQuery:
         return filter_functions
 
     def _get_sort_functions(self) -> Argument:
-        """ This functions returns all sort functions as arguments for the GraphQL query
+        """Returns all sort functions as arguments for the GraphQL query.
 
-        :return: graphql_query Argument containing all sort functions
+        Returns:
+            graphql_query.Argument: Argument containing all sort functions.
         """
         sort_functions = Argument(
             name="sortFunctions",
@@ -81,11 +86,14 @@ class GraphQLQuery:
         return sort_functions
 
     def _get_arguments(self, filter_functions: Argument, sort_functions: Argument):
-        """ This functions returns all necessary arguments for the GraphQl query
+        """Returns all necessary arguments for the GraphQL query.
 
-        :param filter_functions: graphql_query Argument containing all sort functions
-        :param sort_functions: graphql_query Argument containing all filter functions
-        :return: graphql_query Argument
+        Args:
+            filter_functions (graphql_query.Argument): Argument containing all filter functions.
+            sort_functions (graphql_query.Argument): Argument containing all sort functions.
+
+        Returns:
+            list: List of GraphQL query arguments.
         """
         arguments = [
             filter_functions,
@@ -98,22 +106,20 @@ class GraphQLQuery:
         return arguments
 
     def generate_query(self) -> str:
-        """ This functions creates a new graphql in the correct String format by using all the arguments provided to
-        this object
+        """Creates a new GraphQL query in the correct string format by using all the arguments provided to this object.
 
-        :return: String containing the graphQl query
+        Returns:
+            str: String containing the GraphQL query.
         """
-
-        # get all arguments into a list
+        # Get all arguments into a list
         filter_functions = self._get_filter_functions()
         sort_functions = self._get_sort_functions()
         arguments = self._get_arguments(filter_functions, sort_functions)
 
-        # create new query
+        # Create new query
         query = Query(
-            name="mdhSearch", # name of query
-            arguments=arguments, # list of arguments
-            # all fields of this query
+            name="mdhSearch",  # Name of the query
+            arguments=arguments,  # List of arguments
             fields=[
                 "totalFilesCount",
                 "returnedFilesCount",
@@ -129,20 +135,21 @@ class GraphQLQuery:
                 )
             ]
         )
-        operation = Operation(type="query", queries=[query]) # transform query into an operation
+        operation = Operation(type="query", queries=[query])  # Transform query into an operation
 
-        # return the rendered version of the executed query as string
+        # Return the rendered version of the executed query as a string
         return operation.render()
 
 
 # How to use:
-# 1. create one or more filter functions (optional)
-    # e.g.: f = FilterFunction(tag="MdhTimestamp", value="1", operation="GREATER", date_type="TS")
-# 2. create one or more sort functions (optional)
-    # e.g.: s = SortFunction(tag="FileName", operation="DESC")
-# 3. create a GraphQLQuery (parameters are optional)
-    # q = GraphQLQuery(filter_functions=[f], sort_functions=[s], limit=1000, filter_logic="AND")
-# 4. generate the query string
-    # query_string = q.generate_query()
-# finally the query_string can be written into a GraphQL file
+# 1. Create one or more filter functions (optional)
 
+f = FilterFunction(tag="MdhTimestamp", value="1", operation="GREATER", data_type="TS")
+
+s = SortFunction(tag="FileName", operation="DESC")
+
+q = GraphQLQuery(filter_functions=[f], sort_functions=[s], limit=1000, filter_logic="AND")
+
+query_string = q.generate_query()
+
+# Finally, the query_string can be written into a GraphQL file.
