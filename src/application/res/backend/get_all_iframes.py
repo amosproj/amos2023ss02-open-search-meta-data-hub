@@ -17,7 +17,6 @@ def get_iframes():
     response = requests.get(url, headers=headers)
     response_data = response.json()
     visualizations = response_data.get('saved_objects', [])
-
     iframe_data = []
     for obj in visualizations:
         if obj.get('id') and obj.get('type') == 'visualization':

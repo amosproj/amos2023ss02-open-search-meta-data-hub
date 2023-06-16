@@ -1,4 +1,3 @@
-
 from graphql_query import Argument, Operation, Query, Field
 
 
