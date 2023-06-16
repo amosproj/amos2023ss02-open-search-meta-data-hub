@@ -3,6 +3,8 @@ import os
 import pathlib
 import subprocess
 
+from graphql_queries import FilterFunction, SortFunction, GraphQLQuery
+
 import mdh
 from dotenv import load_dotenv
 from pathlib import Path
@@ -76,41 +78,9 @@ class MetaDataHubManager:
             file.write(contents)
 
     def _generate_query(self, timestamp, limit):
-        gql_query = """
-            query {
-                mdhSearch(
-                    filterFunctions: [
-                        {
-                            tag: "MdHTimestamp",
-                            value: "%s",
-                            operation: GREATER,
-                            dataType: TS
-                        }
-                    ],
-                    filterLogicOption: AND,
-                    limit: %d
-                ) {
-                    totalFilesCount
-                    returnedFilesCount
-                    instanceName
-                    timeZone
-                    fixedReturnColumnSize
-                    limitedByLicensing
-                    queryStatusAsText
-                    dataTypes {
-                        name
-                        type
-                    }
-                    files {
-                        metadata {
-                            name
-                            value
-                        }
-                    }
-                }
-            }
-            """ % (timestamp, limit)
-        self._write_file(self.format_query(gql_query))
+        f = FilterFunction(tag="MdhTimestamp", value=timestamp, operation="GREATER", data_type="TS")
+        gql_query = GraphQLQuery(filter_functions=[],limit=limit, filter_logic="AND")
+        self._write_file(self.format_query(gql_query.generate_query()))
         return gql_query
 
     def format_query(self, gql_query: str) -> str:
