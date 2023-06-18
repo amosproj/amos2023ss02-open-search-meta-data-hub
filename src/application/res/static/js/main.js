@@ -13,16 +13,17 @@ $(document).ready(function(){
 
   let rowIdx = 0;
 
-$('#addRow').on('click', function () {
+  $('#addRow').on('click', function () {
     // Increment the row index when button is clicked
     rowIdx++;
 
     // Create the new row with incremented indices
+    var options = $("#entry-0-metadata_tag > option").clone();
     $('#formRow').after(`
         <div id="row${rowIdx}" class="row">
             <div class="col-md-3">
                 <label for="metadata_tag${rowIdx}">Metadata tag</label><br>
-                <input type="text" id="metadata_tag${rowIdx}" name="entry-${rowIdx}-metadata_tag" class="form-control"/>
+                <select class="form-control" id="entry-${rowIdx}-metadata_tag" name="entry-${rowIdx}-metadata_tag"></select>
             </div>
             <div class="col-md-3">
                 <label for="condition${rowIdx}">Condition</label><br>
@@ -53,6 +54,8 @@ $('#addRow').on('click', function () {
         </div>
     `);
 
+    $("#entry-"+rowIdx+"-metadata_tag").append(options);
+
     // Attach click event to the Remove button
     $('#removeRow' + rowIdx).on('click', function () {
         $(this).closest('div.row').remove();
@@ -69,7 +72,7 @@ function showDetails(button) {
   var hit = JSON.parse(button.dataset.hit);
 
   // Create a table with the details
-  var table = '<table class="table">';
+  var table = '<table class="table wrap-text">';
   for (var key in hit) {
       table += '<tr><th>' + key + '</th><td>' + hit[key] + '</td></tr>';
   }
