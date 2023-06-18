@@ -1,7 +1,11 @@
 import time
 from opensearchpy import OpenSearch
 from opensearchpy.exceptions import ConnectionError, NotFoundError, TransportError, RequestError
+from enum import Enum
+import json
 
+
+# from helper_class import Operator
 
 class OpenSearchManager:
     """
@@ -271,15 +275,21 @@ class OpenSearchManager:
                 data_type = self.get_datatype(index_name, search_field)
                 search_content = search_info[search_field]['search_content']
                 operator = search_info[search_field]['operator']
-                sub_queries.append(self._get_sub_query(data_type, operator, search_field, search_content))
+                weight = search_info[search_field]['weight']
+                sub_queries.append(self._get_sub_query(data_type, operator, search_field, weight,search_content))
         if sub_queries:
             query = self._get_query(sub_queries)
         else:
             query = {"query": {"exists": {"field": " "}}}
+        print("Advanced_query:",query)
+
         response = self._client.search(
             body=query,
             index=index_name
         )
+        #for testing
+        with open("advanved_query_result.json", "w") as json_file:
+            json.dump(response, json_file)
 
         return response
 
@@ -302,7 +312,7 @@ class OpenSearchManager:
         return query
 
     @staticmethod
-    def _get_sub_query(data_type: str, operator: str, search_field: str, search_content: any) -> tuple:
+    def _get_sub_query(data_type: str, operator: str, search_field: str, weight: str,search_content: any) -> tuple:
         """Returns a subquery that can be used to create a complete query.
 
           Args:
@@ -316,27 +326,27 @@ class OpenSearchManager:
 
           """
         if data_type == 'float' or data_type == 'date':
-            if operator == 'EQUALS':
-                return {'term': {search_field: {'value': search_content}}}, 'must'
-            elif operator == 'GREATER_THAN':
-                return {'range': {search_field: {'gt': search_content}}}, 'must'
-            elif operator == 'LESS_THAN':
-                return {'range': {search_field: {'lt': search_content}}}, 'must'
+            if operator == Operator.EQUALS.value: #'EQUALS':
+                return {'term': {search_field: {'value': search_content,'boost':weight}}}, 'must'
+            elif operator == Operator.GREATER_THAN.value: #'GREATER_THAN':
+                return {'range': {search_field: {'gt': search_content, 'boost':weight}}}, 'must'
+            elif operator == Operator.EQUALS.value: #'LESS_THAN':
+                return {'range': {search_field: {'lt': search_content,'boost':weight}}}, 'must'
             elif operator == 'GREATER_THAN_OR_EQUALS':
-                return {'range': {search_field: {'gte': search_content}}}, 'must'
+                return {'range': {search_field: {'gte': search_content, 'boost':weight}}}, 'must'
             elif operator == 'LESS_THAN_OR_EQUALS':
-                return {'range': {search_field: {'lte': search_content}}}, 'must'
-            elif operator == 'NOT_EQUALS':
-                return {'term': {search_field: {'value': search_content}}}, 'must_not'
+                return {'range': {search_field: {'lte': search_content,'boost':weight}}}, 'must'
+            elif operator == Operator.EQUALS.value: #'NOT_EQUALS':
+                return {'term': {search_field: {'value': search_content,'boost':weight}}}, 'must_not'
             else:
-                return {'term': {search_field: {'value': search_content}}}, 'must'
+                return {'term': {search_field: {'value': search_content,'boost':weight}}}, 'must'
         elif data_type == 'text':
-            if operator == 'EQUALS':
-                return {"wildcard": {search_field: {"value": "*" + search_content + "*"}}}, 'must'
-            elif operator == 'NOT_EQUALS':
-                return {"wildcard": {search_field: {"value": "*" + search_content + "*"}}}, 'must_not'
+            if operator == Operator.EQUALS.value:#'EQUALS':
+                return {"wildcard": {search_field: {"value": "*" + search_content + "*", 'boost':weight}}}, 'must'
+            elif operator == Operator.NOT_EQUALS.value:#'NOT_EQUALS':
+                return {"wildcard": {search_field: {"value": "*" + search_content + "*", 'boost':weight}}}, 'must_not'
             else:
-                return {"wildcard": {search_field: {"value": "*" + search_content + "*"}}}, 'must'
+                return {"wildcard": {search_field: {"value": "*" + search_content + "*", 'boost':weight}}}, 'must'
 
     def get_latest_timestamp(self, index_name) -> str:
         """ This function gets the data of the newest file uploaded to the OpenSearch Node regarding the date of upload
@@ -374,3 +384,13 @@ class OpenSearchManager:
             return "1111-11-11 11:11:11"
         except RequestError:
             return "1111-11-11 11:11:11"
+
+
+#Helper class that enumerat all operators
+class Operator(Enum):
+    EQUALS = 'is_equal'
+    NOT_EQUALS = 'is_not_equal'
+    GREATER_THAN = 'is_greater'
+    LESS_THAN = 'is_smaller'
+    GREATER_THAN_OR_EQUALS = 'is_greater_or_equal'
+    LESS_THAN_OR_EQUALS = 'is_smaller_or_equal'
