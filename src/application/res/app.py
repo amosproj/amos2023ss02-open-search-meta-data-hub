@@ -3,9 +3,10 @@ import json
 from flask import Flask
 from flask import render_template
 from flask import request
+from flask import session
 from flask_bootstrap import Bootstrap5
 from flask_wtf import FlaskForm, CSRFProtect
-from wtforms import StringField, SelectField, FieldList, FormField, Form, SubmitField
+from wtforms import StringField, SelectField, FieldList, FormField, Form, SubmitField, IntegerField, validators
 from wtforms.validators import DataRequired
 from backend.opensearch_api import OpenSearchManager
 from backend import files_type
@@ -41,6 +42,8 @@ class AdvancedEntryForm(FlaskForm):
         ('is_greater', 'is greater'), 
         ('is_smaller', 'is smaller')])
     value = StringField('Value')
+    weight = IntegerField('Weight', [validators.NumberRange(min=1, max=100, message="Weight must be between 1 and 100")],default=1)
+
 
 class AdvancedSearchForm(FlaskForm):
     entry = FieldList(FormField(AdvancedEntryForm), min_entries=1)
@@ -80,6 +83,7 @@ def index():
 
 @app.route('/search', methods=['GET', 'POST'])
 def search():
+    session['last_form'] = 'simple'
     simpleSearchForm = SimpleSearchForm()
     simpleSearchResult = ""
     advancedSearchForm = AdvancedSearchForm()
@@ -87,6 +91,7 @@ def search():
     if simpleSearchForm.validate_on_submit():
         searchValue = simpleSearchForm.searchValue.data
         resultTmp = os_manager.simple_search("amoscore", searchValue)
+        session['last_form'] = 'simple'
         if len(resultTmp)>0:
             simpleSearchResult=renderResult(resultTmp)
         else:
@@ -100,21 +105,23 @@ def search():
             parameter_name = entry['metadata_tag']
             search_content = entry['value']
             operator = entry['condition']
-            # weight=entry['weight']
+            weight=entry['weight']
             search_info[parameter_name] = {
                 'search_content': search_content,
                 'operator': operator,
-                'weight': DEFAULT_WEIGHT-i
+                #'weight': DEFAULT_WEIGHT-i
+                'weight': weight
             }
             i+=0.5
             print(search_info)
         resultTmp = os_manager.advanced_search(index_name="amoscore", search_info=search_info)
+        session['last_form'] = 'advanced'
         if len(resultTmp)>0:
             advancedSearchResult=renderResult(resultTmp)
         else:
             advancedSearchResult="No results found."
 
-    return render_template('search.html',simpleSearchForm=simpleSearchForm,simpleSearchResult=simpleSearchResult, advancedSearchForm=advancedSearchForm, advancedSearchResult=advancedSearchResult)
+    return render_template('search.html',simpleSearchForm=simpleSearchForm,simpleSearchResult=simpleSearchResult, advancedSearchForm=advancedSearchForm, advancedSearchResult=advancedSearchResult,last_form=session.get('last_form'))
 
 #@app.route('/search/simple')
 #def search_simple():

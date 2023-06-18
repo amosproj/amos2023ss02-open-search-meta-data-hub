@@ -13,7 +13,8 @@
     </div>
 </div>
 
-<div id="simpleSearch" class="mt-3 text-end">
+<div id="simpleSearch" class="mt-3 text-end" {% if last_form != 'simple' %}style="display: none;"{% endif %}>
+
 
     <form method="POST">
       {{ simpleSearchForm.hidden_tag() }}
@@ -28,7 +29,7 @@
 
 </div>
 
-<div id="advancedSearch" class="mt-3 text-end" style="display: none;">
+<div id="advancedSearch" class="mt-3 text-end" {% if last_form != 'advanced' %}style="display: none;"{% endif %}>
 
   <form class="myform" method="POST">
     {{ advancedSearchForm.hidden_tag() }}
@@ -63,6 +64,8 @@
                 {{ advancedSearchForm.entry[0].value(class="form-control") }}
             </div>
             <div class="col-md-3">
+              {{ advancedSearchForm.entry[0].weight.label }}<br>
+              {{ advancedSearchForm.entry[0].weight(class="form-control") }}
             </div>
         </div>
     </div>
