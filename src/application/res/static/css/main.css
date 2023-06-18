@@ -87,3 +87,23 @@ body {
     table-layout: fixed;
     width: 100%;
 }
+
+.formRow{
+    margin-bottom: 10px;
+}
+
+.table {
+    border: none;
+}
+.table td, .table th {
+    border: none;
+    text-align: left;
+
+}
+.table thead th:last-child {
+    text-align: right;
+}
+
+.table tbody td:last-child {
+    text-align: right;
+}

@@ -20,7 +20,7 @@ $(document).ready(function(){
     // Create the new row with incremented indices
     var options = $("#entry-0-metadata_tag > option").clone();
     $('#formRow').after(`
-        <div id="row${rowIdx}" class="row">
+        <div id="row${rowIdx}" class="row formRow">
             <div class="col-md-3">
                 <label for="metadata_tag${rowIdx}">Metadata tag</label><br>
                 <select class="form-control" id="entry-${rowIdx}-metadata_tag" name="entry-${rowIdx}-metadata_tag"></select>
@@ -48,8 +48,12 @@ $(document).ready(function(){
                 <label for="value${rowIdx}">Value</label><br>
                 <input type="text" id="value${rowIdx}" name="entry-${rowIdx}-value" class="form-control"/>
             </div>
-            <div class="col-md-3">
-                <button id="removeRow${rowIdx}" type="button" class="btn btn-danger">Remove</button>
+            <div class="col-md-2">
+              <label for="entry-0-weight">Weight</label><br>
+              <input class="form-control" id="entry-${rowIdx}-weight" max="100" min="1" name="entry-${rowIdx}-weight" type="number" value="1">
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+            <button id="removeRow${rowIdx}" type="button" class="btn btn-danger">Remove</button>
             </div>
         </div>
     `);
