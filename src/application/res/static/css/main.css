@@ -81,3 +81,9 @@ body {
     height: 700px;
     border: none;
 }
+
+.wrap-text{
+    word-wrap: break-word;
+    table-layout: fixed;
+    width: 100%;
+}
