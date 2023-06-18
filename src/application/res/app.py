@@ -14,6 +14,7 @@ import pandas as pd
 from backend import get_all_iframes
 import urllib
 
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secrets.token_hex(16)
 
@@ -63,8 +64,9 @@ def renderResult(input):
         'Details': '<button class="btn btn-info" onclick="showDetails(this)" data-hit=\'{}\'>Show Details</button>'.format(json.dumps(item['_source']))
     } for idx, item in enumerate(hits_list)])
     # Convert the DataFrame to HTML and apply Bootstrap classes
-    html_output = df.to_html(index=False, classes="table table-striped", escape=False)
-    return html_output
+    df_html = df.to_html(index=False, classes="table", escape=False)
+
+    return df_html
 
 
 """Rendering start page of the website"""

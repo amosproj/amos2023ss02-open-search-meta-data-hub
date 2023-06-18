@@ -19,7 +19,7 @@
     <form method="POST">
       {{ simpleSearchForm.hidden_tag() }}
       <div class="row">
-        <label for="searchValue" class="col-md-2">{{ simpleSearchForm.searchValue.label }}:</label> 
+        <label for="searchValue" class="col-md-2">SearchValue:</label> 
         {{ simpleSearchForm.searchValue(class_="form-control col-md-8") }}
         <input type="submit" class="btn btn-primary col-md-2" value="Submit" name="simple-submit">
 
@@ -34,7 +34,7 @@
   <form class="myform" method="POST">
     {{ advancedSearchForm.hidden_tag() }}
     <div class="form-container" id="form-container">
-        <div class="row" id="formRow">
+        <div class="row formRow" id="formRow">
             <div class="col-md-3">
                 {{ advancedSearchForm.entry[0].metadata_tag.label }}<br>
                 {{ advancedSearchForm.entry[0].metadata_tag(class="form-control") }}
@@ -63,9 +63,11 @@
                 {{ advancedSearchForm.entry[0].value.label }}<br>
                 {{ advancedSearchForm.entry[0].value(class="form-control") }}
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
               {{ advancedSearchForm.entry[0].weight.label }}<br>
               {{ advancedSearchForm.entry[0].weight(class="form-control") }}
+            </div>
+            <div class="col-md-1">
             </div>
         </div>
     </div>
