@@ -19,7 +19,7 @@ app.config['SECRET_KEY'] = secrets.token_hex(16)
 bootstrap = Bootstrap5(app)
 csrf = CSRFProtect(app)
 
-os_manager: OpenSearchManager = OpenSearchManager(localhost=True)
+os_manager: OpenSearchManager = OpenSearchManager(localhost=False)
 
     
 class SimpleSearchForm(FlaskForm):
@@ -93,13 +93,14 @@ def search():
             simpleSearchResult="No results found."
     
     if advancedSearchForm.validate_on_submit():
-        DEFAULT_WEIGHT=3
+        DEFAULT_WEIGHT=3 # for testing
         i=0
         search_info = {}
         for entry in advancedSearchForm.entry.data:
             parameter_name = entry['metadata_tag']
             search_content = entry['value']
             operator = entry['condition']
+            # weight=entry['weight']
             search_info[parameter_name] = {
                 'search_content': search_content,
                 'operator': operator,
@@ -143,4 +144,4 @@ def visualizations():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8001,debug=True)
+    app.run(host='0.0.0.0', port=8000,debug=True)
