@@ -287,10 +287,6 @@ class OpenSearchManager:
             body=query,
             index=index_name
         )
-        #for testing
-        with open("advanved_query_result.json", "w") as json_file:
-            json.dump(response, json_file)
-
         return response
 
     @staticmethod
@@ -330,6 +326,8 @@ class OpenSearchManager:
                 return {'term': {search_field: {'value': search_content,'boost':weight}}}, 'must'
             elif operator == Operator.GREATER_THAN.value: #'GREATER_THAN':
                 return {'range': {search_field: {'gt': search_content, 'boost':weight}}}, 'must'
+            elif operator == Operator.LESS_THAN.value:
+                return {'range': {search_field: {'lte': search_content,'boost':weight}}}, 'must'
             elif operator == Operator.EQUALS.value: #'LESS_THAN':
                 return {'range': {search_field: {'lt': search_content,'boost':weight}}}, 'must'
             elif operator == 'GREATER_THAN_OR_EQUALS':
@@ -342,7 +340,8 @@ class OpenSearchManager:
                 return {'term': {search_field: {'value': search_content,'boost':weight}}}, 'must'
         elif data_type == 'text':
             if operator == Operator.EQUALS.value:#'EQUALS':
-                return {"wildcard": {search_field: {"value": "*" + search_content + "*", 'boost':weight}}}, 'must'
+                return {"term": {search_field+".keyword": {"value": search_content, 'boost':weight}}}, 'must'
+                # return {"wildcard": {search_field: {"value": "*" + search_content + "*", 'boost':weight}}}, 'must'
             elif operator == Operator.NOT_EQUALS.value:#'NOT_EQUALS':
                 return {"wildcard": {search_field: {"value": "*" + search_content + "*", 'boost':weight}}}, 'must_not'
             else:
