@@ -97,3 +97,13 @@ function showDetails(button) {
     });
   });
 
+  //show Visualization
+  function showVisualization(title,iframe_code) {
+    var iframe = '<tr class="iframeRow" style="display: none;"><td colspan="3">' + iframe_code + '</td></tr>';
+    document.getElementById('detailsTable').innerHTML = iframe;
+    document.getElementById('exampleModalLabel').innerHTML = title;
+
+    // Show the modal
+    $('#iframeModal').modal('show');
+  }
+  
