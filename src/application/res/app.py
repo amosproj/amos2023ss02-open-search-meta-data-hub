@@ -14,7 +14,6 @@ import pandas as pd
 from backend import get_all_iframes
 import urllib
 
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secrets.token_hex(16)
 
@@ -49,8 +48,6 @@ class AdvancedEntryForm(FlaskForm):
 class AdvancedSearchForm(FlaskForm):
     entry = FieldList(FormField(AdvancedEntryForm), min_entries=1)
     submit = SubmitField('Submit')
-
-
 
 def renderResult(input):
     # Extract the relevant list from the dictionary
@@ -139,14 +136,23 @@ def advanced_search_v2():
 #    labels, values, colors = files_type.get_files_type()
 #    return render_template('doughnut_chart.html', max=17000, set=zip(values, labels, colors))
 
-
 @app.route('/visualizations')
 def visualizations():
     iframe_data = get_all_iframes.get_iframes()
-    return render_template('visualizations.html', iframe_data=iframe_data)
 
+    # Pagination settings
+    page = int(request.args.get('page', 1))
+    per_page = 10  # Number of items per page
+    total_items = len(iframe_data)
+    total_pages = (total_items + per_page - 1) // per_page  # Calculate total pages
 
+    # Get the current page's data
+    start = (page - 1) * per_page
+    end = start + per_page
+    current_page_data = iframe_data[start:end]
+
+    return render_template('visualizations.html', iframe_data=current_page_data, page=page, total_pages=total_pages)
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
+    app.run(host='0.0.0.0', port=8000)    
