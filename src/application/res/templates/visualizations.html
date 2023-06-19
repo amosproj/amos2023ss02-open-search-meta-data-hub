@@ -5,31 +5,48 @@
 <br>
 <h1>{% block title %}Visualizations{% endblock %}</h1>
 <br>
+{% if iframe_data %}
 <table class="table table-striped">
   <thead>
     <tr>
       <th scope="col">Title</th>
       <th scope="col">Type</th>
       <th scope="col">Last Update</th>
+      <th scope="col"></th>
     </tr>
   </thead>
   <tbody>
     {% for item in iframe_data %}
     <tr>
-      <td class="title" >{{ item.title }}</td>
+      <td>{{ item.title }}</td>
       <td>{{ item.type }}</td>
       <td>{{ item.updated_at }}</td>
-    </tr>
-    <tr class="iframeRow" style="display: none;">
-      <td colspan="3">
-        {% if item.iframe_code %}
-        {{ item.iframe_code | safe }}
-        {% endif %}
-      </td>
+      <td><button class="btn btn-info" onclick="showVisualization('{{ item.title }}','{{ item.iframe_code}}')">Visualize</button></td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+{% else %}
+<p class="no-visualizations">No visualizations available. Please add visualizations to your OpenSearch Dashboard first.</p>
+{% endif %}
+
+<div class="modal fade" id="iframeModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl"> <!-- Added 'modal-lg' class for larger size -->
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel"></h5>
+        <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="detailsTable">
+        <!-- The JavaScript function will insert the details table here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 
 {% endblock %}
+

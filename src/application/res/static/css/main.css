@@ -10,11 +10,6 @@
         border: none;
     }
 
-    .title {
-        color: blue;
-        cursor: pointer;
-    }
-
 
 body {
 
@@ -92,6 +87,7 @@ body {
     margin-bottom: 10px;
 }
 
+
 .table {
     border: none;
 }
@@ -107,3 +103,9 @@ body {
 .table tbody td:last-child {
     text-align: right;
 }
+
+.no-visualizations {
+    font-size: 22px;
+    font-style: italic;
+    color: #000000;
+  }
