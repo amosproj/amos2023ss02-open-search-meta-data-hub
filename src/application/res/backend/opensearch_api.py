@@ -298,8 +298,8 @@ class OpenSearchManager:
         the value 'must' or 'must_not'.
         :return: Returns a query that can be used to search in OpenSearch.
         """
-
-        query = {'query': {'bool': {}}}
+        #The default size is 10, now it goes to 100 for example!
+        query = {'size':100,'query': {'bool': {}}}
         for sub_query, functionality in sub_queries:
             if functionality not in query['query']['bool']:
                 query['query']['bool'][functionality] = [sub_query]
