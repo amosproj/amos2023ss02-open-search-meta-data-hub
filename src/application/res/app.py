@@ -9,7 +9,6 @@ from flask_wtf import FlaskForm, CSRFProtect
 from wtforms import StringField, SelectField, FieldList, FormField, Form, SubmitField, IntegerField, validators
 from wtforms.validators import DataRequired
 from backend.opensearch_api import OpenSearchManager
-from backend import files_type
 import pandas as pd
 from backend import get_all_iframes
 import urllib
@@ -130,11 +129,6 @@ def search():
 @app.route('/search/advanced_v2')
 def advanced_search_v2():
     return render_template('index1.html')
-
-#@app.route('/files_type_chart')
-#def files_type_chart():
-#    labels, values, colors = files_type.get_files_type()
-#    return render_template('doughnut_chart.html', max=17000, set=zip(values, labels, colors))
 
 @app.route('/visualizations')
 def visualizations():
