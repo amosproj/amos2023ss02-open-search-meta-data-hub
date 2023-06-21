@@ -2,6 +2,7 @@ import time
 from datetime import datetime
 from mdh_api import MetaDataHubManager
 import sys
+
 import os
 
 # Get the path to the parent directory
@@ -151,8 +152,8 @@ def execute_pipeline():
     print("--> Time needed: %s seconds!" % (time.time() - start_time_connecting))
 
     # get the timestamp of the latest data import
-    latest_timestamp = os_manager.get_latest_timestamp(index_name=instance_name)
-
+    # latest_timestamp = os_manager.get_latest_timestamp(index_name=instance_name)
+    latest_timestamp = '1111-11-11 11:11:11'
     # MdH data extraction
     print(f"2. Starting to download data from '{instance_name}' in MdH that was added after "
           f"{(latest_timestamp, 'begin')[latest_timestamp == '1111-11-11 11:11:11']}.")

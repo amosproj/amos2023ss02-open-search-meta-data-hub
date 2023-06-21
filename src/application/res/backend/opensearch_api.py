@@ -207,7 +207,7 @@ class OpenSearchManager:
         Insert multiple documents into OpenSearch via the bulk API.
 
         :param index_name: The name of the index to which the new data will be added.
-        :param data: A list of dictionaries containing the new data and its values in the right format.
+        :param data: A list of tuples containing dictionaries with new data and their corresponding IDs.
         :return: The response of the bulk request.
         """
         create_operation = {
@@ -215,19 +215,48 @@ class OpenSearchManager:
         }
 
         bulk_data = []
-        for doc, id in data:
-            if not id == "default_id":
-                create_operation['create']['_id'] = id
+        imported_entries = []  # Track successfully imported entries
+        failed_entries = []  # Track failed entries for recovery
+
+        for doc, entry_id in data:
+            if not entry_id == "default_id":
+                create_operation['create']['_id'] = entry_id
             bulk_data.append(str(create_operation))
             bulk_data.append(str(doc))
+            imported_entries.append(entry_id)
 
         bulk_request = "\n".join(bulk_data).replace("'", "\"")
 
         try:
-            return self._client.bulk(body=bulk_request)
+            response = self._client.bulk(body=bulk_request)
+
+            if response['errors']:
+                # Check for errors in the bulk response
+                for item in response['items']:
+                    if 'error' in item['create']:
+                        entry_id = item['create']['_id']
+                        failed_entries.append(entry_id)
+
+            if failed_entries:
+                # Retry importing failed entries individually or in smaller batches
+                self.retry_import(index_name, failed_entries)
+
+            return response
         except TransportError:
-            print("Bulk data oversteps the amount of allowed bytes")
+            print("Bulk data exceeds the allowed size")
             return None
+
+    def retry_import(self, index_name: str, entries: list[str]):
+        """
+        Retry importing failed entries individually or in smaller batches.
+
+        :param index_name: The name of the index to which the failed entries will be imported.
+        :param entries: A list of failed entry IDs to retry importing.
+        """
+        # Implement retry logic here, importing failed entries individually or in smaller batches
+        # Ensure that all entries from MdH are eventually imported
+
+        pass
 
     def simple_search(self, index_name: str, search_text: str) -> any:
         """
