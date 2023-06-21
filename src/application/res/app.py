@@ -12,6 +12,9 @@ from backend.opensearch_api import OpenSearchManager
 from backend.os_dashboard_api import OSDashboardManager
 import pandas as pd
 import urllib
+from backend.helper_functions import create_config_parser
+
+config=create_config_parser()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secrets.token_hex(16)
@@ -19,8 +22,8 @@ app.config['SECRET_KEY'] = secrets.token_hex(16)
 bootstrap = Bootstrap5(app)
 csrf = CSRFProtect(app)
 
-os_manager: OpenSearchManager = OpenSearchManager(localhost=False)
 os_dashboard_manager : OSDashboardManager = OSDashboardManager(localhost=False)
+os_manager: OpenSearchManager = OpenSearchManager(localhost=config.get('General','localhost'))
 
     
 class SimpleSearchForm(FlaskForm):

@@ -3,6 +3,9 @@ from opensearchpy import OpenSearch
 from opensearchpy.exceptions import ConnectionError, NotFoundError, TransportError, RequestError
 from enum import Enum
 import json
+from dotenv import load_dotenv
+import os
+
 
 
 # from helper_class import Operator
@@ -42,7 +45,8 @@ class OpenSearchManager:
 
         # Create the client with SSL/TLS and hostname verification disabled
         # Port on which the OpenSearch node runs
-        auth = ('admin', 'admin')  # For testing only. Don't store credentials in code.
+        load_dotenv()  # load the environment
+        auth = (os.getenv("OS_USER"), os.getenv("OS_PASSWORD"))  # credentials are loaded from the .env file
         self._client = OpenSearch(
             hosts=[{'host': self._host, 'port': self._port}],  # Host and port to connect with
             http_auth=auth,  # Credentials
