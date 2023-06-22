@@ -253,10 +253,54 @@ class OpenSearchManager:
         :param index_name: The name of the index to which the failed entries will be imported.
         :param entries: A list of failed entry IDs to retry importing.
         """
-        # Implement retry logic here, importing failed entries individually or in smaller batches
-        # Ensure that all entries from MdH are eventually imported
+        batch_size = 100  # Set the desired batch size for retrying failed entries
 
-        pass
+        for i in range(0, len(entries), batch_size):
+            batch_entries = entries[i:i + batch_size]
+
+            for entry_id in batch_entries:
+                success = False
+                retries = 3  # Number of retry attempts per entry
+
+                while not success and retries > 0:
+                    try:
+                        # Import the individual entry or batch of entries
+                        self.import_entry(entry_id, index_name)
+                        success = True
+                    except Exception as e:
+                        print(f"Failed to import entry '{entry_id}': {str(e)}")
+                        retries -= 1
+
+                        if retries > 0:
+                            print("Retrying...")
+                            # Implement any necessary delay or backoff mechanism before retrying
+
+            if not success:
+                print(f"Failed to import batch of entries: {batch_entries}")
+
+    def import_entry(entry_id: str, index_name: str):
+        """
+        Import an individual entry into the specified index.
+
+        :param entry_id: The ID of the entry to import.
+        :param index_name: The name of the index to which the entry will be imported.
+        """
+        # Implement the logic to import an individual entry to the specified index
+        # You can use the existing import functionality or customize it based on your requirements
+
+        # Example code:
+        try:
+            entry_data = fetch_entry_from_mdh(entry_id)  # Fetch entry data from the MdH using the entry ID
+            response = self._client.create(index=index_name,
+                                           body=entry_data)  # Perform the import using the OpenSearch client
+
+            if response.get("result") == "created":
+                print(f"Successfully imported entry '{entry_id}' to index '{index_name}'")
+            else:
+                print(f"Failed to import entry '{entry_id}' to index '{index_name}': Unknown error")
+
+        except Exception as e:
+            print(f"Failed to import entry '{entry_id}' to index '{index_name}': {str(e)}")
 
     def simple_search(self, index_name: str, search_text: str) -> any:
         """
