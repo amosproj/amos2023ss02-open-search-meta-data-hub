@@ -10,11 +10,6 @@
         border: none;
     }
 
-    .title {
-        color: blue;
-        cursor: pointer;
-    }
-
 
 body {
 
@@ -81,3 +76,51 @@ body {
     height: 700px;
     border: none;
 }
+
+.wrap-text{
+    word-wrap: break-word;
+    table-layout: fixed;
+    width: 100%;
+}
+
+.formRow{
+    margin-bottom: 10px;
+}
+
+
+.table {
+    border: none;
+}
+.table td, .table th {
+    border: none;
+    text-align: left;
+
+}
+.table thead th:last-child {
+    text-align: right;
+}
+
+.table tbody td:last-child {
+    text-align: right;
+}
+
+.no-visualizations {
+    font-size: 22px;
+    font-style: italic;
+    color: #000000;
+  }
+
+  .page-link{
+    color: #000000;
+
+  }
+
+  .page-item.active .page-link {
+    background-color:#000000;
+    border-color: #000000;
+  }
+
+  .page-item.disabled .page-link {
+    color: #c7c7c7;
+    pointer-events: none;
+  }

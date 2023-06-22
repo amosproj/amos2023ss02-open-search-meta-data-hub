@@ -4,11 +4,12 @@ import json
 from datetime import datetime
 from dateutil import tz
 
+localhost=False
 
 
 def get_iframes():
     # Fetch visualizations
-    url = 'http://opensearch-dashboards:5601/api/saved_objects/_find?type=visualization'
+    url = 'http://localhost:5601/api/saved_objects/_find?type=visualization' if localhost else 'http://opensearch-dashboards:5601/api/saved_objects/_find?type=visualization'
     headers = {
         'Content-Type': 'application/json',
         'kbn-xsrf': 'true'  # Add this header if required by your OpenSearch Dashboards instance
@@ -17,7 +18,6 @@ def get_iframes():
     response = requests.get(url, headers=headers)
     response_data = response.json()
     visualizations = response_data.get('saved_objects', [])
-
     iframe_data = []
     for obj in visualizations:
         if obj.get('id') and obj.get('type') == 'visualization':

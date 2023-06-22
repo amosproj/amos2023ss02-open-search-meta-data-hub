@@ -13,16 +13,17 @@ $(document).ready(function(){
 
   let rowIdx = 0;
 
-$('#addRow').on('click', function () {
+  $('#addRow').on('click', function () {
     // Increment the row index when button is clicked
     rowIdx++;
 
     // Create the new row with incremented indices
+    var options = $("#entry-0-metadata_tag > option").clone();
     $('#formRow').after(`
-        <div id="row${rowIdx}" class="row">
+        <div id="row${rowIdx}" class="row formRow">
             <div class="col-md-3">
                 <label for="metadata_tag${rowIdx}">Metadata tag</label><br>
-                <input type="text" id="metadata_tag${rowIdx}" name="entry-${rowIdx}-metadata_tag" class="form-control"/>
+                <select class="form-control" id="entry-${rowIdx}-metadata_tag" name="entry-${rowIdx}-metadata_tag"></select>
             </div>
             <div class="col-md-3">
                 <label for="condition${rowIdx}">Condition</label><br>
@@ -47,11 +48,17 @@ $('#addRow').on('click', function () {
                 <label for="value${rowIdx}">Value</label><br>
                 <input type="text" id="value${rowIdx}" name="entry-${rowIdx}-value" class="form-control"/>
             </div>
-            <div class="col-md-3">
-                <button id="removeRow${rowIdx}" type="button" class="btn btn-danger">Remove</button>
+            <div class="col-md-2">
+              <label for="entry-0-weight">Weight</label><br>
+              <input class="form-control" id="entry-${rowIdx}-weight" max="100" min="1" name="entry-${rowIdx}-weight" type="number" value="1">
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+            <button id="removeRow${rowIdx}" type="button" class="btn btn-danger">Remove</button>
             </div>
         </div>
     `);
+
+    $("#entry-"+rowIdx+"-metadata_tag").append(options);
 
     // Attach click event to the Remove button
     $('#removeRow' + rowIdx).on('click', function () {
@@ -69,7 +76,7 @@ function showDetails(button) {
   var hit = JSON.parse(button.dataset.hit);
 
   // Create a table with the details
-  var table = '<table class="table">';
+  var table = '<table class="table wrap-text">';
   for (var key in hit) {
       table += '<tr><th>' + key + '</th><td>' + hit[key] + '</td></tr>';
   }
@@ -90,3 +97,13 @@ function showDetails(button) {
     });
   });
 
+  //show Visualization
+  function showVisualization(title,iframe_code) {
+    var iframe = '<tr class="iframeRow" style="display: none;"><td colspan="3">' + iframe_code + '</td></tr>';
+    document.getElementById('detailsTable').innerHTML = iframe;
+    document.getElementById('exampleModalLabel').innerHTML = title;
+
+    // Show the modal
+    $('#iframeModal').modal('show');
+  }
+  
