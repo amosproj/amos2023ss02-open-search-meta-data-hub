@@ -14,7 +14,7 @@ class OpenSearchManager:
      on your specific requirements.
      """
 
-    def __init__(self, localhost: bool = False):
+    def __init__(self, localhost: bool = False, import_all=True):
         """
         Create a new OpenSearchManager for handling the connection to OpenSearch.
 
@@ -25,6 +25,7 @@ class OpenSearchManager:
 
         self._set_host(localhost)  # set the host for the OpenSearch connection
         self._connect_to_open_search()
+        self.import_all = import_all
 
     def _set_host(self, localhost: bool):
         """ Setting the host for the OpenSearch connection
@@ -203,16 +204,7 @@ class OpenSearchManager:
             print(f"No mapping found for index '{index_name}.'")
 
     def perform_bulk(self, index_name: str, data: list[(dict, id)]) -> object:
-        """
-        Insert multiple documents into OpenSearch via the bulk API.
-
-        :param index_name: The name of the index to which the new data will be added.
-        :param data: A list of tuples containing dictionaries with new data and their corresponding IDs.
-        :return: The response of the bulk request.
-        """
-        create_operation = {
-            "create": {"_index": index_name}
-        }
+        create_operation = {"create": {"_index": index_name}}
 
         bulk_data = []
         imported_entries = []  # Track successfully imported entries
@@ -220,7 +212,7 @@ class OpenSearchManager:
 
         for doc, entry_id in data:
             if not entry_id == "default_id":
-                create_operation['create']['_id'] = entry_id
+                create_operation["create"]["_id"] = entry_id
             bulk_data.append(str(create_operation))
             bulk_data.append(str(doc))
             imported_entries.append(entry_id)
@@ -230,77 +222,38 @@ class OpenSearchManager:
         try:
             response = self._client.bulk(body=bulk_request)
 
-            if response['errors']:
+            if response["errors"]:
                 # Check for errors in the bulk response
-                for item in response['items']:
-                    if 'error' in item['create']:
-                        entry_id = item['create']['_id']
+                for item in response["items"]:
+                    if "error" in item["create"]:
+                        entry_id = item["create"]["_id"]
                         failed_entries.append(entry_id)
 
             if failed_entries:
-                # Retry importing failed entries individually or in smaller batches
-                self.retry_import(index_name, failed_entries)
+                if self.import_all:
+                    # Retry importing failed entries individually or in smaller batches
+                    self.retry_import(index_name, failed_entries)
+                else:
+                    # Log or handle the failed entries for further analysis
+                    print("Failed to import entries:", failed_entries)
 
             return response
         except TransportError:
             print("Bulk data exceeds the allowed size")
             return None
 
-    def retry_import(self, index_name: str, entries: list[str]):
+    def retry_import(self, index_name: str, entries: list):
         """
         Retry importing failed entries individually or in smaller batches.
 
-        :param index_name: The name of the index to which the failed entries will be imported.
-        :param entries: A list of failed entry IDs to retry importing.
+        :param index_name: The name of the index to which the entries will be imported.
+        :param entries: List of entry IDs to be retried.
         """
-        batch_size = 100  # Set the desired batch size for retrying failed entries
-
+        batch_size = 100  # Number of entries to import in each batch
         for i in range(0, len(entries), batch_size):
-            batch_entries = entries[i:i + batch_size]
-
-            for entry_id in batch_entries:
-                success = False
-                retries = 3  # Number of retry attempts per entry
-
-                while not success and retries > 0:
-                    try:
-                        # Import the individual entry or batch of entries
-                        self.import_entry(entry_id, index_name)
-                        success = True
-                    except Exception as e:
-                        print(f"Failed to import entry '{entry_id}': {str(e)}")
-                        retries -= 1
-
-                        if retries > 0:
-                            print("Retrying...")
-                            # Implement any necessary delay or backoff mechanism before retrying
-
-            if not success:
-                print(f"Failed to import batch of entries: {batch_entries}")
-
-    def import_entry(entry_id: str, index_name: str):
-        """
-        Import an individual entry into the specified index.
-
-        :param entry_id: The ID of the entry to import.
-        :param index_name: The name of the index to which the entry will be imported.
-        """
-        # Implement the logic to import an individual entry to the specified index
-        # You can use the existing import functionality or customize it based on your requirements
-
-        # Example code:
-        try:
-            entry_data = fetch_entry_from_mdh(entry_id)  # Fetch entry data from the MdH using the entry ID
-            response = self._client.create(index=index_name,
-                                           body=entry_data)  # Perform the import using the OpenSearch client
-
-            if response.get("result") == "created":
-                print(f"Successfully imported entry '{entry_id}' to index '{index_name}'")
-            else:
-                print(f"Failed to import entry '{entry_id}' to index '{index_name}': Unknown error")
-
-        except Exception as e:
-            print(f"Failed to import entry '{entry_id}' to index '{index_name}': {str(e)}")
+            batch_entries = entries[i: i + batch_size]
+            batch_data = [(doc, entry_id) for doc, entry_id in data if entry_id in batch_entries]
+            self.perform_bulk(index_name, batch_data)
 
     def simple_search(self, index_name: str, search_text: str) -> any:
         """
@@ -349,12 +302,12 @@ class OpenSearchManager:
                 search_content = search_info[search_field]['search_content']
                 operator = search_info[search_field]['operator']
                 weight = search_info[search_field]['weight']
-                sub_queries.append(self._get_sub_query(data_type, operator, search_field, weight,search_content))
+                sub_queries.append(self._get_sub_query(data_type, operator, search_field, weight, search_content))
         if sub_queries:
             query = self._get_query(sub_queries)
         else:
             query = {"query": {"exists": {"field": " "}}}
-        print("Advanced_query:",query)
+        print("Advanced_query:", query)
 
         response = self._client.search(
             body=query,
@@ -371,8 +324,8 @@ class OpenSearchManager:
         the value 'must' or 'must_not'.
         :return: Returns a query that can be used to search in OpenSearch.
         """
-        #The default size is 10, now it goes to 100 for example!
-        query = {'size':100,'query': {'bool': {}}}
+        # The default size is 10, now it goes to 100 for example!
+        query = {'size': 100, 'query': {'bool': {}}}
         for sub_query, functionality in sub_queries:
             if functionality not in query['query']['bool']:
                 query['query']['bool'][functionality] = [sub_query]
@@ -381,7 +334,7 @@ class OpenSearchManager:
         return query
 
     @staticmethod
-    def _get_sub_query(data_type: str, operator: str, search_field: str, weight: str,search_content: any) -> tuple:
+    def _get_sub_query(data_type: str, operator: str, search_field: str, weight: str, search_content: any) -> tuple:
         """Returns a subquery that can be used to create a complete query.
 
           Args:
@@ -395,30 +348,30 @@ class OpenSearchManager:
 
           """
         if data_type == 'float' or data_type == 'date':
-            if operator == Operator.EQUALS.value: #'EQUALS':
-                return {'term': {search_field: {'value': search_content,'boost':weight}}}, 'must'
-            elif operator == Operator.GREATER_THAN.value: #'GREATER_THAN':
-                return {'range': {search_field: {'gt': search_content, 'boost':weight}}}, 'must'
+            if operator == Operator.EQUALS.value:  # 'EQUALS':
+                return {'term': {search_field: {'value': search_content, 'boost': weight}}}, 'must'
+            elif operator == Operator.GREATER_THAN.value:  # 'GREATER_THAN':
+                return {'range': {search_field: {'gt': search_content, 'boost': weight}}}, 'must'
             elif operator == Operator.LESS_THAN.value:
-                return {'range': {search_field: {'lte': search_content,'boost':weight}}}, 'must'
-            elif operator == Operator.EQUALS.value: #'LESS_THAN':
-                return {'range': {search_field: {'lt': search_content,'boost':weight}}}, 'must'
+                return {'range': {search_field: {'lte': search_content, 'boost': weight}}}, 'must'
+            elif operator == Operator.EQUALS.value:  # 'LESS_THAN':
+                return {'range': {search_field: {'lt': search_content, 'boost': weight}}}, 'must'
             elif operator == 'GREATER_THAN_OR_EQUALS':
-                return {'range': {search_field: {'gte': search_content, 'boost':weight}}}, 'must'
+                return {'range': {search_field: {'gte': search_content, 'boost': weight}}}, 'must'
             elif operator == 'LESS_THAN_OR_EQUALS':
-                return {'range': {search_field: {'lte': search_content,'boost':weight}}}, 'must'
-            elif operator == Operator.EQUALS.value: #'NOT_EQUALS':
-                return {'term': {search_field: {'value': search_content,'boost':weight}}}, 'must_not'
+                return {'range': {search_field: {'lte': search_content, 'boost': weight}}}, 'must'
+            elif operator == Operator.EQUALS.value:  # 'NOT_EQUALS':
+                return {'term': {search_field: {'value': search_content, 'boost': weight}}}, 'must_not'
             else:
-                return {'term': {search_field: {'value': search_content,'boost':weight}}}, 'must'
+                return {'term': {search_field: {'value': search_content, 'boost': weight}}}, 'must'
         elif data_type == 'text':
-            if operator == Operator.EQUALS.value:#'EQUALS':
-                return {"term": {search_field+".keyword": {"value": search_content, 'boost':weight}}}, 'must'
+            if operator == Operator.EQUALS.value:  # 'EQUALS':
+                return {"term": {search_field + ".keyword": {"value": search_content, 'boost': weight}}}, 'must'
                 # return {"wildcard": {search_field: {"value": "*" + search_content + "*", 'boost':weight}}}, 'must'
-            elif operator == Operator.NOT_EQUALS.value:#'NOT_EQUALS':
-                return {"wildcard": {search_field: {"value": "*" + search_content + "*", 'boost':weight}}}, 'must_not'
+            elif operator == Operator.NOT_EQUALS.value:  # 'NOT_EQUALS':
+                return {"wildcard": {search_field: {"value": "*" + search_content + "*", 'boost': weight}}}, 'must_not'
             else:
-                return {"wildcard": {search_field: {"value": "*" + search_content + "*", 'boost':weight}}}, 'must'
+                return {"wildcard": {search_field: {"value": "*" + search_content + "*", 'boost': weight}}}, 'must'
 
     def get_latest_timestamp(self, index_name) -> str:
         """ This function gets the data of the newest file uploaded to the OpenSearch Node regarding the date of upload
@@ -458,7 +411,7 @@ class OpenSearchManager:
             return "1111-11-11 11:11:11"
 
 
-#Helper class that enumerat all operators
+# Helper class that enumerat all operators
 class Operator(Enum):
     EQUALS = 'is_equal'
     NOT_EQUALS = 'is_not_equal'
