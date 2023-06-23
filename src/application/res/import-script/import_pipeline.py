@@ -3,6 +3,9 @@ from datetime import datetime
 from mdh_api import MetaDataHubManager
 import sys
 import os
+from helper_functions import create_config_parser #TODO : fix path
+
+config=create_config_parser()
 
 # Get the path to the parent directory
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -146,7 +149,7 @@ def execute_pipeline():
     # getting the manager to handle the APIs
     print("1. Start to connect to the OpenSearch Node and the MetaDataHub API.")
     start_time_connecting = time.time()
-    mdh_manager, os_manager = create_managers(localhost=False)
+    mdh_manager, os_manager = create_managers(localhost=config.get('General','localhost'))
     print("--> Finished to connect to the OpenSearch Node and the MetaDataHub API!")
     print("--> Time needed: %s seconds!" % (time.time() - start_time_connecting))
 
