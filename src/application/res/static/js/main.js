@@ -1,5 +1,29 @@
 $(document).ready(function(){
 
+
+  $('#entry-0-metadata_tag').select2({
+    theme: 'bootstrap',
+    width: 'resolve' // need to override the changed width
+});
+
+  /* Test Fuse.js
+  let selectElement = document.getElementById('your-select-id');
+  let optionsArray = Array.from(selectElement.options).map(option => option.value);
+  let fuse = new Fuse(optionsArray, {
+    shouldSort: true,
+    includeScore: true,
+    threshold: 0.6, // determines how fuzzy the search should be
+    location: 0,
+    distance: 100,
+    maxPatternLength: 32,
+    minMatchCharLength: 1,
+    keys: [
+      "option"
+    ]
+  });
+  */
+  
+
   $("#advancedSearchToggleButton").on("click", function () {
     $("#simpleSearch").hide(); // Hide the simple search section
     $("#advancedSearch").show(); // Show the advanced search section
@@ -59,6 +83,7 @@ $(document).ready(function(){
     `);
 
     $("#entry-"+rowIdx+"-metadata_tag").append(options);
+    $("#entry-"+rowIdx+"-metadata_tag").select2({theme: 'bootstrap', width: 'resolve'}); // make it searchable
 
     // Attach click event to the Remove button
     $('#removeRow' + rowIdx).on('click', function () {
