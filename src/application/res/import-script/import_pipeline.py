@@ -2,6 +2,7 @@ import time
 from datetime import datetime
 from mdh_api import MetaDataHubManager
 import sys
+#from import_controller import *
 
 import os
 
@@ -26,18 +27,19 @@ def create_managers(localhost=False):
 
 
 
-def extract_data_from_mdh(mdh_manager: MetaDataHubManager, latest_timestamp: str) -> tuple[dict, list[dict], int]:
+def extract_data_from_mdh(mdh_manager: MetaDataHubManager, latest_timestamp: str = False, limit: int = False) -> tuple[dict, list[dict], int]:
     """
     Extract data from the MetaDataHub.
 
     :param mdh_manager: Manager to handle the MetaDataHub API.
     :param latest_timestamp: Timestamp of the last executed import.
+    :param limit: Limit of files that will be downloaded from the MetaDataHub (default = False --> no limit)
     :return: A tuple containing a dictionary of metadata-tags and their corresponding datatypes,
              a list of dictionaries containing all the metadata tags and their values for each file,
              and the amount of files downloaded.
     """
     # Download data from the MetaDataHub
-    mdh_manager.download_data(timestamp=latest_timestamp, limit=20)
+    mdh_manager.download_data(timestamp=latest_timestamp, limit=limit)
 
     # Get the metadata datatypes, metadata data, and the number of downloaded files
     mdh_datatypes = mdh_manager.get_datatypes()
@@ -80,7 +82,7 @@ def modify_datatypes(mdh_datatypes: dict) -> dict:
 
 
 
-def modify_data(mdh_data: list[dict], data_types: dict) -> list[(dict, id)]:
+def modify_data(mdh_data: list[dict], data_types: dict, current_time: str) -> list[(dict, id)]:
     """
     Reformat the mdh_data dictionary for storage in OpenSearch.
 
@@ -116,12 +118,11 @@ def modify_data(mdh_data: list[dict], data_types: dict) -> list[(dict, id)]:
 
                 if name and value:  # Check if both the name and value are valid
                     file_info[name] = value  # Store the modified metadata tag and its value in the file_info dictionary
+        file_info['timestamp'] = current_time
 
         modified_data.append((file_info, id))  # Append the modified metadata and the ID as a tuple to the modified_data list
 
     return modified_data
-
-
 
 
 def upload_data(instance_name: str, os_manager: OpenSearchManager, data_types: dict, data: list[dict],
@@ -158,6 +159,10 @@ def upload_data(instance_name: str, os_manager: OpenSearchManager, data_types: d
     return imported_files
 
 
+def print_status():
+    # TODO: copy all print statements of @execute_pipeline() into this function
+    pass
+
 def execute_pipeline():
     """
         This function executes the complete import-pipeline by executing 4 steps:
@@ -169,47 +174,39 @@ def execute_pipeline():
 
     # the instance of the MetaDataHub in which the search is performed
     instance_name = "amoscore"
+    current_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
     # getting the manager to handle the APIs
-    print("1. Start to connect to the OpenSearch Node and the MetaDataHub API.")
-    start_time_connecting = time.time()
-    mdh_manager, os_manager = create_managers(localhost=False)
-    print("--> Finished to connect to the OpenSearch Node and the MetaDataHub API!")
-    print("--> Time needed: %s seconds!" % (time.time() - start_time_connecting))
+    mdh_manager, os_manager = create_managers(localhost=True)
 
     # get the timestamp of the latest data import
-    # latest_timestamp = os_manager.get_latest_timestamp(index_name=instance_name)
-    latest_timestamp = '1111-11-11 11:11:11'
+    latest_timestamp = os_manager.get_latest_timestamp(index_name=instance_name)
+
     # MdH data extraction
-    print(f"2. Starting to download data from '{instance_name}' in MdH that was added after "
-          f"{(latest_timestamp, 'begin')[latest_timestamp == '1111-11-11 11:11:11']}.")
-    start_time_extracting = time.time()
-    mdh_datatypes, mdh_data, files_amount = extract_data_from_mdh(mdh_manager=mdh_manager,
-                                                                  latest_timestamp=latest_timestamp)
-    print(f"--> Finished to download data from MdH!")
-    print(f"--> {files_amount} files with a total of {len(mdh_datatypes)} metadata-tags have been downloaded.")
-    print("--> Time needed: %s seconds!" % (time.time() - start_time_extracting))
+    mdh_datatypes, mdh_data, files_amount = extract_data_from_mdh(mdh_manager=mdh_manager, limit=25)
+
+    # save initial import control
+    # save_initial_import(os_manager=os_manager, index_name='Import_control', timestamp=datetime.now(), files_count=files_amount)
+
 
     # Modifying the data into correct format
-    print("3. Starting to modify the data.")
-    start_time_modifying = time.time()
     data_types = modify_datatypes(mdh_datatypes=mdh_datatypes)  # modify the datatypes so they fit in OpenSearch
-    data = modify_data(mdh_data=mdh_data, data_types=data_types)  # modify the data so it fits in OpenSearch
-    print("--> Finished to modify the data!")
-    print("--> Time needed: %s seconds!" % (time.time() - start_time_modifying))
+    data = modify_data(mdh_data=mdh_data, data_types=data_types, current_time=current_time)  # modify the data so it fits in OpenSearch
+
 
     # Loading the data into OpenSearch
-    print("4. Starting to store data in OpenSearch.")
-    start_time_loading = time.time()
     imported_files = upload_data(instance_name=instance_name, os_manager=os_manager, data_types=data_types, data=data,
                                  files_amount=files_amount)
-    print("--> Finished to store data in OpenSearch!")
 
-    print(f"--> {imported_files} of {files_amount} files have been imported into the OpenSearch Node!")
-    if not imported_files == files_amount:
-        print(f"Not all files could be imported successfully, please repeat import!")
-    print("--> Time needed: %s seconds!" % (time.time() - start_time_loading))
+    #update_import(os_manager=os_manager, index_name='Import_control', files_count=files_amount, uploaded_files=imported_files)
 
+    # if not get_last_import_status(os_manager=os_manager, index_name='Import_control'):
+    #     return False
+    # else:
+    #     return True
+
+def retry_last_import():
+    pass
 
 if __name__ == "__main__":
     print("---------------------- Import-Pipeline ----------------------")

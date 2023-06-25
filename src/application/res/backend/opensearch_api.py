@@ -142,6 +142,19 @@ class OpenSearchManager:
             print(f"Error occurred while checking field '{field_name}' in index '{index_name}': {str(e)}")
             return False
 
+    def get_total_files(self, index_name):
+        query = {
+            "query": {
+                "match_all": {}
+            }
+        }
+
+        response = self._client.search(
+            body=query,
+            index=index_name
+        )
+        return response['hits']['total']['value']
+
     def create_index(self, index_name: str):
         """Create a new index with non-default settings.
 
@@ -159,6 +172,7 @@ class OpenSearchManager:
             'mappings': {
                 'properties': {},
             }
+
         }
 
         if not self._client.indices.exists(index=index_name):
@@ -195,7 +209,7 @@ class OpenSearchManager:
                     else:
                         property = {"type": datatype}
                     mapping_body['properties'][key] = property
-
+            mapping_body['properties']['timestamp'] = {'type': 'date'}
             return self._client.indices.put_mapping(index=index_name, body=mapping_body)
 
         except NotFoundError:
@@ -204,56 +218,31 @@ class OpenSearchManager:
             print(f"No mapping found for index '{index_name}.'")
 
     def perform_bulk(self, index_name: str, data: list[(dict, id)]) -> object:
-        create_operation = {"create": {"_index": index_name}}
+        """
+        Insert multiple documents into OpenSearch via the bulk API.
+
+        :param index_name: The name of the index to which the new data will be added.
+        :param data: A list of dictionaries containing the new data and its values in the right format.
+        :return: The response of the bulk request.
+        """
+        create_operation = {
+            "create": {"_index": index_name}
+        }
 
         bulk_data = []
-        imported_entries = []  # Track successfully imported entries
-        failed_entries = []  # Track failed entries for recovery
-
-        for doc, entry_id in data:
-            if not entry_id == "default_id":
-                create_operation["create"]["_id"] = entry_id
+        for doc, id in data:
+            if not id == "default_id":
+                create_operation['create']['_id'] = id
             bulk_data.append(str(create_operation))
             bulk_data.append(str(doc))
-            imported_entries.append(entry_id)
 
         bulk_request = "\n".join(bulk_data).replace("'", "\"")
 
         try:
-            response = self._client.bulk(body=bulk_request)
-
-            if response["errors"]:
-                # Check for errors in the bulk response
-                for item in response["items"]:
-                    if "error" in item["create"]:
-                        entry_id = item["create"]["_id"]
-                        failed_entries.append(entry_id)
-
-            if failed_entries:
-                if self.import_all:
-                    # Retry importing failed entries individually or in smaller batches
-                    self.retry_import(index_name, failed_entries)
-                else:
-                    # Log or handle the failed entries for further analysis
-                    print("Failed to import entries:", failed_entries)
-
-            return response
+            return self._client.bulk(body=bulk_request)
         except TransportError:
-            print("Bulk data exceeds the allowed size")
+            print("Bulk data oversteps the amount of allowed bytes")
             return None
-
-    def retry_import(self, index_name: str, entries: list):
-        """
-        Retry importing failed entries individually or in smaller batches.
-
-        :param index_name: The name of the index to which the entries will be imported.
-        :param entries: List of entry IDs to be retried.
-        """
-        batch_size = 100  # Number of entries to import in each batch
-        for i in range(0, len(entries), batch_size):
-            batch_entries = entries[i: i + batch_size]
-            batch_data = [(doc, entry_id) for doc, entry_id in data if entry_id in batch_entries]
-            self.perform_bulk(index_name, batch_data)
 
     def simple_search(self, index_name: str, search_text: str) -> any:
         """
@@ -373,7 +362,7 @@ class OpenSearchManager:
             else:
                 return {"wildcard": {search_field: {"value": "*" + search_content + "*", 'boost': weight}}}, 'must'
 
-    def get_latest_timestamp(self, index_name) -> str:
+    def get_latest_timestamp(self, index_name) -> any:
         """ This function gets the data of the newest file uploaded to the OpenSearch Node regarding the date of upload
         into the MetaDataHub
         :param index_name: the name of the index in which to search
@@ -401,14 +390,46 @@ class OpenSearchManager:
             return mdh_timestamp.replace("T", " ")
         except KeyError:
             print(f"No data for the index '{index_name}' is stored.")
-            return "1111-11-11 11:11:11"
+            return False
         except NotFoundError:
             print(f"No index with name '{index_name}' found.")
-            return "1111-11-11 11:11:11"
+            return False
         except IndexError:
-            return "1111-11-11 11:11:11"
+            return False
         except RequestError:
-            return "1111-11-11 11:11:11"
+            return False
+
+    def get_last_import(self, index_name: str = "Import_control") -> any:
+        query = {
+            "size": 1,
+            "query": {
+                "exists": {
+                    "field": "Version"
+                },
+            },
+            "sort": [
+                {
+                    "Version": "desc"
+                }
+            ]
+        }
+        try:
+            response = self._client.search(
+                body=query,
+                index=index_name
+            )
+            last_import = response['hits']['hits'][0]['_source']
+            return last_import
+        except KeyError:
+            print(f"No data for the index '{index_name}' is stored.")
+            return False
+        except NotFoundError:
+            print(f"No index with name '{index_name}' found.")
+            return False
+        except IndexError:
+            return False
+        except RequestError:
+            return False
 
 
 # Helper class that enumerat all operators
@@ -419,3 +440,5 @@ class Operator(Enum):
     LESS_THAN = 'is_smaller'
     GREATER_THAN_OR_EQUALS = 'is_greater_or_equal'
     LESS_THAN_OR_EQUALS = 'is_smaller_or_equal'
+
+
