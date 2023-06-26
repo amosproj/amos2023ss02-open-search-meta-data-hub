@@ -22,7 +22,7 @@ app.config['SECRET_KEY'] = secrets.token_hex(16)
 bootstrap = Bootstrap5(app)
 csrf = CSRFProtect(app)
 
-os_dashboard_manager : OSDashboardManager = OSDashboardManager(localhost=False)
+os_dashboard_manager : OSDashboardManager = OSDashboardManager(localhost=config.get('General','localhost'))
 os_manager: OpenSearchManager = OpenSearchManager(localhost=config.get('General','localhost'))
 
     
