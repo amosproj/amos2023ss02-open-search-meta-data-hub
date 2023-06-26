@@ -11,6 +11,13 @@ from backend.opensearch_api import OpenSearchManager
 INDEX_NAME = "import_control"
 
 def create_import_index(os_manager: OpenSearchManager):
+    """
+    Creates the import index in OpenSearch with the required fields.
+
+    Args:
+        os_manager (OpenSearchManager): Instance of the OpenSearchManager class.
+
+    """
     fields = {
         'Version': 'integer',
         'Status': 'text',
@@ -23,6 +30,14 @@ def create_import_index(os_manager: OpenSearchManager):
 
 
 def save_initial_import(os_manager: OpenSearchManager, files_count):
+    """
+    Saves the initial import information to the import index.
+
+    Args:
+        os_manager (OpenSearchManager): Instance of the OpenSearchManager class.
+        files_count (int): Total number of files to be uploaded.
+
+    """
     if INDEX_NAME not in os_manager.get_all_indices():
         create_import_index(os_manager)
     last_import = os_manager.get_last_import(index_name=INDEX_NAME)
@@ -35,17 +50,28 @@ def save_initial_import(os_manager: OpenSearchManager, files_count):
         total_files = 0
     id = str(version)
     data = {
-             'Version': version,
-             'Status': 'Incomplete',
-             'Files to be uploaded': files_count,
-             'Successfully uploaded files': 0,
-             'Total files in index': total_files
-         }
+        'Version': version,
+        'Status': 'Incomplete',
+        'Files to be uploaded': files_count,
+        'Successfully uploaded files': 0,
+        'Total files in index': total_files
+    }
     os_manager.add_to_index(index_name=INDEX_NAME, body=data, id=id)
 
 
-
 def update_import(os_manager: OpenSearchManager, files_count, uploaded_files):
+    """
+    Updates the import information in the import index.
+
+    Args:
+        os_manager (OpenSearchManager): Instance of the OpenSearchManager class.
+        files_count (int): Total number of files to be uploaded.
+        uploaded_files (int): Number of files successfully uploaded.
+
+    Returns:
+        dict: The updated import information.
+
+    """
     time.sleep(5)
     last_import = os_manager.get_last_import(index_name=INDEX_NAME)
     print(last_import)
@@ -72,6 +98,16 @@ def update_import(os_manager: OpenSearchManager, files_count, uploaded_files):
 
 
 def get_last_import_status(os_manager: OpenSearchManager):
+    """
+    Retrieves the status of the last import from the import index.
+
+    Args:
+        os_manager (OpenSearchManager): Instance of the OpenSearchManager class.
+
+    Returns:
+        bool: True if the last import was successful, False otherwise.
+
+    """
     last_import = os_manager.get_last_import(index_name=INDEX_NAME)
     if last_import:
         status = last_import['Status']

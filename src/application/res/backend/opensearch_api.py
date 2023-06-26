@@ -369,11 +369,22 @@ class OpenSearchManager:
                 return {"wildcard": {search_field: {"value": "*" + search_content + "*", 'boost': weight}}}, 'must'
 
     def get_latest_timestamp(self, index_name) -> any:
-        """ This function gets the data of the newest file uploaded to the OpenSearch Node regarding the date of upload
-        into the MetaDataHub
-        :param index_name: the name of the index in which to search
-        :return: String thtat contains the timestamp
         """
+          Retrieves the timestamp of the newest file uploaded to the OpenSearch Node based on the upload date in the MetaDataHub.
+
+          Args:
+              index_name (str): The name of the index to search for the timestamp.
+
+          Returns:
+              str: The timestamp as a string.
+
+          Raises:
+              KeyError: If no data is stored for the specified index.
+              NotFoundError: If no index with the given name is found.
+              IndexError: If an index error occurs while retrieving the timestamp.
+              RequestError: If a request error occurs while retrieving the timestamp.
+          """
+
         query = {
             "size": 1,
             "query": {
@@ -406,6 +417,21 @@ class OpenSearchManager:
             return False
 
     def get_last_import(self, index_name):
+        """
+        Retrieves the information of the last import from the specified index.
+
+        Args:
+            index_name (str): The name of the index from which to retrieve the last import.
+
+        Returns:
+            dict: The information of the last import as a dictionary.
+
+        Raises:
+            KeyError: If no data is stored for the specified index.
+            NotFoundError: If no index with the given name is found.
+            IndexError: If an index error occurs while retrieving the last import.
+            RequestError: If a request error occurs while retrieving the last import.
+        """
         query = {
             "size": 1,
             "query": {
