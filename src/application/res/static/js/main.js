@@ -66,6 +66,9 @@ $(document).ready(function(){
                     <option disabled style="text-align:center;">────────────────</option>
                     <option value="is_greater">is greater</option>
                     <option value="is_smaller">is smaller</option>
+                    <option disabled style="text-align:center;">────────────────</option>
+                    <option value="is_greater_or_equal">is greater or equal</option>
+                    <option value="is_smaller_or_equal">is smaller or equal</option>
                 </select>
             </div>
             <div class="col-md-3">
