@@ -9,8 +9,8 @@ from flask_wtf import FlaskForm, CSRFProtect
 from wtforms import StringField, SelectField, FieldList, FormField, Form, SubmitField, IntegerField, validators
 from wtforms.validators import DataRequired
 from backend.opensearch_api import OpenSearchManager
+from backend.os_dashboard_api import OSDashboardManager
 import pandas as pd
-from backend import get_all_iframes
 import urllib
 
 app = Flask(__name__)
@@ -20,6 +20,7 @@ bootstrap = Bootstrap5(app)
 csrf = CSRFProtect(app)
 
 os_manager: OpenSearchManager = OpenSearchManager(localhost=False)
+os_dashboard_manager : OSDashboardManager = OSDashboardManager(localhost=False)
 
     
 class SimpleSearchForm(FlaskForm):
@@ -132,7 +133,7 @@ def advanced_search_v2():
 
 @app.route('/visualizations')
 def visualizations():
-    iframe_data = get_all_iframes.get_iframes()
+    iframe_data = os_dashboard_manager.get_iframes()
 
     # Pagination settings
     page = int(request.args.get('page', 1))
@@ -149,4 +150,4 @@ def visualizations():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)    
+    app.run(host='0.0.0.0', port=8000)
