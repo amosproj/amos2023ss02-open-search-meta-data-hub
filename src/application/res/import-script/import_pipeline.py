@@ -2,7 +2,7 @@ import time
 from datetime import datetime
 from mdh_api import MetaDataHubManager
 import sys
-#from import_controller import *
+from import_controller import *
 
 import os
 
@@ -144,7 +144,7 @@ def upload_data(instance_name: str, os_manager: OpenSearchManager, data_types: d
     os_manager.update_index(index_name=instance_name, data_types=data_types)
 
     chunk_size = 10000  # Size of chunks the data will be split into
-    imported_files = 0  # Counter for files that are successfully imported
+    imported_files = 1  # Counter for files that are successfully imported
 
     for i in range(0, files_amount, chunk_size):
         # Split the data into chunks
@@ -163,7 +163,7 @@ def print_status():
     # TODO: copy all print statements of @execute_pipeline() into this function
     pass
 
-def execute_pipeline():
+def execute_pipeline(start_index: int = 1):
     """
         This function executes the complete import-pipeline by executing 4 steps:
         1. connecting to the OpenSearch Node and the MetaDataHub
@@ -183,35 +183,37 @@ def execute_pipeline():
     latest_timestamp = os_manager.get_latest_timestamp(index_name=instance_name)
 
     # MdH data extraction
-    mdh_datatypes, mdh_data, files_amount = extract_data_from_mdh(mdh_manager=mdh_manager, limit=25)
+    mdh_datatypes, mdh_data, files_amount = extract_data_from_mdh(mdh_manager=mdh_manager, limit=15)
 
     # save initial import control
-    # save_initial_import(os_manager=os_manager, index_name='Import_control', timestamp=datetime.now(), files_count=files_amount)
+    save_initial_import(os_manager=os_manager, files_count=files_amount)
 
 
     # Modifying the data into correct format
     data_types = modify_datatypes(mdh_datatypes=mdh_datatypes)  # modify the datatypes so they fit in OpenSearch
-    data = modify_data(mdh_data=mdh_data, data_types=data_types, current_time=current_time)  # modify the data so it fits in OpenSearch
+    data = modify_data(mdh_data=mdh_data[start_index-1:-1], data_types=data_types, current_time=current_time)  # modify the data so it fits in OpenSearch
 
 
     # Loading the data into OpenSearch
     imported_files = upload_data(instance_name=instance_name, os_manager=os_manager, data_types=data_types, data=data,
                                  files_amount=files_amount)
 
-    #update_import(os_manager=os_manager, index_name='Import_control', files_count=files_amount, uploaded_files=imported_files)
+    import_info = update_import(os_manager=os_manager, files_count=files_amount, uploaded_files=imported_files)
 
-    # if not get_last_import_status(os_manager=os_manager, index_name='Import_control'):
-    #     return False
-    # else:
-    #     return True
+    return import_info
 
-def retry_last_import():
-    pass
 
 if __name__ == "__main__":
     print("---------------------- Import-Pipeline ----------------------")
     start_time = time.time()
-    execute_pipeline()
+    print("Start executing the pipeline ...")
+    import_info = execute_pipeline()
+
+    if not import_info["Status"] == "Successful":
+        print("Import not successful ... retry import")
+        new_start_index = import_info["Files to be uploaded"] - import_info["Successfully uploaded files"]
+        execute_pipeline(new_start_index)
+
     print("--> Pipeline execution finished!")
     print("--> Pipeline took ", "%s seconds" % (time.time() - start_time), " to execute!")
     print("---------------------- Import-Pipeline ----------------------")

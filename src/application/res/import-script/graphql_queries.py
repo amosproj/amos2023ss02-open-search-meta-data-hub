@@ -26,15 +26,15 @@ class FilterFunction:
 
 
 class SortFunction:
-    def __init__(self, tag: str, operation: str):
+    def __init__(self, tag: str, operation: str = "ASC"):
         """Creates a new object of class SortFunction.
 
         Args:
             tag (str): The name of the MdH metadata-tag that this sort function is applied to.
             operation (str): The operation of the filter, e.g., EQUALS, GREATER, ...
         """
-        self.tag = Argument(name="tag", value=f'"{tag}"')
-        self.operation = Argument(name="operation", value=operation)
+        self.sort_by = Argument(name="sortBy", value=f'"{tag}"')
+        self.sort_by_option = Argument(name="sortByOption", value=operation)
 
     def get_sort_function(self):
         """Returns this sort function as a list for later processing.
@@ -42,11 +42,11 @@ class SortFunction:
         Returns:
             list: List of properties of the sort function.
         """
-        return [self.tag, self.operation]
+        return [self.sort_by, self.sort_by_option]
 
 
 class GraphQLQuery:
-    def __init__(self, filter_functions: list = [], sort_functions: list = [], limit: int = False, filter_logic="AND"):
+    def __init__(self, filter_functions: list = None, sort_functions: list = None, limit: int = False, filter_logic="AND"):
         """Creates a new object of class GraphQLQuery.
 
         Args:
@@ -55,6 +55,10 @@ class GraphQLQuery:
             limit (int, optional): Limit that determines the amount of files to be downloaded with the GraphQL query. Defaults to False.
             filter_logic (str, optional): Logic to be used for all filters. Defaults to "AND".
         """
+        if filter_functions is None:
+            filter_functions = list()
+        if sort_functions is None:
+            sort_functions = list()
         self.filter_functions = filter_functions
         self.sort_functions = sort_functions
         self.limit = Argument(name="limit", value=limit)

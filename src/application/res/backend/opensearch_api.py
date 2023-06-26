@@ -170,7 +170,10 @@ class OpenSearchManager:
                 }
             },
             'mappings': {
-                'properties': {},
+                'properties':
+                    {
+                        'timestamp': {'type': 'date', "format": "strict_date_hour_minute_second||epoch_millis"},
+                },
             }
 
         }
@@ -209,7 +212,6 @@ class OpenSearchManager:
                     else:
                         property = {"type": datatype}
                     mapping_body['properties'][key] = property
-            mapping_body['properties']['timestamp'] = {'type': 'date'}
             return self._client.indices.put_mapping(index=index_name, body=mapping_body)
 
         except NotFoundError:
@@ -235,14 +237,21 @@ class OpenSearchManager:
                 create_operation['create']['_id'] = id
             bulk_data.append(str(create_operation))
             bulk_data.append(str(doc))
-
         bulk_request = "\n".join(bulk_data).replace("'", "\"")
-
         try:
             return self._client.bulk(body=bulk_request)
         except TransportError:
             print("Bulk data oversteps the amount of allowed bytes")
             return None
+
+    def add_to_index(self, index_name: str, body: dict, id: int) -> object:
+        response = self._client.index(
+            index=index_name,
+            body=body,
+            id=id,
+            refresh=True
+        )
+        return response
 
     def simple_search(self, index_name: str, search_text: str) -> any:
         """
@@ -282,7 +291,6 @@ class OpenSearchManager:
         :return: None (or specify the return type if applicable).
         """
 
-        print("Search_info: ", search_info)
         sub_queries = []
         for search_field in search_info:
             print(self.field_exists(index_name, search_field))
@@ -399,7 +407,7 @@ class OpenSearchManager:
         except RequestError:
             return False
 
-    def get_last_import(self, index_name: str = "Import_control") -> any:
+    def get_last_import(self, index_name):
         query = {
             "size": 1,
             "query": {
@@ -427,8 +435,10 @@ class OpenSearchManager:
             print(f"No index with name '{index_name}' found.")
             return False
         except IndexError:
+            print(f"Index error for index '{index_name}'")
             return False
         except RequestError:
+            print(f"Request error for index '{index_name}'")
             return False
 
 

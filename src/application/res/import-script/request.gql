@@ -3,7 +3,7 @@ query {
     filterFunctions: []
     sortFunctions: []
     filterLogicOption: AND
-    limit: 25
+    limit: 15
   ) {
     totalFilesCount
     returnedFilesCount
