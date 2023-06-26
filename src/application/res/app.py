@@ -31,7 +31,7 @@ class SimpleSearchForm(FlaskForm):
     submit = SubmitField('Search')
 
 class AdvancedEntryForm(FlaskForm):
-    all_fields = os_manager.get_all_fields(index_name="amoscore")
+    all_fields = os_manager.get_all_fields(index_name=config.get('Opensearch_Dashboard','default_index_name'))
     metadata_tag = SelectField('Metadata tag', choices=all_fields)
     condition = SelectField('Condition', choices=[
         ('tag_exists', 'tag exists'), 
@@ -92,7 +92,7 @@ def search():
     advancedSearchResult = ""
     if simpleSearchForm.validate_on_submit():
         searchValue = simpleSearchForm.searchValue.data
-        resultTmp = os_manager.simple_search("amoscore", searchValue)
+        resultTmp = os_manager.simple_search(config.get('Opensearch_Dashboard','default_index_name'), searchValue)
         session['last_form'] = 'simple'
         if len(resultTmp)>0:
             simpleSearchResult=renderResult(resultTmp)
@@ -112,7 +112,7 @@ def search():
                 'weight': weight
             }
             print(search_info)
-        resultTmp = os_manager.advanced_search(index_name="amoscore", search_info=search_info)
+        resultTmp = os_manager.advanced_search(index_name=config.get('Opensearch_Dashboard','default_index_name'), search_info=search_info)
         session['last_form'] = 'advanced'
         if len(resultTmp)>0:
             advancedSearchResult=renderResult(resultTmp)
@@ -123,12 +123,12 @@ def search():
 
 #@app.route('/search/simple')
 #def search_simple():
-#    return os_manager.simple_search("amoscore", request.args.get('searchString')) #Hardcoded indexname
+#    return os_manager.simple_search(config.get('Opensearch_Dashboard','default_index_name'), request.args.get('searchString')) #Hardcoded indexname
 #
 #@app.route('/search/advanced')
 #def search_advanced():
 #    search_info = json.loads(urllib.parse.unquote(request.args.get('searchString'))) #ToDo use Flask Forms
-#    return os_manager.advanced_search("amoscore", search_info) #Hardcoded indexname
+#    return os_manager.advanced_search(config.get('Opensearch_Dashboard', 'default_index_name'), search_info) #Hardcoded indexname
 
 @app.route('/search/advanced_v2')
 def advanced_search_v2():

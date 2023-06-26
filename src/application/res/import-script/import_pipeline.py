@@ -144,7 +144,7 @@ def execute_pipeline():
     """
 
     # the instance of the MetaDataHub in which the search is performed
-    instance_name = "amoscore"
+    instance_name = config.get('Opensearch_Dashboards','default_index_name')
 
     # getting the manager to handle the APIs
     print("1. Start to connect to the OpenSearch Node and the MetaDataHub API.")
