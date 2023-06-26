@@ -3,9 +3,8 @@ from datetime import datetime
 from mdh_api import MetaDataHubManager
 import sys
 import os
-from helper_functions import create_config_parser #TODO : fix path
+import configparser
 
-config=create_config_parser()
 
 # Get the path to the parent directory
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -14,6 +13,8 @@ parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
 from backend.opensearch_api import OpenSearchManager
 
+config = configparser.ConfigParser()
+config.read('config.ini')
 
 def create_managers(localhost=False):
     """ This function creates the managers to handle the APIs to the MetaDataHub and the OpenSearch Node

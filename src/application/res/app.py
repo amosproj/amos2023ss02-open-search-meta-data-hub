@@ -12,9 +12,10 @@ from backend.opensearch_api import OpenSearchManager
 from backend.os_dashboard_api import OSDashboardManager
 import pandas as pd
 import urllib
-from backend.helper_functions import create_config_parser
+import configparser
 
-config=create_config_parser()
+config = configparser.ConfigParser()
+config.read('config.ini')
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secrets.token_hex(16)
