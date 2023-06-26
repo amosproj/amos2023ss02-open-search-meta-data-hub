@@ -23,8 +23,8 @@ app.config['SECRET_KEY'] = secrets.token_hex(16)
 bootstrap = Bootstrap5(app)
 csrf = CSRFProtect(app)
 
-os_dashboard_manager : OSDashboardManager = OSDashboardManager(localhost=config.get('General','localhost'))
-os_manager: OpenSearchManager = OpenSearchManager(localhost=config.get('General','localhost'))
+os_dashboard_manager : OSDashboardManager = OSDashboardManager(localhost=config.getboolean('General','localhost'))
+os_manager: OpenSearchManager = OpenSearchManager(localhost=config.getboolean('General','localhost'))
 
     
 class SimpleSearchForm(FlaskForm):
@@ -32,7 +32,7 @@ class SimpleSearchForm(FlaskForm):
     submit = SubmitField('Search')
 
 class AdvancedEntryForm(FlaskForm):
-    all_fields = os_manager.get_all_fields(index_name=config.get('Opensearch_Dashboard','default_index_name'))
+    all_fields = os_manager.get_all_fields(index_name=config.get('General','default_index_name'))
     metadata_tag = SelectField('Metadata tag', choices=all_fields)
     condition = SelectField('Condition', choices=[
         ('tag_exists', 'tag exists'), 
@@ -93,7 +93,7 @@ def search():
     advancedSearchResult = ""
     if simpleSearchForm.validate_on_submit():
         searchValue = simpleSearchForm.searchValue.data
-        resultTmp = os_manager.simple_search(config.get('Opensearch_Dashboard','default_index_name'), searchValue)
+        resultTmp = os_manager.simple_search(config.get('General','default_index_name'), searchValue)
         session['last_form'] = 'simple'
         if len(resultTmp)>0:
             simpleSearchResult=renderResult(resultTmp)
@@ -113,7 +113,7 @@ def search():
                 'weight': weight
             }
             print(search_info)
-        resultTmp = os_manager.advanced_search(index_name=config.get('Opensearch_Dashboard','default_index_name'), search_info=search_info)
+        resultTmp = os_manager.advanced_search(index_name=config.get('General','default_index_name'), search_info=search_info)
         session['last_form'] = 'advanced'
         if len(resultTmp)>0:
             advancedSearchResult=renderResult(resultTmp)
