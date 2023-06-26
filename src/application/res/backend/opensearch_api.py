@@ -330,6 +330,7 @@ class OpenSearchManager:
                 query['query']['bool'][functionality].append(sub_query)
         return query
 
+
     @staticmethod
     def _get_sub_query(data_type: str, operator: str, search_field: str, weight: str, search_content: any) -> tuple:
         """Returns a subquery that can be used to create a complete query.
@@ -345,27 +346,24 @@ class OpenSearchManager:
 
           """
         if data_type == 'float' or data_type == 'date':
-            if operator == Operator.EQUALS.value:  # 'EQUALS':
+            if operator == Operator.IS_EQUAL.value:
                 return {'term': {search_field: {'value': search_content, 'boost': weight}}}, 'must'
-            elif operator == Operator.GREATER_THAN.value:  # 'GREATER_THAN':
+            elif operator == Operator.IS_GREATER_THAN.value:
                 return {'range': {search_field: {'gt': search_content, 'boost': weight}}}, 'must'
-            elif operator == Operator.LESS_THAN.value:
+            elif operator == Operator.IS_LESS_THAN.value:
                 return {'range': {search_field: {'lte': search_content, 'boost': weight}}}, 'must'
-            elif operator == Operator.EQUALS.value:  # 'LESS_THAN':
+            elif operator == Operator.IS_LESS_THAN_OR_EQUAL.value:
                 return {'range': {search_field: {'lt': search_content, 'boost': weight}}}, 'must'
-            elif operator == 'GREATER_THAN_OR_EQUALS':
+            elif operator == Operator.IS_GREATER_THAN_OR_EQUAL.value:
                 return {'range': {search_field: {'gte': search_content, 'boost': weight}}}, 'must'
-            elif operator == 'LESS_THAN_OR_EQUALS':
-                return {'range': {search_field: {'lte': search_content, 'boost': weight}}}, 'must'
-            elif operator == Operator.EQUALS.value:  # 'NOT_EQUALS':
+            elif operator == Operator.IS_NOT_EQUAL.value:
                 return {'term': {search_field: {'value': search_content, 'boost': weight}}}, 'must_not'
             else:
                 return {'term': {search_field: {'value': search_content, 'boost': weight}}}, 'must'
         elif data_type == 'text':
-            if operator == Operator.EQUALS.value:  # 'EQUALS':
+            if operator == Operator.IS_EQUAL.value:
                 return {"term": {search_field + ".keyword": {"value": search_content, 'boost': weight}}}, 'must'
-                # return {"wildcard": {search_field: {"value": "*" + search_content + "*", 'boost':weight}}}, 'must'
-            elif operator == Operator.NOT_EQUALS.value:  # 'NOT_EQUALS':
+            elif operator == Operator.IS_NOT_EQUAL.value:
                 return {"wildcard": {search_field: {"value": "*" + search_content + "*", 'boost': weight}}}, 'must_not'
             else:
                 return {"wildcard": {search_field: {"value": "*" + search_content + "*", 'boost': weight}}}, 'must'
@@ -442,13 +440,17 @@ class OpenSearchManager:
             return False
 
 
-# Helper class that enumerat all operators
 class Operator(Enum):
-    EQUALS = 'is_equal'
-    NOT_EQUALS = 'is_not_equal'
-    GREATER_THAN = 'is_greater'
-    LESS_THAN = 'is_smaller'
-    GREATER_THAN_OR_EQUALS = 'is_greater_or_equal'
-    LESS_THAN_OR_EQUALS = 'is_smaller_or_equal'
+    """
+    Represents different operators for query comparisons.
+    """
+
+    IS_EQUAL = 'is_equal'  # Represents the "equals" operator
+    IS_NOT_EQUAL = 'is_not_equal'  # Represents the "not equals" operator
+    IS_GREATER_THAN = 'is_greater'  # Represents the "greater than" operator
+    IS_LESS_THAN = 'is_smaller'  # Represents the "less than" operator
+    IS_GREATER_THAN_OR_EQUAL = 'is_greater_or_equal'  # Represents the "greater than or equal to" operator
+    IS_LESS_THAN_OR_EQUAL = 'is_smaller_or_equal'  # Represents the "less than or equal to" operator
+
 
 
