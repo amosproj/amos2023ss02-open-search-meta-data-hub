@@ -32,7 +32,7 @@
 <div id="advancedSearch" class="mt-3 text-end" {% if last_form != 'advanced' %}style="display: none;"{% endif %}>
 
   <form class="myform" method="POST">
-    <input type="hidden" id="myDict" name="myDict" value="{{ json_dict }}">
+    <input type="hidden" id="datatypesDict" name="myDict" value="{{ json_dict }}">
     {{ advancedSearchForm.hidden_tag() }}
     <div class="form-container" id="form-container">
         <div class="row formRow" id="formRow">
@@ -44,7 +44,7 @@
               <label for="entry-0-condition">Condition</label><br>
               <select class="form-control" id="entry-0-condition" name="entry-0-condition">
                 <option value="tag_exists">tag exists</option>
-                  <option value="tag_not_exist">tag not exists</option>
+                  <option value="tag_not_exists">tag not exists</option>
                   <option disabled style="text-align:center;">────────────────</option>
                   <option value="field_is_empty">field is empty</option>
                   <option value="field_is_not_empty">field is not empty</option>

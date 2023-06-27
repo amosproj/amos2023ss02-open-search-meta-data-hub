@@ -1,27 +1,12 @@
+let myDict;  // Declare dict
+let rowIdx;  // Declare rowIdx
 $(document).ready(function(){
 
 
   $('#entry-0-metadata_tag').select2({
     theme: 'bootstrap',
     width: 'resolve' // need to override the changed width
-});
-
-  /* Test Fuse.js
-  let selectElement = document.getElementById('your-select-id');
-  let optionsArray = Array.from(selectElement.options).map(option => option.value);
-  let fuse = new Fuse(optionsArray, {
-    shouldSort: true,
-    includeScore: true,
-    threshold: 0.6, // determines how fuzzy the search should be
-    location: 0,
-    distance: 100,
-    maxPatternLength: 32,
-    minMatchCharLength: 1,
-    keys: [
-      "option"
-    ]
   });
-  */
   
 
   $("#advancedSearchToggleButton").on("click", function () {
@@ -35,7 +20,8 @@ $(document).ready(function(){
     $("#simpleSearch").show(); // Show the simple search section
   });
 
-  let rowIdx = 0;
+  rowIdx = 0;
+  myDict = JSON.parse($("#datatypesDict").val());  // Parse the JSON string back to a JavaScript object
 
   $('#addRow').on('click', function () {
     // Increment the row index when button is clicked
@@ -53,7 +39,7 @@ $(document).ready(function(){
                 <label for="condition${rowIdx}">Condition</label><br>
                 <select id="condition${rowIdx}" name="entry-${rowIdx}-condition" class="form-control">
                     <option value="tag_exists">tag exists</option>
-                    <option value="tag_not_exist">tag not exists</option>
+                    <option value="tag_not_exists">tag not exists</option>
                     <option disabled style="text-align:center;">────────────────</option>
                     <option value="field_is_empty">field is empty</option>
                     <option value="field_is_not_empty">field is not empty</option>
@@ -92,15 +78,22 @@ $(document).ready(function(){
     $('#removeRow' + rowIdx).on('click', function () {
         $(this).closest('div.row').remove();
     });
+
+
   });
 
   // Set the initial event listener for the metadata tag select field in the first row
   $('#entry-0-metadata_tag').change(function() {
-    var metadataTagValue = $(this).val();
-    updateConditionOptions(0, metadataTagValue);
+    updateConditionOptions(0, $(this).val());
   });
   
-  
+  // Bind the change event for the metadata tag select field of the new row
+    $('#entry-' + rowIdx + '-metadata_tag').change(function() {
+        updateConditionOptions(rowIdx, $(this).val());
+    });
+
+  //execure one Time on page load:
+  updateConditionOptions(0, $('#entry-0-metadata_tag').val());
 
 });
 
@@ -127,23 +120,40 @@ function showDetails(button) {
 function updateConditionOptions(rowIdx, metadataTagValue) {
   // Define the condition options for each data type
   var conditionOptions = {
-    'text': ['tag_exists', 'field_is_empty', 'field_is_not_empty', 'contains', 'not_contains'],
-    'float': ['tag_exists', 'field_is_empty', 'field_is_not_empty', 'is_equal', 'is_not_equal', 'is_greater', 'is_smaller'],
-    'date': ['tag_exists', 'field_is_empty', 'field_is_not_empty', 'is_equal', 'is_not_equal', 'is_greater', 'is_smaller'],
+    'text': ['tag_exists', 'tag_not_exists', 'field_is_empty', 'field_is_not_empty', 'contains', 'not_contains'],
+    'float': ['tag_exists', 'tag_not_exists', 'field_is_empty', 'field_is_not_empty', 'is_equal', 'is_not_equal', 'is_greater', 'is_smaller'],
+    'date': ['tag_exists', 'tag_not_exists', 'field_is_empty', 'field_is_not_empty', 'is_equal', 'is_not_equal', 'is_greater', 'is_smaller'],
   };
 
   // Get the selected data type from the metadata tag value
-  var selectedDataType = getDataType(metadataTagValue);
-  // Populate the condition select field with the appropriate options
+  var selectedDataType = myDict[metadataTagValue];
+
+  // Populate the condition select fied with the appropriate options
+  var conditionSelect = $("#entry-" + rowIdx + "-condition");
+
+  // Store the current selected option
+  var currentOption = conditionSelect.val();
+
+  // Disable all options
+  conditionSelect.find('option').each(function() {
+    $(this).prop('disabled', true);
+  });
+
+  // Enable the options that are available for the selected data type
+  conditionOptions[selectedDataType].forEach(function(condition) {
+    conditionSelect.find('option[value="' + condition + '"]').prop('disabled', false);
+
+  // If the currently selected option is not disabled, set it back
+  if (conditionOptions[selectedDataType].includes(currentOption)) {
+    conditionSelect.val(currentOption);
+  } else {
+    // else select the first non-disabled option
+    conditionSelect.val(conditionSelect.find('option:not([disabled]):first').val());
+  }
+
+  });
 }
 
-// Get the data type based on the metadata tag value
-function getDataType(metadataTagValue) {
-  var hiddenField = document.getElementById('datatypesDict');
-  var jsonDict = hiddenField.value;
-  var myDict = JSON.parse(jsonDict);  // Parse the JSON string back to a JavaScript object
-  return myDict[metadataTagValue]
-}
 
 
  $(document).ready(function() {
