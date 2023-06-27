@@ -1,5 +1,5 @@
 let myDict;  // Declare dict
-let rowIdx;  // Declare rowIdx
+var rowIdx;  // Declare rowIdx
 $(document).ready(function(){
 
 
@@ -23,21 +23,23 @@ $(document).ready(function(){
   rowIdx = 0;
   myDict = JSON.parse($("#datatypesDict").val());  // Parse the JSON string back to a JavaScript object
 
+  populateAdvancedSearchFormFromSession();
+
   $('#addRow').on('click', function () {
     // Increment the row index when button is clicked
     rowIdx++;
 
     // Create the new row with incremented indices
     var options = $("#entry-0-metadata_tag > option").clone();
-    $('#formRow').after(`
+    $('#form-container').append(`
         <div id="row${rowIdx}" class="row formRow">
             <div class="col-md-3">
-                <label for="metadata_tag${rowIdx}">Metadata tag</label><br>
+                <label for="entry-${rowIdx}-metadata_tag">Metadata tag</label><br>
                 <select class="form-control" id="entry-${rowIdx}-metadata_tag" name="entry-${rowIdx}-metadata_tag"></select>
             </div>
             <div class="col-md-3">
                 <label for="condition${rowIdx}">Condition</label><br>
-                <select id="condition${rowIdx}" name="entry-${rowIdx}-condition" class="form-control">
+                <select id="entry-${rowIdx}-condition" name="entry-${rowIdx}-condition" class="form-control">
                     <option value="tag_exists">tag exists</option>
                     <option value="tag_not_exists">tag not exists</option>
                     <option disabled style="text-align:center;">────────────────</option>
@@ -59,7 +61,7 @@ $(document).ready(function(){
             </div>
             <div class="col-md-3">
                 <label for="value${rowIdx}">Value</label><br>
-                <input type="text" id="value${rowIdx}" name="entry-${rowIdx}-value" class="form-control"/>
+                <input type="text" id="entry-${rowIdx}-value" name="entry-${rowIdx}-value" class="form-control"/>
             </div>
             <div class="col-md-2">
               <label for="entry-0-weight">Weight</label><br>
@@ -72,31 +74,144 @@ $(document).ready(function(){
     `);
 
     $("#entry-"+rowIdx+"-metadata_tag").append(options);
-    $("#entry-"+rowIdx+"-metadata_tag").select2({theme: 'bootstrap', width: 'resolve'}); // make it searchable
+    setTimeout(function() {
+      $("#entry-"+rowIdx+"-metadata_tag").select2({theme: 'bootstrap', width: 'resolve'});
+      setupChangeListener(rowIdx);
+    }, 0); // make it searchable
 
     // Attach click event to the Remove button
     $('#removeRow' + rowIdx).on('click', function () {
         $(this).closest('div.row').remove();
     });
 
+    // Bind the change event for the metadata tag select field of the new row
+    $('#entry-' + rowIdx + '-metadata_tag').on("change", function() {
+      updateConditionOptions(rowIdx, $(this).val());
+      console.log($(this).val());
+    });
+
+    //entry-${rowIdx}-metadata_tag
+
+    updateConditionOptions(rowIdx, $('#entry-' + rowIdx + '-metadata_tag').val());
+
+
+
 
   });
 
   // Set the initial event listener for the metadata tag select field in the first row
-  $('#entry-0-metadata_tag').change(function() {
+  $('#entry-0-metadata_tag').on("change", function() {
     updateConditionOptions(0, $(this).val());
   });
-  
-  // Bind the change event for the metadata tag select field of the new row
-    $('#entry-' + rowIdx + '-metadata_tag').change(function() {
-        updateConditionOptions(rowIdx, $(this).val());
-    });
+
+  //advanced Search handler
+  $("#advancedSearchForm").one("submit", function(e) {
+      e.preventDefault();
+      var advancedSearchEntries = [];
+      $("#advancedSearchForm .formRow").each(function() {
+          var row = $(this);
+          var metadataTag = row.find("select[name^='entry-'][name$='-metadata_tag']").val();
+          var condition = row.find("select[name^='entry-'][name$='-condition']").val();
+          var value = row.find("input[name^='entry-'][name$='-value']").val();
+          var weight = row.find("input[name^='entry-'][name$='-weight']").val();
+          advancedSearchEntries.push({ metadataTag: metadataTag, condition: condition, value: value, weight: weight });
+      });
+      sessionStorage.setItem('advanced_search_entries', JSON.stringify(advancedSearchEntries));
+      console.log("session");
+      $(this).submit();
+  });
+
+
 
   //execure one Time on page load:
   updateConditionOptions(0, $('#entry-0-metadata_tag').val());
 
 });
 
+function initializeSelect2(elementId) {
+  setTimeout(function() {
+    $("#" + elementId).select2({theme: 'bootstrap', width: 'resolve'});
+  }, 0);
+}
+
+function addRowWithValues(metadataTag, condition, value, weight) {
+  console.log(condition);
+  rowIdx++;
+  // Create the new row with incremented indices
+  var options = $("#entry-0-metadata_tag > option").clone();
+  $('#form-container').append(`
+      <div id="row${rowIdx}" class="row formRow">
+          <div class="col-md-3">
+              <label for="entry-${rowIdx}-metadata_tag">Metadata tag</label><br>
+              <select class="form-control" id="entry-${rowIdx}-metadata_tag" name="entry-${rowIdx}-metadata_tag"></select>
+          </div>
+          <div class="col-md-3">
+              <label for="condition${rowIdx}">Condition</label><br>
+              <select id="entry-${rowIdx}-condition" name="entry-${rowIdx}-condition" class="form-control">
+                  <option value="tag_exists">tag exists</option>
+                  <option value="tag_not_exists">tag not exists</option>
+                  <option disabled style="text-align:center;">────────────────</option>
+                  <option value="field_is_empty">field is empty</option>
+                  <option value="field_is_not_empty">field is not empty</option>
+                  <option disabled style="text-align:center;">────────────────</option>
+                  <option value="contains" selected>contains</option>
+                  <option value="not_contains">not contains</option>
+                  <option disabled style="text-align:center;">────────────────</option>
+                  <option value="is_equal">is equal</option>
+                  <option value="is_not_equal">is not equal</option>
+                  <option disabled style="text-align:center;">────────────────</option>
+                  <option value="is_greater">is greater</option>
+                  <option value="is_smaller">is smaller</option>
+                  <option disabled style="text-align:center;">────────────────</option>
+                  <option value="is_greater_or_equal">is greater or equal</option>
+                  <option value="is_smaller_or_equal">is smaller or equal</option>
+              </select>
+          </div>
+          <div class="col-md-3">
+              <label for="value${rowIdx}">Value</label><br>
+              <input type="text" id="entry-${rowIdx}-value" name="entry-${rowIdx}-value" class="form-control"/>
+          </div>
+          <div class="col-md-2">
+            <label for="entry-0-weight">Weight</label><br>
+            <input class="form-control" id="entry-${rowIdx}-weight" max="100" min="1" name="entry-${rowIdx}-weight" type="number" value="1">
+          </div>
+          <div class="col-md-1 d-flex align-items-end">
+          <button id="removeRow${rowIdx}" type="button" class="btn btn-danger">Remove</button>
+          </div>
+      </div>
+  `);
+
+  
+  $("#entry-"+rowIdx+"-metadata_tag").append(options);
+  setupChangeListener(rowIdx);
+  $("#entry-"+rowIdx+"-metadata_tag").val(metadataTag);
+  $("#entry-"+rowIdx+"-condition").val(condition);
+  $("#entry-"+rowIdx+"-value").val(value);
+  $("#entry-"+rowIdx+"-weight").val(weight);
+
+  $('#removeRow' + rowIdx).on('click', function () {
+      $(this).closest('div.row').remove();
+  });
+  // Bind the change event for the metadata tag select field of the new row
+  $('#entry-' + rowIdx + '-metadata_tag').on("change", function() {
+    updateConditionOptions(rowIdx, $(this).val());
+    console.log($(this).val());
+  });
+  initializeSelect2("entry-" + rowIdx + "-metadata_tag");
+  updateConditionOptions(rowIdx, $("#entry-"+rowIdx+"-metadata_tag").val());
+}
+
+function populateAdvancedSearchFormFromSession() {
+  var advancedSearchEntries = JSON.parse(sessionStorage.getItem('advanced_search_entries') || "[]");
+  console.log(advancedSearchEntries);
+  if(advancedSearchEntries.length>1){
+    for (var i = 1; i < advancedSearchEntries.length; i++) {
+      var entry = advancedSearchEntries[i];
+      addRowWithValues(entry.metadataTag, entry.condition, entry.value, entry.weight);
+  }
+  }
+  
+}
 
 function showDetails(button) {
   // Get the hit details from the button's data-hit attribute
@@ -117,8 +232,11 @@ function showDetails(button) {
 }
 
 // Update the condition select field options based on the selected metadata tag
-function updateConditionOptions(rowIdx, metadataTagValue) {
+function updateConditionOptions(rowIdxLocal, vall) {
   // Define the condition options for each data type
+  console.log(rowIdxLocal);
+  console.log(vall);
+
   var conditionOptions = {
     'text': ['tag_exists', 'tag_not_exists', 'field_is_empty', 'field_is_not_empty', 'contains', 'not_contains'],
     'float': ['tag_exists', 'tag_not_exists', 'field_is_empty', 'field_is_not_empty', 'is_equal', 'is_not_equal', 'is_greater', 'is_smaller'],
@@ -126,11 +244,11 @@ function updateConditionOptions(rowIdx, metadataTagValue) {
   };
 
   // Get the selected data type from the metadata tag value
-  var selectedDataType = myDict[metadataTagValue];
+  var selectedDataType = myDict[vall];
 
   // Populate the condition select fied with the appropriate options
-  var conditionSelect = $("#entry-" + rowIdx + "-condition");
-
+  var conditionSelect = $("#entry-" + rowIdxLocal + "-condition");
+  console.log(conditionSelect);
   // Store the current selected option
   var currentOption = conditionSelect.val();
 
@@ -151,6 +269,13 @@ function updateConditionOptions(rowIdx, metadataTagValue) {
     conditionSelect.val(conditionSelect.find('option:not([disabled]):first').val());
   }
 
+  });
+}
+
+function setupChangeListener(rowIdx) {
+  $('#entry-' + rowIdx + '-metadata_tag').on("change", function() {
+      updateConditionOptions(rowIdx, $(this).val());
+      console.log($(this).val());
   });
 }
 
