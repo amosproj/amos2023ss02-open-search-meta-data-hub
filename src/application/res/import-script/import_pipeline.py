@@ -124,14 +124,18 @@ def modify_data(mdh_data: list[dict], data_types: dict, current_time: str) -> li
 
 def upload_data(instance_name: str, os_manager: OpenSearchManager, data_types: dict, data: list[dict],
                 files_amount: int) -> int:
-    """ This function uploads the modified data from the MetaDataHub into the OpenSearch Node using the bulk API
+    """
+    Uploads the modified data from MetaDataHub to OpenSearch using the bulk API.
 
-    :param instance_name: name of the instance (equals index name in Opensearch Node)
-    :param os_manager: Manager to handle the OpenSearch API
-    :param data_types: dictionary of all metadata-tags and their corresponding datatypes
-    :param data: list of dictionaries containing all metadata-tags and their values for each file
-    :param files_amount: amount of files (equals length of data)
-    :return: integer containing the amount of all successfully imported files
+    Args:
+        instance_name (str): Name of the instance (equivalent to index name in OpenSearch Node).
+        os_manager (OpenSearchManager): Manager to handle the OpenSearch API.
+        data_types (dict): Dictionary of metadata tags and their corresponding data types.
+        data (list[dict]): List of dictionaries containing metadata tags and their values for each file.
+        files_amount (int): Total number of files (equal to the length of data).
+
+    Returns:
+        int: Number of successfully imported files.
     """
 
     # Create an index for the new data in OpenSearch
@@ -141,7 +145,7 @@ def upload_data(instance_name: str, os_manager: OpenSearchManager, data_types: d
     os_manager.update_index(index_name=instance_name, data_types=data_types)
 
     chunk_size = 10000  # Size of chunks the data will be split into
-    imported_files = 1  # Counter for files that are successfully imported
+    imported_files = 0  # Counter for files that are successfully imported
 
     for i in range(0, files_amount, chunk_size):
         # Split the data into chunks
@@ -154,6 +158,7 @@ def upload_data(instance_name: str, os_manager: OpenSearchManager, data_types: d
         imported_files += len(response.get('items', []))
 
     return imported_files
+
 
 
 def print_status():
