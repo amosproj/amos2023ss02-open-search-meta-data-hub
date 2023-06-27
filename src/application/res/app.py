@@ -137,19 +137,8 @@ def advanced_search_v2():
 def visualizations():
     iframe_data = os_dashboard_manager.get_iframes()
 
-    # Pagination settings
-    page = int(request.args.get('page', 1))
-    per_page = 10  # Number of items per page
-    total_items = len(iframe_data)
-    total_pages = (total_items + per_page - 1) // per_page  # Calculate total pages
-
-    # Get the current page's data
-    start = (page - 1) * per_page
-    end = start + per_page
-    current_page_data = iframe_data[start:end]
-
-    return render_template('visualizations.html', iframe_data=current_page_data, page=page, total_pages=total_pages)
+    return render_template('visualizations.html',iframe_data=iframe_data)
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
+    app.run(host='0.0.0.0', port=8000)    

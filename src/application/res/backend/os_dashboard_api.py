@@ -72,7 +72,7 @@ class OSDashboardManager:
                 updated_at_human_readable = _convert_time(obj['updated_at'])
 
                 # Generate the iframe code
-                iframe_code = f'<iframe src="http://localhost:5601/app/visualize#/edit/{encoded_id}?embed=true&_g=(filters%3A!()%2CrefreshInterval%3A(pause%3A!t%2Cvalue%3A0)%2Ctime%3A(from%3Anow-15m%2Cto%3Anow))" height="600" width="800"></iframe>'
+                iframe_code = f'http://localhost:5601/app/visualize#/edit/{encoded_id}?embed=true&_g=(filters%3A!()%2CrefreshInterval%3A(pause%3A!t%2Cvalue%3A0)%2Ctime%3A(from%3Anow-15m%2Cto%3Anow))'
 
                 # Add the data to the iframe_data list
                 iframe_data.append({

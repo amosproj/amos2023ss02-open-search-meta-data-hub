@@ -290,11 +290,90 @@ function setupChangeListener(rowIdx) {
 
   //show Visualization
   function showVisualization(title,iframe_code) {
-    var iframe = '<tr class="iframeRow" style="display: none;"><td colspan="3">' + iframe_code + '</td></tr>';
+    
+    var iframe = '<iframe class="resizable-iframe" src="' + iframe_code + '" frameborder="0"></iframe>';
+
     document.getElementById('detailsTable').innerHTML = iframe;
     document.getElementById('exampleModalLabel').innerHTML = title;
 
     // Show the modal
     $('#iframeModal').modal('show');
   }
+
+  function openSidebar(iframes) {
+    var checkboxes = '';
+    for (var i = 0; i < iframes.length; i++) {
+      var iframe = iframes[i];
+      checkboxes += '<input type="checkbox" id="' + iframe.title + '" name="' + iframe.title + '" checked>';
+      checkboxes += '<label for="check' + i + '">' + iframe.title + '</label><br>';
+    }
   
+    checkboxes += '<br>';
+    checkboxes += '<input type="checkbox" id="selectAll" onclick="toggleSelectAll()" checked>';
+    checkboxes += '<label for="selectAll">Select All</label>';
+  
+    document.getElementById('detailsTable').innerHTML = checkboxes;
+    document.getElementById('sidebarTitle').innerHTML = "Panels Configuration";
+  
+    // Show the sidebar
+    document.getElementById('sidebarContainer').style.transform = "translateX(0)";
+  }
+  
+  
+  function closeSidebar() {
+    // Hide the sidebar
+    document.getElementById('sidebarContainer').style.transform = "translateX(100%)";
+  }
+  
+
+  document.addEventListener('click', function(event) {
+    var sidebarContainer = document.getElementById('sidebarContainer');
+    var sidebarOverlay = document.getElementById('sidebarOverlay');
+  
+    if (!sidebarContainer.contains(event.target) && event.target !== sidebarOverlay && event.target !== document.getElementById('openSidebarButton')) {
+      closeSidebar();
+    }
+  });
+  
+
+  function toggleSelectAll() {
+    var selectAllCheckbox = document.getElementById('selectAll');
+    var checkboxes = document.querySelectorAll('[type^="check"]');
+  
+    for (var i = 0; i < checkboxes.length; i++) {
+      checkboxes[i].checked = selectAllCheckbox.checked;
+    }
+  }
+
+function showCheckedCheckboxes(iframe_data) {
+  console.log("hello")
+  var resultContainer = document.getElementById('resultContainer');
+  var checkboxes = document.querySelectorAll('[type^="check"]');
+  var checkedCheckboxes = [];
+
+  for (var i = 0; i < checkboxes.length; i++) {
+    if (checkboxes[i].checked) {
+      checkedCheckboxes.push(checkboxes[i].name);
+    }
+  }
+
+  var html = '';
+  for (var j = 0; j < checkedCheckboxes.length; j++) {
+    var checkedCheckbox = checkedCheckboxes[j];
+    for (var k = 0; k < iframe_data.length; k++) {
+      var iframe = iframe_data[k];
+      if (iframe.title === checkedCheckbox) {
+        html += '<div class="iframe-row">';
+        html += '<div class="resizable-component draggable-iframe" draggable="true" ondragstart="drag(event)">';
+        html += '<p class="iframe-name">' + checkedCheckbox + '</p>';
+        html += '<iframe class="resizable-iframe" src="' + iframe.iframe_code + '" frameborder="0"></iframe>';
+        html += '</div>';
+        html += '</div>';
+        break;
+      }
+    }
+  }
+
+  resultContainer.innerHTML = html;
+}
+
