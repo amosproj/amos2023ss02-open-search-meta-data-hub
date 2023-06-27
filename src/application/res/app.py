@@ -19,7 +19,7 @@ app.config['SECRET_KEY'] = secrets.token_hex(16)
 bootstrap = Bootstrap5(app)
 csrf = CSRFProtect(app)
 
-os_manager: OpenSearchManager = OpenSearchManager(localhost=False)
+os_manager: OpenSearchManager = OpenSearchManager(localhost=True)
 
     
 class SimpleSearchForm(FlaskForm):
@@ -147,6 +147,12 @@ def visualizations():
 
     return render_template('visualizations.html', iframe_data=current_page_data, page=page, total_pages=total_pages)
 
+@app.route('/dashboard')
+def dashboard():
+    iframe_data = get_all_iframes.get_iframes()
+
+    return render_template('dashboard.html',iframe_data=iframe_data)
+
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)    
+    app.run(host='0.0.0.0', port=8001,debug=True)    

@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 from dateutil import tz
 
-localhost=False
+localhost=True
 
 
 def get_iframes():
@@ -33,7 +33,7 @@ def get_iframes():
             updated_at_human_readable=convert_time(obj['updated_at'])
             
             # Generate the iframe code
-            iframe_code = f'<iframe src="http://localhost:5601/app/visualize#/edit/{encoded_id}?embed=true&_g=(filters%3A!()%2CrefreshInterval%3A(pause%3A!t%2Cvalue%3A0)%2Ctime%3A(from%3Anow-15m%2Cto%3Anow))" height="600" width="800"></iframe>'
+            iframe_code = f'http://localhost:5601/app/visualize#/edit/{encoded_id}?embed=true&_g=(filters%3A!()%2CrefreshInterval%3A(pause%3A!t%2Cvalue%3A0)%2Ctime%3A(from%3Anow-15m%2Cto%3Anow))'
 
             # Add the data to the iframe_data list
             iframe_data.append({
@@ -43,6 +43,7 @@ def get_iframes():
                 'iframe_code': iframe_code
             })
 
+    print(iframe_data)
     return iframe_data
 
 
@@ -52,3 +53,5 @@ def convert_time(updated_at_ts):
   german_dt = utc_dt.astimezone(german_tz)
   updated_at_human_readable = german_dt.strftime('%b %d, %Y - %H:%M:%S')
   return updated_at_human_readable
+
+
