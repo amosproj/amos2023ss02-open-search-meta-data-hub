@@ -173,7 +173,7 @@ class OpenSearchManager:
                 'properties':
                     {
                         'timestamp': {'type': 'date', "format": "strict_date_hour_minute_second||epoch_millis"},
-                },
+                    },
             }
 
         }
@@ -330,7 +330,6 @@ class OpenSearchManager:
                 query['query']['bool'][functionality].append(sub_query)
         return query
 
-
     @staticmethod
     def _get_sub_query(data_type: str, operator: str, search_field: str, weight: str, search_content: any) -> tuple:
         """Returns a subquery that can be used to create a complete query.
@@ -477,6 +476,3 @@ class Operator(Enum):
     IS_LESS_THAN = 'is_smaller'  # Represents the "less than" operator
     IS_GREATER_THAN_OR_EQUAL = 'is_greater_or_equal'  # Represents the "greater than or equal to" operator
     IS_LESS_THAN_OR_EQUAL = 'is_smaller_or_equal'  # Represents the "less than or equal to" operator
-
-
-

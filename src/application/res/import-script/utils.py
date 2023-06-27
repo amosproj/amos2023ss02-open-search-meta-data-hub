@@ -16,4 +16,3 @@ def update_last_imported_entry(entry):
     data = {'last_imported_entry': entry}
     with open('recovery.json', 'w') as file:
         json.dump(data, file)
-

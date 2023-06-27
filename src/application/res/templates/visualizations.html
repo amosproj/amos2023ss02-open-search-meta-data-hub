@@ -6,83 +6,88 @@
 <h1>{% block title %}Visualizations{% endblock %}</h1>
 <br>
 {% if iframe_data %}
-  <table class="table table-striped">
+<table class="table table-striped">
     <thead>
-      <tr>
+    <tr>
         <th scope="col">Title</th>
         <th scope="col">Type</th>
         <th scope="col">Last Update</th>
         <th scope="col"></th>
-      </tr>
+    </tr>
     </thead>
     <tbody>
-      {% for item in iframe_data %}
-      <tr>
+    {% for item in iframe_data %}
+    <tr>
         <td>{{ item.title }}</td>
         <td>{{ item.type }}</td>
         <td>{{ item.updated_at }}</td>
-        <td><button class="btn btn-info" onclick="showVisualization('{{ item.title }}','{{ item.iframe_code}}')">Visualize</button></td>
-      </tr>
-      {% endfor %}
+        <td>
+            <button class="btn btn-info" onclick="showVisualization('{{ item.title }}','{{ item.iframe_code}}')">
+                Visualize
+            </button>
+        </td>
+    </tr>
+    {% endfor %}
     </tbody>
-  </table>
+</table>
 
-  {% if total_pages > 1 %}
-    <div class="pagination-container">
-      <ul class="pagination">
+{% if total_pages > 1 %}
+<div class="pagination-container">
+    <ul class="pagination">
         {% if page > 1 %}
         <li class="page-item">
-          <a class="page-link" href="/visualizations?page={{ page - 1 }}">Previous</a>
+            <a class="page-link" href="/visualizations?page={{ page - 1 }}">Previous</a>
         </li>
         {% else %}
         <li class="page-item disabled">
-          <span class="page-link">Previous</span>
+            <span class="page-link">Previous</span>
         </li>
         {% endif %}
         {% for num in range(1, total_pages + 1) %}
-          {% if num == page %}
-          <li class="page-item active" aria-current="page">
+        {% if num == page %}
+        <li class="page-item active" aria-current="page">
             <span class="page-link">{{ num }}</span>
-          </li>
-          {% else %}
-          <li class="page-item">
+        </li>
+        {% else %}
+        <li class="page-item">
             <a class="page-link" href="/visualizations?page={{ num }}">{{ num }}</a>
-          </li>
-          {% endif %}
+        </li>
+        {% endif %}
         {% endfor %}
         {% if page < total_pages %}
         <li class="page-item">
-          <a class="page-link" href="/visualizations?page={{ page + 1 }}">Next</a>
+            <a class="page-link" href="/visualizations?page={{ page + 1 }}">Next</a>
         </li>
         {% else %}
         <li class="page-item disabled">
-          <span class="page-link">Next</span>
+            <span class="page-link">Next</span>
         </li>
         {% endif %}
-        
-      </ul>
-    </div>
-  {% endif %}
+
+    </ul>
+</div>
+{% endif %}
 
 {% else %}
-  <p class="no-visualizations">No visualizations available. Please add visualizations to your OpenSearch Dashboard first.</p>
+<p class="no-visualizations">No visualizations available. Please add visualizations to your OpenSearch Dashboard
+    first.</p>
 {% endif %}
 
 <div class="modal fade" id="iframeModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel"></h5>
-        <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body" id="detailsTable">
-        <!-- The JavaScript function will insert the details table here -->
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-      </div>
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel"></h5>
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="detailsTable">
+                <!-- The JavaScript function will insert the details table here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
 {% endblock %}

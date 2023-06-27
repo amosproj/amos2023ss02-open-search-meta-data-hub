@@ -1,25 +1,25 @@
-$(document).ready(function(){
+$(document).ready(function () {
 
-  $("#advancedSearchToggleButton").on("click", function () {
-    $("#simpleSearch").hide(); // Hide the simple search section
-    $("#advancedSearch").show(); // Show the advanced search section
-  });
+    $("#advancedSearchToggleButton").on("click", function () {
+        $("#simpleSearch").hide(); // Hide the simple search section
+        $("#advancedSearch").show(); // Show the advanced search section
+    });
 
-  // Event handler for the simple search toggle button
-  $("#simpleSearchToggleButton").on("click", function () {
-    $("#advancedSearch").hide(); // Hide the advanced search section
-    $("#simpleSearch").show(); // Show the simple search section
-  });
+    // Event handler for the simple search toggle button
+    $("#simpleSearchToggleButton").on("click", function () {
+        $("#advancedSearch").hide(); // Hide the advanced search section
+        $("#simpleSearch").show(); // Show the simple search section
+    });
 
-  let rowIdx = 0;
+    let rowIdx = 0;
 
-  $('#addRow').on('click', function () {
-    // Increment the row index when button is clicked
-    rowIdx++;
+    $('#addRow').on('click', function () {
+        // Increment the row index when button is clicked
+        rowIdx++;
 
-    // Create the new row with incremented indices
-    var options = $("#entry-0-metadata_tag > option").clone();
-    $('#formRow').after(`
+        // Create the new row with incremented indices
+        var options = $("#entry-0-metadata_tag > option").clone();
+        $('#formRow').after(`
         <div id="row${rowIdx}" class="row formRow">
             <div class="col-md-3">
                 <label for="metadata_tag${rowIdx}">Metadata tag</label><br>
@@ -58,52 +58,51 @@ $(document).ready(function(){
         </div>
     `);
 
-    $("#entry-"+rowIdx+"-metadata_tag").append(options);
+        $("#entry-" + rowIdx + "-metadata_tag").append(options);
 
-    // Attach click event to the Remove button
-    $('#removeRow' + rowIdx).on('click', function () {
-        $(this).closest('div.row').remove();
+        // Attach click event to the Remove button
+        $('#removeRow' + rowIdx).on('click', function () {
+            $(this).closest('div.row').remove();
+        });
     });
-});
-  
-  
+
 
 });
 
 
 function showDetails(button) {
-  // Get the hit details from the button's data-hit attribute
-  var hit = JSON.parse(button.dataset.hit);
+    // Get the hit details from the button's data-hit attribute
+    var hit = JSON.parse(button.dataset.hit);
 
-  // Create a table with the details
-  var table = '<table class="table wrap-text">';
-  for (var key in hit) {
-      table += '<tr><th>' + key + '</th><td>' + hit[key] + '</td></tr>';
-  }
-  table += '</table>';
+    // Create a table with the details
+    var table = '<table class="table wrap-text">';
+    for (var key in hit) {
+        table += '<tr><th>' + key + '</th><td>' + hit[key] + '</td></tr>';
+    }
+    table += '</table>';
 
-  // Insert the table into the modal
-  document.getElementById('detailsTable').innerHTML = table;
+    // Insert the table into the modal
+    document.getElementById('detailsTable').innerHTML = table;
 
-  // Show the modal
-  $('#myModal').modal('show');
+    // Show the modal
+    $('#myModal').modal('show');
 }
 
 
- $(document).ready(function() {
-    $('.title').click(function() {
-      var row = $(this).closest('tr');
-      row.next('.iframeRow').toggle();
+$(document).ready(function () {
+    $('.title').click(function () {
+        var row = $(this).closest('tr');
+        row.next('.iframeRow').toggle();
     });
-  });
+});
 
-  //show Visualization
-  function showVisualization(title,iframe_code) {
+//show Visualization
+function showVisualization(title, iframe_code) {
     var iframe = '<tr class="iframeRow" style="display: none;"><td colspan="3">' + iframe_code + '</td></tr>';
     document.getElementById('detailsTable').innerHTML = iframe;
     document.getElementById('exampleModalLabel').innerHTML = title;
 
     // Show the modal
     $('#iframeModal').modal('show');
-  }
+}
   

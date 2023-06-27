@@ -1,8 +1,6 @@
-
 from mdh_api import MetaDataHubManager
 import time
 from import_pipeline import *
-
 
 mdh_manager = MetaDataHubManager(True)
 instance_name = 'amoscore'
@@ -32,11 +30,10 @@ for file, id in data:
     for name, value in file.items():
         if name == "FileType":
             if value not in dict:
-                dict[value] = len(file)+1
+                dict[value] = len(file) + 1
             else:
-                if len(file)+1 > dict[value]:
-                    dict[value] = len(file)+1
-
+                if len(file) + 1 > dict[value]:
+                    dict[value] = len(file) + 1
 
 all_tags = []
 for name, type in data_types.items():
@@ -44,6 +41,3 @@ for name, type in data_types.items():
 
 print(all_tags)
 print(len(all_tags))
-
-
-

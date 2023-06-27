@@ -11,11 +11,14 @@ sys.path.append(parent_dir)
 
 from backend.opensearch_api import OpenSearchManager
 
+
 def safe_timestamp() -> str:
     pass
 
+
 def get_timestamp() -> str:
     pass
+
 
 def modify_datatypes(mdh_datatypes: dict) -> dict:
     """

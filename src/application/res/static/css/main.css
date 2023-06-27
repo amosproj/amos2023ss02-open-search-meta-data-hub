@@ -1,14 +1,14 @@
-    .iframeContainer {
-        width: 100%;
-        margin-bottom: 20px;
-    }
+.iframeContainer {
+    width: 100%;
+    margin-bottom: 20px;
+}
 
-    .iframeContainer iframe {
-        display: block;
-        width: 100%;
-        height: auto;
-        border: none;
-    }
+.iframeContainer iframe {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: none;
+}
 
 
 body {
@@ -77,13 +77,13 @@ body {
     border: none;
 }
 
-.wrap-text{
+.wrap-text {
     word-wrap: break-word;
     table-layout: fixed;
     width: 100%;
 }
 
-.formRow{
+.formRow {
     margin-bottom: 10px;
 }
 
@@ -91,11 +91,13 @@ body {
 .table {
     border: none;
 }
+
 .table td, .table th {
     border: none;
     text-align: left;
 
 }
+
 .table thead th:last-child {
     text-align: right;
 }
@@ -108,19 +110,19 @@ body {
     font-size: 22px;
     font-style: italic;
     color: #000000;
-  }
+}
 
-  .page-link{
+.page-link {
     color: #000000;
 
-  }
+}
 
-  .page-item.active .page-link {
-    background-color:#000000;
+.page-item.active .page-link {
+    background-color: #000000;
     border-color: #000000;
-  }
+}
 
-  .page-item.disabled .page-link {
+.page-item.disabled .page-link {
     color: #c7c7c7;
     pointer-events: none;
-  }
+}

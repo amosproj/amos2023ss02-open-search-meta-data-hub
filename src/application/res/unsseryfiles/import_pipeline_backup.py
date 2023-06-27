@@ -3,6 +3,7 @@ from mdh_api import MetaDataHubManager
 import sys
 import os
 from datetime import datetime
+
 # Get the path to the parent directory
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -11,6 +12,7 @@ sys.path.append(parent_dir)
 
 from backend.opensearch_api import OpenSearchManager
 from mdh_api import MetaDataHubManager
+
 
 def update_last_import_timestamp(timestamp):
     """
@@ -201,6 +203,7 @@ if __name__ == "__main__":
 
     print("Finished!")
 
+
 def generate_mdh_search_query(filter_functions=None, limit=2000):
     """
     Generate a dynamic MDH search query.
@@ -247,8 +250,9 @@ def generate_mdh_search_query(filter_functions=None, limit=2000):
     query = query.replace("TIME_ZONE", "timeZone")  # Replace key for time zone
     query = query.replace("FIXED_RETURN_COLUMN_SIZE", "fixed")
 
+
 def generate_query(filter_tag, filter_value, filter_operation, filter_data_type, limit):
-    write_file("request.gql","")
+    write_file("request.gql", "")
     query = """
         query {
             mdhSearch(
@@ -284,7 +288,7 @@ def generate_query(filter_tag, filter_value, filter_operation, filter_data_type,
         }
         """ % (filter_tag, filter_value, filter_operation, filter_data_type, limit)
 
-    write_file("request.gql",query)
+    write_file("request.gql", query)
 
     return query
 
@@ -321,7 +325,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
 # example of usage
 # query_string = generate_mdh_search_query(filter_functions=["your", "filter", "functions"], limit=500)

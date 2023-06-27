@@ -26,8 +26,8 @@ def create_managers(localhost=False):
     return mdh_manager, os_manager
 
 
-
-def extract_data_from_mdh(mdh_manager: MetaDataHubManager, latest_timestamp: str = False, limit: int = False) -> tuple[dict, list[dict], int]:
+def extract_data_from_mdh(mdh_manager: MetaDataHubManager, latest_timestamp: str = False, limit: int = False) -> tuple[
+    dict, list[dict], int]:
     """
     Extract data from the MetaDataHub.
 
@@ -47,7 +47,6 @@ def extract_data_from_mdh(mdh_manager: MetaDataHubManager, latest_timestamp: str
     files_amount = len(mdh_data)
 
     return mdh_datatypes, mdh_data, files_amount
-
 
 
 def modify_datatypes(mdh_datatypes: dict) -> dict:
@@ -77,9 +76,6 @@ def modify_datatypes(mdh_datatypes: dict) -> dict:
             break
 
     return modified_datatypes
-
-
-
 
 
 def modify_data(mdh_data: list[dict], data_types: dict, current_time: str) -> list[(dict, id)]:
@@ -120,7 +116,8 @@ def modify_data(mdh_data: list[dict], data_types: dict, current_time: str) -> li
                     file_info[name] = value  # Store the modified metadata tag and its value in the file_info dictionary
         file_info['timestamp'] = current_time
 
-        modified_data.append((file_info, id))  # Append the modified metadata and the ID as a tuple to the modified_data list
+        modified_data.append(
+            (file_info, id))  # Append the modified metadata and the ID as a tuple to the modified_data list
 
     return modified_data
 
@@ -163,6 +160,7 @@ def print_status():
     # TODO: copy all print statements of @execute_pipeline() into this function
     pass
 
+
 def execute_pipeline(start_index: int = 1):
     """
         This function executes the complete import-pipeline by executing 4 steps:
@@ -188,11 +186,10 @@ def execute_pipeline(start_index: int = 1):
     # save initial import control
     save_initial_import(os_manager=os_manager, files_count=files_amount)
 
-
     # Modifying the data into correct format
     data_types = modify_datatypes(mdh_datatypes=mdh_datatypes)  # modify the datatypes so they fit in OpenSearch
-    data = modify_data(mdh_data=mdh_data[start_index-1:-1], data_types=data_types, current_time=current_time)  # modify the data so it fits in OpenSearch
-
+    data = modify_data(mdh_data=mdh_data[start_index - 1:-1], data_types=data_types,
+                       current_time=current_time)  # modify the data so it fits in OpenSearch
 
     # Loading the data into OpenSearch
     imported_files = upload_data(instance_name=instance_name, os_manager=os_manager, data_types=data_types, data=data,

@@ -46,7 +46,8 @@ class SortFunction:
 
 
 class GraphQLQuery:
-    def __init__(self, filter_functions: list = None, sort_functions: list = None, limit: int = False, filter_logic="AND"):
+    def __init__(self, filter_functions: list = None, sort_functions: list = None, limit: int = False,
+                 filter_logic="AND"):
         """Creates a new object of class GraphQLQuery.
 
         Args:
@@ -142,6 +143,3 @@ class GraphQLQuery:
 
         # Return the rendered version of the executed query as a string
         return operation.render()
-
-
-

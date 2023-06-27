@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+
 # Get the path to the parent directory
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -9,6 +10,7 @@ sys.path.append(parent_dir)
 from backend.opensearch_api import OpenSearchManager
 
 INDEX_NAME = "import_control"
+
 
 def create_import_index(os_manager: OpenSearchManager):
     """

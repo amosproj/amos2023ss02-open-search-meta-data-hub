@@ -9,7 +9,8 @@
     />
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"/>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css')}}"/>
     <title>{% block title %} {% endblock %}</title>
@@ -33,7 +34,7 @@
             <li class="nav-item active">
                 <a class="nav-link" href="{{ url_for('search')}}">Search</a>
             </li>
-              <li class="nav-item active">
+            <li class="nav-item active">
                 <a class="nav-link" href="{{ url_for('visualizations')}}">Visualizations</a>
             </li>
             <li class="nav-item active">
