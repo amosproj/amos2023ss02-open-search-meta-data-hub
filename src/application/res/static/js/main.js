@@ -107,3 +107,53 @@ function showDetails(button) {
     $('#iframeModal').modal('show');
   }
   
+  // function configurePanels() {
+  //   document.getElementById('detailsTable').innerHTML = "iframe";
+  //   document.getElementById('exampleModalLabel').innerHTML = "title";
+
+  //   // Show the modal
+  //   $('#dialogContainer').modal('show');
+  // }
+  function openSidebar(iframes) {
+    var checkboxes = '';
+    for (var i = 0; i < iframes.length; i++) {
+      var iframe = iframes[i];
+      checkboxes += '<input type="checkbox" id="check' + i + '" name="' + iframe.title + '">';
+      checkboxes += '<label for="check' + i + '">' + iframe.title + '</label><br>';
+    }
+    
+    checkboxes += '<br>';
+    checkboxes += '<input type="checkbox" id="selectAll" onclick="toggleSelectAll()">'
+    checkboxes += '<label for="selectAll">Select All</label>';
+    
+    document.getElementById('detailsTable').innerHTML = checkboxes;
+    document.getElementById('sidebarTitle').innerHTML = "Panels Configuration";
+  
+    // Show the sidebar
+    document.getElementById('sidebarContainer').style.transform = "translateX(0)";
+  }
+  
+  function closeSidebar() {
+    // Hide the sidebar
+    document.getElementById('sidebarContainer').style.transform = "translateX(100%)";
+  }
+  
+
+  document.addEventListener('click', function(event) {
+    var sidebarContainer = document.getElementById('sidebarContainer');
+    var sidebarOverlay = document.getElementById('sidebarOverlay');
+  
+    if (!sidebarContainer.contains(event.target) && event.target !== sidebarOverlay && event.target !== document.getElementById('openSidebarButton')) {
+      closeSidebar();
+    }
+  });
+  
+
+  function toggleSelectAll() {
+    var selectAllCheckbox = document.getElementById('selectAll');
+    var checkboxes = document.querySelectorAll('[id^="check"]');
+  
+    for (var i = 0; i < checkboxes.length; i++) {
+      checkboxes[i].checked = selectAllCheckbox.checked;
+    }
+  }

@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<br>
+<div class="dashboard-header">
+  <h1>{% block title %}Dashboard{% endblock %}</h1>
+  <button class="btn btn-info" id="openSidebarButton" onclick="openSidebar({{ iframe_data }})">Panels configuration</button>
+  <!-- <button type="button" class="btn btn-primary" id="openSidebarButton" onclick="openSidebar()">Open Sidebar</button> -->
+
+</div>
+</button></td>
+
+
+{% for item in iframe_data|batch(2) %}
+<div class="iframe-row">
+  {% for iframe in item %}
+  <div class="resizable-component draggable-iframe" draggable="true" ondragstart="drag(event)">
+    <p class="iframe-name">{{ iframe.title }}</p>
+    <iframe class="resizable-iframe" src="{{ iframe.iframe_code }}" frameborder="0"></iframe>
+  </div>
+  {% endfor %}
+</div>
+{% endfor %}
+
+<style>
+.iframe-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.resizable-component {
+  position: relative;
+  width: calc(50% - 10px);
+  height: 400px;
+  overflow: hidden;
+  resize: both;
+  border: 1px solid #ccc;
+  cursor: move;
+}
+
+.iframe-name {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.resizable-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+  
+.dashboard-header button {
+  margin-left: 10px;
+}
+.sidebar-container {
+  position: fixed;
+  top: 56px; /* Adjust this value based on the height of your navbar */
+  right: 0;
+  width: 50%;
+  height: calc(100% - 56px); /* Adjust this value based on the height of your navbar */
+  background-color: #f8f9fa;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  z-index: 9999;
+  transform: translateX(100%);
+  transition: transform 0.3s ease-out;
+}
+
+
+.sidebar-content {
+  height: 100%;
+  padding: 20px;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.sidebar-title {
+  margin: 0;
+}
+
+.sidebar-body {
+  flex-grow: 1;
+}
+
+.sidebar-footer {
+  margin-top: 20px;
+  text-align: right;
+}
+
+
+
+</style>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/interactjs@1.10.11"></script>
+<script>
+
+</script>
+
+<br> </br>
+<br> </br>
+<button type="button" class="btn btn-primary" id="openSidebarButton" onclick="openSidebar()">Open Sidebar</button>
+
+<div class="sidebar-container" id="sidebarContainer">
+  <div class="sidebar-content">
+    <div class="sidebar-header">
+      <h5 class="sidebar-title" id="sidebarTitle"></h5>
+    </div>
+    <div class="sidebar-body" id="detailsTable">
+      <!-- The JavaScript function will insert the details table here -->
+      
+    </div>
+    <div class="sidebar-footer">
+      <button class="btn btn-info" >Save</button>
+      <button class="btn btn-info" onclick="closeSidebar()">Close</button>
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+{% endblock %}

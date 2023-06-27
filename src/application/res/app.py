@@ -148,6 +148,12 @@ def visualizations():
 
     return render_template('visualizations.html', iframe_data=current_page_data, page=page, total_pages=total_pages)
 
+@app.route('/dashboard')
+def dashboard():
+    iframe_data = get_all_iframes.get_iframes()
+
+    return render_template('dashboard.html',iframe_data=iframe_data)
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)
