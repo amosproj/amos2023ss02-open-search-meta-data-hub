@@ -11,7 +11,7 @@
 </div>
 </button></td>
 
-
+<div id="resultContainer">
 {% for item in iframe_data|batch(2) %}
 <div class="iframe-row">
   {% for iframe in item %}
@@ -22,7 +22,7 @@
   {% endfor %}
 </div>
 {% endfor %}
-
+</div>
 <style>
 .iframe-row {
   display: flex;
@@ -67,7 +67,7 @@
   position: fixed;
   top: 56px; /* Adjust this value based on the height of your navbar */
   right: 0;
-  width: 50%;
+  width: 38%;
   height: calc(100% - 56px); /* Adjust this value based on the height of your navbar */
   background-color: #f8f9fa;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
@@ -115,7 +115,6 @@
 
 <br> </br>
 <br> </br>
-<button type="button" class="btn btn-primary" id="openSidebarButton" onclick="openSidebar()">Open Sidebar</button>
 
 <div class="sidebar-container" id="sidebarContainer">
   <div class="sidebar-content">
@@ -127,17 +126,11 @@
       
     </div>
     <div class="sidebar-footer">
-      <button class="btn btn-info" >Save</button>
+      <button class="btn btn-info" onclick="showCheckedCheckboxes({{ iframe_data }})">Save</button>
       <button class="btn btn-info" onclick="closeSidebar()">Close</button>
-
     </div>
   </div>
 </div>
-
-
-
-
-
 
 
 {% endblock %}
