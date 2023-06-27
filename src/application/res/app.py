@@ -19,7 +19,7 @@ app.config['SECRET_KEY'] = secrets.token_hex(16)
 bootstrap = Bootstrap5(app)
 csrf = CSRFProtect(app)
 
-os_manager: OpenSearchManager = OpenSearchManager(localhost=True)
+os_manager: OpenSearchManager = OpenSearchManager(localhost=False)
 
     
 class SimpleSearchForm(FlaskForm):
@@ -155,4 +155,4 @@ def dashboard():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8001,debug=True)    
+    app.run(host='0.0.0.0', port=8000)    

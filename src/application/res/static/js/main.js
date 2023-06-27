@@ -99,21 +99,16 @@ function showDetails(button) {
 
   //show Visualization
   function showVisualization(title,iframe_code) {
-    var iframe = '<tr class="iframeRow" style="display: none;"><td colspan="3">' + iframe_code + '</td></tr>';
+    
+    var iframe = '<iframe class="resizable-iframe" src="' + iframe_code + '" frameborder="0"></iframe>';
+
     document.getElementById('detailsTable').innerHTML = iframe;
     document.getElementById('exampleModalLabel').innerHTML = title;
 
     // Show the modal
     $('#iframeModal').modal('show');
   }
-  
-  // function configurePanels() {
-  //   document.getElementById('detailsTable').innerHTML = "iframe";
-  //   document.getElementById('exampleModalLabel').innerHTML = "title";
 
-  //   // Show the modal
-  //   $('#dialogContainer').modal('show');
-  // }
   function openSidebar(iframes) {
     var checkboxes = '';
     for (var i = 0; i < iframes.length; i++) {
