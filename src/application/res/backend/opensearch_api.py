@@ -178,7 +178,7 @@ class OpenSearchManager:
 
         }
 
-        if not self._client.indices.exists(index=index_name):
+        if index_name not in self.get_all_indices():
             # Check if the index already exists
             response = self._client.indices.create(index=index_name, body=index_body)
             if response["acknowledged"]:

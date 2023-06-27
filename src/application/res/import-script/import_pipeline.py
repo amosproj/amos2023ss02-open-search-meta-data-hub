@@ -2,7 +2,7 @@ import time
 from datetime import datetime
 from mdh_api import MetaDataHubManager
 import sys
-from import_controller import *
+#from import_controller import *
 
 import os
 
@@ -145,7 +145,7 @@ def upload_data(instance_name: str, os_manager: OpenSearchManager, data_types: d
     os_manager.update_index(index_name=instance_name, data_types=data_types)
 
     chunk_size = 10000  # Size of chunks the data will be split into
-    imported_files = 0  # Counter for files that are successfully imported
+    imported_files = 1  # Counter for files that are successfully imported
 
     for i in range(0, files_amount, chunk_size):
         # Split the data into chunks
@@ -161,7 +161,7 @@ def upload_data(instance_name: str, os_manager: OpenSearchManager, data_types: d
 
 
 
-def print_import_pipeline_results(start_time: float, import_info: dict):
+def print_import_pipeline_results(start_time: float):
     """
     Prints the results of the import pipeline execution.
 
@@ -170,15 +170,11 @@ def print_import_pipeline_results(start_time: float, import_info: dict):
         import_info (dict): Information about the import status.
 
     """
-    print("---------------------- Import-Pipeline ----------------------")
-    print("Start executing the pipeline ...")
-
-    if not import_info["Status"] == "Successful":
-        print("Import not successful ... retry import")
-
+    # if not import_info["Status"] == "Successful":
+    #     print("Import not successfull after retry.")
     print("--> Pipeline execution finished!")
     print("--> Pipeline took ", "%s seconds" % (time.time() - start_time), " to execute!")
-    print("---------------------- Import-Pipeline ----------------------")
+
 
 
 def execute_pipeline(start_index: int = 1):
@@ -195,7 +191,7 @@ def execute_pipeline(start_index: int = 1):
     current_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
     # getting the manager to handle the APIs
-    mdh_manager, os_manager = create_managers(localhost=True)
+    mdh_manager, os_manager = create_managers(localhost=False)
 
     # get the timestamp of the latest data import
     latest_timestamp = os_manager.get_latest_timestamp(index_name=instance_name)
@@ -204,7 +200,7 @@ def execute_pipeline(start_index: int = 1):
     mdh_datatypes, mdh_data, files_amount = extract_data_from_mdh(mdh_manager=mdh_manager, limit=15)
 
     # save initial import control
-    save_initial_import(os_manager=os_manager, files_count=files_amount)
+    #save_initial_import(os_manager=os_manager, files_count=files_amount)
 
     # Modifying the data into correct format
     data_types = modify_datatypes(mdh_datatypes=mdh_datatypes)  # modify the datatypes so they fit in OpenSearch
@@ -215,14 +211,20 @@ def execute_pipeline(start_index: int = 1):
     imported_files = upload_data(instance_name=instance_name, os_manager=os_manager, data_types=data_types, data=data,
                                  files_amount=files_amount)
 
-    import_info = update_import(os_manager=os_manager, files_count=files_amount, uploaded_files=imported_files)
+    #import_info = update_import(os_manager=os_manager, files_count=files_amount, uploaded_files=imported_files)
 
-    return import_info
+    #return import_info
 
 
 if __name__ == "__main__":
-    # Example usage:
+    print("---------------------- Import-Pipeline ----------------------")
+    print("Start executing the pipeline ...")
     start_time = time.time()
-    import_info = execute_pipeline()
-
-    print_import_pipeline_results(start_time, import_info)
+    execute_pipeline()
+    # import_info = execute_pipeline()
+    # if not import_info["Status"] == "Successful":
+    #     print("Import not successful ... retry import")
+    #     new_start_index = import_info["Files to be uploaded"] - import_info["Successfully uploaded files"]
+    #     execute_pipeline(new_start_index)
+    print_import_pipeline_results(start_time)
+    print("---------------------- Import-Pipeline ----------------------")

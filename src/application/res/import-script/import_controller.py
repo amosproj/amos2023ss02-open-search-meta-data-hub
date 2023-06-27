@@ -74,7 +74,7 @@ def update_import(os_manager: OpenSearchManager, files_count, uploaded_files):
         dict: The updated import information.
 
     """
-    time.sleep(5)
+    time.sleep(4)
     last_import = os_manager.get_last_import(index_name=INDEX_NAME)
     print(last_import)
     if last_import:

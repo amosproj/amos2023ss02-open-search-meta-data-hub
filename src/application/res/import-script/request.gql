@@ -1,26 +1,26 @@
 query {
-    mdhSearch(
-        filterFunctions: []
-        sortFunctions: []
-        filterLogicOption: AND
-        limit: 15
-    ) {
-        totalFilesCount
-        returnedFilesCount
-        instanceName
-        timeZone
-        fixedReturnColumnSize
-        limitedByLicensing
-        queryStatusAsText
-        dataTypes {
-            name
-            type
-        }
-        files {
-            metadata {
-                name
-                value
-            }
-        }
+  mdhSearch(
+    filterFunctions: []
+    sortFunctions: []
+    filterLogicOption: AND
+    limit: 15
+  ) {
+    totalFilesCount
+    returnedFilesCount
+    instanceName
+    timeZone
+    fixedReturnColumnSize
+    limitedByLicensing
+    queryStatusAsText
+    dataTypes {
+      name
+      type
     }
+    files {
+      metadata {
+        name
+        value
+      }
+    }
+  }
 }
