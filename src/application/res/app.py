@@ -12,6 +12,10 @@ from backend.opensearch_api import OpenSearchManager
 from backend.os_dashboard_api import OSDashboardManager
 import pandas as pd
 import urllib
+import configparser
+
+config = configparser.ConfigParser()
+config.read('config.ini')
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secrets.token_hex(16)
@@ -19,8 +23,8 @@ app.config['SECRET_KEY'] = secrets.token_hex(16)
 bootstrap = Bootstrap5(app)
 csrf = CSRFProtect(app)
 
-os_manager: OpenSearchManager = OpenSearchManager(localhost=False)
-os_dashboard_manager : OSDashboardManager = OSDashboardManager(localhost=False)
+os_dashboard_manager : OSDashboardManager = OSDashboardManager(localhost=config.getboolean('General','localhost'))
+os_manager: OpenSearchManager = OpenSearchManager(localhost=config.getboolean('General','localhost'),search_size = config.getint('General', 'search_size'))
 
     
 class SimpleSearchForm(FlaskForm):
@@ -28,7 +32,7 @@ class SimpleSearchForm(FlaskForm):
     submit = SubmitField('Search')
 
 class AdvancedEntryForm(FlaskForm):
-    all_fields = os_manager.get_all_fields(index_name="amoscore")
+    all_fields = os_manager.get_all_fields(index_name=config.get('General','default_index_name'))
     metadata_tag = SelectField('Metadata tag', choices=all_fields)
     condition = SelectField('Condition', choices=[
         ('tag_exists', 'tag exists'), 
@@ -91,7 +95,7 @@ def search():
     json_dict = json.dumps(field_names_data_types)
     if simpleSearchForm.validate_on_submit():
         searchValue = simpleSearchForm.searchValue.data
-        resultTmp = os_manager.simple_search("amoscore", searchValue)
+        resultTmp = os_manager.simple_search(config.get('General','default_index_name'), searchValue)
         session['last_form'] = 'simple'
         if len(resultTmp)>0:
             simpleSearchResult=renderResult(resultTmp)
@@ -111,7 +115,7 @@ def search():
                 'weight': weight
             }
             print(search_info)
-        resultTmp = os_manager.advanced_search(index_name="amoscore", search_info=search_info)
+        resultTmp = os_manager.advanced_search(index_name=config.get('General','default_index_name'), search_info=search_info)
         session['last_form'] = 'advanced'
         if len(resultTmp)>0:
             advancedSearchResult=renderResult(resultTmp)
@@ -122,12 +126,12 @@ def search():
 
 #@app.route('/search/simple')
 #def search_simple():
-#    return os_manager.simple_search("amoscore", request.args.get('searchString')) #Hardcoded indexname
+#    return os_manager.simple_search(config.get('Opensearch_Dashboard','default_index_name'), request.args.get('searchString')) #Hardcoded indexname
 #
 #@app.route('/search/advanced')
 #def search_advanced():
 #    search_info = json.loads(urllib.parse.unquote(request.args.get('searchString'))) #ToDo use Flask Forms
-#    return os_manager.advanced_search("amoscore", search_info) #Hardcoded indexname
+#    return os_manager.advanced_search(config.get('Opensearch_Dashboard', 'default_index_name'), search_info) #Hardcoded indexname
 
 @app.route('/search/advanced_v2')
 def advanced_search_v2():
