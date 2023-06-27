@@ -116,6 +116,25 @@ class OpenSearchManager:
                 f"in index '{index_name}': {str(e)}")
             return ""
 
+    def extract_metadata_dict(self, index_name: str) -> dict:
+        """Extract field names and data types from the mapping dictionary and create a new dictionary.
+
+        Args:
+            index_name (str): The name of the index to retrieve metadata from.
+
+        Returns:
+            dict: A new dictionary with field names as keys and data types as values.
+        """
+        metadata_dict = {}
+
+        mapping_dict = self._client.indices.get_mapping(index=index_name)
+        properties = mapping_dict[index_name]['mappings']['properties']
+        for field_name, field_info in properties.items():
+            data_type = field_info.get('type')
+            metadata_dict[field_name] = data_type
+
+        return metadata_dict
+
     def field_exists(self, index_name: str, field_name: str) -> bool:
         """Check if a field exists or if at least one document has a value for it.
 
