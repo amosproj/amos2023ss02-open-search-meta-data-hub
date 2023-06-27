@@ -118,20 +118,21 @@ function showDetails(button) {
     var checkboxes = '';
     for (var i = 0; i < iframes.length; i++) {
       var iframe = iframes[i];
-      checkboxes += '<input type="checkbox" id="check' + i + '" name="' + iframe.title + '">';
+      checkboxes += '<input type="checkbox" id="' + iframe.title + '" name="' + iframe.title + '" checked>';
       checkboxes += '<label for="check' + i + '">' + iframe.title + '</label><br>';
     }
-    
+  
     checkboxes += '<br>';
-    checkboxes += '<input type="checkbox" id="selectAll" onclick="toggleSelectAll()">'
+    checkboxes += '<input type="checkbox" id="selectAll" onclick="toggleSelectAll()" checked>';
     checkboxes += '<label for="selectAll">Select All</label>';
-    
+  
     document.getElementById('detailsTable').innerHTML = checkboxes;
     document.getElementById('sidebarTitle').innerHTML = "Panels Configuration";
   
     // Show the sidebar
     document.getElementById('sidebarContainer').style.transform = "translateX(0)";
   }
+  
   
   function closeSidebar() {
     // Hide the sidebar
@@ -151,9 +152,42 @@ function showDetails(button) {
 
   function toggleSelectAll() {
     var selectAllCheckbox = document.getElementById('selectAll');
-    var checkboxes = document.querySelectorAll('[id^="check"]');
+    var checkboxes = document.querySelectorAll('[type^="check"]');
   
     for (var i = 0; i < checkboxes.length; i++) {
       checkboxes[i].checked = selectAllCheckbox.checked;
     }
   }
+
+function showCheckedCheckboxes(iframe_data) {
+  console.log("hello")
+  var resultContainer = document.getElementById('resultContainer');
+  var checkboxes = document.querySelectorAll('[type^="check"]');
+  var checkedCheckboxes = [];
+
+  for (var i = 0; i < checkboxes.length; i++) {
+    if (checkboxes[i].checked) {
+      checkedCheckboxes.push(checkboxes[i].name);
+    }
+  }
+
+  var html = '';
+  for (var j = 0; j < checkedCheckboxes.length; j++) {
+    var checkedCheckbox = checkedCheckboxes[j];
+    for (var k = 0; k < iframe_data.length; k++) {
+      var iframe = iframe_data[k];
+      if (iframe.title === checkedCheckbox) {
+        html += '<div class="iframe-row">';
+        html += '<div class="resizable-component draggable-iframe" draggable="true" ondragstart="drag(event)">';
+        html += '<p class="iframe-name">' + checkedCheckbox + '</p>';
+        html += '<iframe class="resizable-iframe" src="' + iframe.iframe_code + '" frameborder="0"></iframe>';
+        html += '</div>';
+        html += '</div>';
+        break;
+      }
+    }
+  }
+
+  resultContainer.innerHTML = html;
+}
+
