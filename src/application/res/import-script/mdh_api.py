@@ -84,7 +84,7 @@ class MetaDataHubManager:
         return gql_query
 
     def format_query(self, gql_query: str) -> str:
-        """ Formatss the wuery in a readable format
+        """ Formats the query in a readable format
 
         :param gql_query: the original GraphQl query
         :return: String containing the formatted query
