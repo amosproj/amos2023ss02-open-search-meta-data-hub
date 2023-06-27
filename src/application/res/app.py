@@ -24,7 +24,7 @@ bootstrap = Bootstrap5(app)
 csrf = CSRFProtect(app)
 
 os_dashboard_manager : OSDashboardManager = OSDashboardManager(localhost=config.getboolean('General','localhost'))
-os_manager: OpenSearchManager = OpenSearchManager(localhost=config.getboolean('General','localhost'))
+os_manager: OpenSearchManager = OpenSearchManager(localhost=config.getboolean('General','localhost'),search_size = config.getint('General', 'search_size'))
 
     
 class SimpleSearchForm(FlaskForm):

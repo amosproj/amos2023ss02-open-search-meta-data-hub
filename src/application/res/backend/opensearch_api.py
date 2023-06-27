@@ -17,16 +17,18 @@ class OpenSearchManager:
      on your specific requirements.
      """
 
-    def __init__(self, localhost: bool = False):
+    def __init__(self, localhost: bool = False, search_size = 10):
         """
         Create a new OpenSearchManager for handling the connection to OpenSearch.
 
         :param localhost: A boolean variable that defines whether to connect to a local instance or
                           the docker container.
                           If not set to True, it will automatically connect to the docker container.
+        :param search_size: A integer variable, which specifies, how much search results should be displayed.
         """
 
         self._set_host(localhost)  # set the host for the OpenSearch connection
+        self.search_size = search_size
         self._connect_to_open_search()
 
     def _set_host(self, localhost: bool):
@@ -243,6 +245,7 @@ class OpenSearchManager:
         """
         fields = self.get_all_fields(index_name)
         query = {
+            'size' : self.search_size,
             "query": {
                 "bool": {
                     "should": []
@@ -282,7 +285,7 @@ class OpenSearchManager:
                 weight = search_info[search_field]['weight']
                 sub_queries.append(self._get_sub_query(data_type, operator, search_field, weight,search_content))
         if sub_queries:
-            query = self._get_query(sub_queries)
+            query = self._get_query(sub_queries, self.search_size)
         else:
             query = {"query": {"exists": {"field": " "}}}
         print("Advanced_query:",query)
@@ -294,7 +297,7 @@ class OpenSearchManager:
         return response
 
     @staticmethod
-    def _get_query(sub_queries: list[tuple]) -> dict:
+    def _get_query(sub_queries: list[tuple], search_size) -> dict:
         """
         Function that creates a query that can be used to search in OpenSearch.
 
@@ -303,7 +306,7 @@ class OpenSearchManager:
         :return: Returns a query that can be used to search in OpenSearch.
         """
         #The default size is 10, now it goes to 100 for example!
-        query = {'size':100,'query': {'bool': {}}}
+        query = {'size' : search_size,'query': {'bool': {}}}
         for sub_query, functionality in sub_queries:
             if functionality not in query['query']['bool']:
                 query['query']['bool'][functionality] = [sub_query]
