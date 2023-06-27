@@ -135,7 +135,7 @@ def advanced_search_v2():
 def visualizations():
     iframe_data = os_dashboard_manager.get_iframes()
 
-    return render_template('dashboard.html',iframe_data=iframe_data)
+    return render_template('visualizations.html',iframe_data=iframe_data)
 
 
 if __name__ == '__main__':
