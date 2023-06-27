@@ -161,9 +161,24 @@ def upload_data(instance_name: str, os_manager: OpenSearchManager, data_types: d
 
 
 
-def print_status():
-    # TODO: copy all print statements of @execute_pipeline() into this function
-    pass
+def print_import_pipeline_results(start_time: float, import_info: dict):
+    """
+    Prints the results of the import pipeline execution.
+
+    Args:
+        start_time (float): Start time of the pipeline execution.
+        import_info (dict): Information about the import status.
+
+    """
+    print("---------------------- Import-Pipeline ----------------------")
+    print("Start executing the pipeline ...")
+
+    if not import_info["Status"] == "Successful":
+        print("Import not successful ... retry import")
+
+    print("--> Pipeline execution finished!")
+    print("--> Pipeline took ", "%s seconds" % (time.time() - start_time), " to execute!")
+    print("---------------------- Import-Pipeline ----------------------")
 
 
 def execute_pipeline(start_index: int = 1):
@@ -206,16 +221,8 @@ def execute_pipeline(start_index: int = 1):
 
 
 if __name__ == "__main__":
-    print("---------------------- Import-Pipeline ----------------------")
+    # Example usage:
     start_time = time.time()
-    print("Start executing the pipeline ...")
     import_info = execute_pipeline()
 
-    if not import_info["Status"] == "Successful":
-        print("Import not successful ... retry import")
-        new_start_index = import_info["Files to be uploaded"] - import_info["Successfully uploaded files"]
-        execute_pipeline(new_start_index)
-
-    print("--> Pipeline execution finished!")
-    print("--> Pipeline took ", "%s seconds" % (time.time() - start_time), " to execute!")
-    print("---------------------- Import-Pipeline ----------------------")
+    print_import_pipeline_results(start_time, import_info)
