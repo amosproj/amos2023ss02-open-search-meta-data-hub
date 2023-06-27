@@ -19,7 +19,7 @@ app.config['SECRET_KEY'] = secrets.token_hex(16)
 bootstrap = Bootstrap5(app)
 csrf = CSRFProtect(app)
 
-os_manager: OpenSearchManager = OpenSearchManager(localhost=True)
+os_manager: OpenSearchManager = OpenSearchManager(localhost=False)
 
     
 class SimpleSearchForm(FlaskForm):
@@ -86,6 +86,8 @@ def search():
     simpleSearchResult = ""
     advancedSearchForm = AdvancedSearchForm()
     advancedSearchResult = ""
+    field_names_data_types = os_manager.extract_metadata_dict('amoscore')
+    json_dict = json.dumps(field_names_data_types)
     if simpleSearchForm.validate_on_submit():
         searchValue = simpleSearchForm.searchValue.data
         resultTmp = os_manager.simple_search("amoscore", searchValue)
@@ -115,7 +117,7 @@ def search():
         else:
             advancedSearchResult="No results found."
 
-    return render_template('search.html',simpleSearchForm=simpleSearchForm,simpleSearchResult=simpleSearchResult, advancedSearchForm=advancedSearchForm, advancedSearchResult=advancedSearchResult,last_form=session.get('last_form'))
+    return render_template('search.html',simpleSearchForm=simpleSearchForm,simpleSearchResult=simpleSearchResult, advancedSearchForm=advancedSearchForm, advancedSearchResult=advancedSearchResult,last_form=session.get('last_form'), json_dict=json_dict)
 
 #@app.route('/search/simple')
 #def search_simple():

@@ -92,7 +92,13 @@ $(document).ready(function(){
     $('#removeRow' + rowIdx).on('click', function () {
         $(this).closest('div.row').remove();
     });
-});
+  });
+
+  // Set the initial event listener for the metadata tag select field in the first row
+  $('#entry-0-metadata_tag').change(function() {
+    var metadataTagValue = $(this).val();
+    updateConditionOptions(0, metadataTagValue);
+  });
   
   
 
@@ -115,6 +121,28 @@ function showDetails(button) {
 
   // Show the modal
   $('#myModal').modal('show');
+}
+
+// Update the condition select field options based on the selected metadata tag
+function updateConditionOptions(rowIdx, metadataTagValue) {
+  // Define the condition options for each data type
+  var conditionOptions = {
+    'text': ['tag_exists', 'field_is_empty', 'field_is_not_empty', 'contains', 'not_contains'],
+    'float': ['tag_exists', 'field_is_empty', 'field_is_not_empty', 'is_equal', 'is_not_equal', 'is_greater', 'is_smaller'],
+    'date': ['tag_exists', 'field_is_empty', 'field_is_not_empty', 'is_equal', 'is_not_equal', 'is_greater', 'is_smaller'],
+  };
+
+  // Get the selected data type from the metadata tag value
+  var selectedDataType = getDataType(metadataTagValue);
+  // Populate the condition select field with the appropriate options
+}
+
+// Get the data type based on the metadata tag value
+function getDataType(metadataTagValue) {
+  var hiddenField = document.getElementById('datatypesDict');
+  var jsonDict = hiddenField.value;
+  var myDict = JSON.parse(jsonDict);  // Parse the JSON string back to a JavaScript object
+  return myDict[metadataTagValue]
 }
 
 
