@@ -68,8 +68,7 @@ class MetaDataHubManager:
         return contents
 
     def _write_file(self, contents):
-        """ This functions t
-        writes to a local GraphQl file
+        """ This functions writes to a local GraphQl file
 
         :param contents: the content that will be written into the file
         """
@@ -89,7 +88,7 @@ class MetaDataHubManager:
         return gql_query
 
     def format_query(self, gql_query: str) -> str:
-        """ Formatss the wuery in a readable format
+        """ Formats the query in a readable format
 
         :param gql_query: the original GraphQl query
         :return: String containing the formatted query
@@ -108,7 +107,7 @@ class MetaDataHubManager:
     def get_instance_name(self) -> str:
         """ get the instance (core name) from the last request
 
-        : return: String containing the name of the instance on which the downloaded was executed
+        :return: String containing the name of the instance on which the downloaded was executed
         """
         return self.result['mdhSearch']['instanceName'].lower()
 

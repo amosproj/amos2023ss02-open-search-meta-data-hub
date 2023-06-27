@@ -3,6 +3,8 @@ from mdh_api import MetaDataHubManager
 import sys
 import os
 
+#TODO : import config
+
 # Get the path to the parent directory
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -82,13 +84,13 @@ def modify_data(mdh_data: list[dict], data_types: dict) -> list[dict]:
 
 if __name__ == "__main__":
     print("Start importing...")
-    mdh_manager = MetaDataHubManager(localhost=False)  # create a manager for handling the MetaDataHub API
+    mdh_manager = MetaDataHubManager(localhost=config.get('General','localhost'))  # create a manager for handling the MetaDataHub API
     instance_name = mdh_manager.get_instance_name()  # get the instance (core name) of the MetaDataHub request
     mdh_datatypes = mdh_manager.get_datatypes()  # get all mdh_datatypes of the request
     mdh_data = mdh_manager.get_data()  # get all mdh_data from the request
     data_types = modify_datatypes(mdh_datatypes=mdh_datatypes)  # modify the datatypes so they fit in OpenSearch
     data = modify_data(mdh_data=mdh_data, data_types=data_types)  # modify the data so it fits in OpenSearch
-    os_manager = OpenSearchManager(localhost=False)  # create a manager for handling the OpenSearch API
+    os_manager = OpenSearchManager(localhost=config.get('General','localhost'))  # create a manager for handling the OpenSearch API
     os_manager.create_index(index_name=instance_name, data_types=data_types)  # create an index for the new data
     os_manager.perform_bulk(index_name=instance_name,
                             data=data)  # perform a bulk request to store the new data in OpenSearch

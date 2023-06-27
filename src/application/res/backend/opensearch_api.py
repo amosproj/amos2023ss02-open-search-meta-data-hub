@@ -3,6 +3,9 @@ from opensearchpy import OpenSearch
 from opensearchpy.exceptions import ConnectionError, NotFoundError, TransportError, RequestError
 from enum import Enum
 import json
+from dotenv import load_dotenv
+import os
+
 
 
 # from helper_class import Operator
@@ -14,18 +17,19 @@ class OpenSearchManager:
      on your specific requirements.
      """
 
-    def __init__(self, localhost: bool = False, import_all=True):
+    def __init__(self, localhost: bool = False, search_size = 10):
         """
         Create a new OpenSearchManager for handling the connection to OpenSearch.
 
         :param localhost: A boolean variable that defines whether to connect to a local instance or
                           the docker container.
                           If not set to True, it will automatically connect to the docker container.
+        :param search_size: A integer variable, which specifies, how much search results should be displayed.
         """
 
         self._set_host(localhost)  # set the host for the OpenSearch connection
+        self.search_size = search_size
         self._connect_to_open_search()
-        self.import_all = import_all
 
     def _set_host(self, localhost: bool):
         """ Setting the host for the OpenSearch connection
@@ -43,7 +47,9 @@ class OpenSearchManager:
 
         # Create the client with SSL/TLS and hostname verification disabled
         # Port on which the OpenSearch node runs
-        auth = ('admin', 'admin')  # For testing only. Don't store credentials in code.
+        load_dotenv()  # load the environment
+        #print(os.getenv("OS_PASSWORD"))
+        auth = (os.getenv("OS_USER"),os.getenv("OS_PASSWORD"))  # credentials are loaded from the .env file
         self._client = OpenSearch(
             hosts=[{'host': self._host, 'port': self._port}],  # Host and port to connect with
             http_auth=auth,  # Credentials
@@ -116,6 +122,25 @@ class OpenSearchManager:
                 f"Error occurred while retrieving datatype for field '{field_name}' "
                 f"in index '{index_name}': {str(e)}")
             return ""
+
+    def extract_metadata_dict(self, index_name: str) -> dict:
+        """Extract field names and data types from the mapping dictionary and create a new dictionary.
+
+        Args:
+            index_name (str): The name of the index to retrieve metadata from.
+
+        Returns:
+            dict: A new dictionary with field names as keys and data types as values.
+        """
+        metadata_dict = {}
+
+        mapping_dict = self._client.indices.get_mapping(index=index_name)
+        properties = mapping_dict[index_name]['mappings']['properties']
+        for field_name, field_info in properties.items():
+            data_type = field_info.get('type')
+            metadata_dict[field_name] = data_type
+
+        return metadata_dict
 
     def field_exists(self, index_name: str, field_name: str) -> bool:
         """Check if a field exists or if at least one document has a value for it.
@@ -263,6 +288,7 @@ class OpenSearchManager:
         """
         fields = self.get_all_fields(index_name)
         query = {
+            'size' : self.search_size,
             "query": {
                 "bool": {
                     "should": []
@@ -291,6 +317,7 @@ class OpenSearchManager:
         :return: None (or specify the return type if applicable).
         """
 
+        print("Search_info: ", search_info)
         sub_queries = []
         for search_field in search_info:
             print(self.field_exists(index_name, search_field))
@@ -299,12 +326,12 @@ class OpenSearchManager:
                 search_content = search_info[search_field]['search_content']
                 operator = search_info[search_field]['operator']
                 weight = search_info[search_field]['weight']
-                sub_queries.append(self._get_sub_query(data_type, operator, search_field, weight, search_content))
+                sub_queries.append(self._get_sub_query(data_type, operator, search_field, weight,search_content))
         if sub_queries:
-            query = self._get_query(sub_queries)
+            query = self._get_query(sub_queries, self.search_size)
         else:
             query = {"query": {"exists": {"field": " "}}}
-        print("Advanced_query:", query)
+        print("Advanced_query:",query)
 
         response = self._client.search(
             body=query,
@@ -313,7 +340,7 @@ class OpenSearchManager:
         return response
 
     @staticmethod
-    def _get_query(sub_queries: list[tuple]) -> dict:
+    def _get_query(sub_queries: list[tuple], search_size) -> dict:
         """
         Function that creates a query that can be used to search in OpenSearch.
 
@@ -321,8 +348,8 @@ class OpenSearchManager:
         the value 'must' or 'must_not'.
         :return: Returns a query that can be used to search in OpenSearch.
         """
-        # The default size is 10, now it goes to 100 for example!
-        query = {'size': 100, 'query': {'bool': {}}}
+        #The default size is 10, now it goes to 100 for example!
+        query = {'size' : search_size,'query': {'bool': {}}}
         for sub_query, functionality in sub_queries:
             if functionality not in query['query']['bool']:
                 query['query']['bool'][functionality] = [sub_query]
@@ -331,7 +358,7 @@ class OpenSearchManager:
         return query
 
     @staticmethod
-    def _get_sub_query(data_type: str, operator: str, search_field: str, weight: str, search_content: any) -> tuple:
+    def _get_sub_query(data_type: str, operator: str, search_field: str, weight: str,search_content: any) -> tuple:
         """Returns a subquery that can be used to create a complete query.
 
           Args:

@@ -5,6 +5,8 @@ import sys
 #from import_controller import *
 
 import os
+import configparser
+
 
 # Get the path to the parent directory
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -13,10 +15,11 @@ parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
 from backend.opensearch_api import OpenSearchManager
 
+config = configparser.ConfigParser()
+config.read('config.ini')
 
-def create_managers(localhost=False):
-    """
-    Create managers to handle the APIs for MetaDataHub and OpenSearch Node.
+def create_managers(localhost : bool = False):
+    """ This function creates the managers to handle the APIs to the MetaDataHub and the OpenSearch Node
 
     :param localhost: Boolean value that defines if the connection is local or on a Docker container (for testing).
     :return: Tuple containing MetaDataHubManager and OpenSearchManager objects.
@@ -68,13 +71,12 @@ def modify_datatypes(mdh_datatypes: dict) -> dict:
             modified_datatypes[name] = 'float'
         elif mdh_type == 'ts':
             modified_datatypes[name] = 'date'
+        elif mdh_type == 'str':
+            modified_datatypes[name] = 'text'
         else:
             modified_datatypes[name] = 'text'
-
-        # Break the loop if the maximum number of modified datatypes is reached
         if len(modified_datatypes) >= 900:
             break
-
     return modified_datatypes
 
 
@@ -187,11 +189,17 @@ def execute_pipeline(start_index: int = 1):
     """
 
     # the instance of the MetaDataHub in which the search is performed
-    instance_name = "amoscore"
+    #instance_name = "amoscore"
     current_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    instance_name = config.get('General','default_index_name')
 
     # getting the manager to handle the APIs
-    mdh_manager, os_manager = create_managers(localhost=False)
+    print("1. Start to connect to the OpenSearch Node and the MetaDataHub API.")
+    start_time_connecting = time.time()
+    print(config.getboolean('General','localhost'))
+    mdh_manager, os_manager = create_managers(localhost=config.getboolean('General','localhost'))
+    print("--> Finished to connect to the OpenSearch Node and the MetaDataHub API!")
+    print("--> Time needed: %s seconds!" % (time.time() - start_time_connecting))
 
     # get the timestamp of the latest data import
     latest_timestamp = os_manager.get_latest_timestamp(index_name=instance_name)

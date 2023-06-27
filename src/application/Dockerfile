@@ -9,6 +9,9 @@ ADD res .
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
+# copy the config.ini file to the working directory
+ADD config.ini config.ini
+
 # download mdh-lib
 RUN wget https://metadatahub.de/cloud/s/JpgrZMQBMn6GWHs/download/mdh-2.3.1-py3-none-any.whl
 RUN pip install mdh-2.3.1-py3-none-any.whl
