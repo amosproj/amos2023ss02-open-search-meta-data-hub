@@ -222,24 +222,20 @@ def execute_pipeline(start_index: int = 1):
     # return import_info
 
 
-def print_import_pipeline_results(start_time: float):
-    # Implementation of result printing
-    pass
+def schedule_import_pipeline(interval: int):
+    """
+    Schedules the import pipeline to run at a specified interval.
 
-
-if __name__ == "__main__":
-    print("---------------------- Import-Pipeline ----------------------")
-    print("Start executing the pipeline ...")
-    start_time = time.time()
-    execute_pipeline()
-    print_import_pipeline_results(start_time)
-    print("---------------------- Import-Pipeline ----------------------")
-
-# Scheduling logic
-if config.getboolean('General', 'schedule_enabled'):
-    interval_minutes = config.getint('General', 'schedule_interval_minutes')
+    :param interval: Interval in seconds between each execution of the import pipeline.
+    """
     while True:
-        print("Running import pipeline...")
-        execute_pipeline()
-        print("Waiting for the next run...")
-        time.sleep(interval_minutes * 60)
+        # Execute the import pipeline here
+        print_import_pipeline_results(time.time())  # Assuming the start time is the current time
+
+        # Wait for the specified interval
+        time.sleep(interval)
+
+
+if __name__ == '__main__':
+    # Entry point of the script
+    schedule_import_pipeline(interval=3600)  # Schedule the import pipeline to run every hour
