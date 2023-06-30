@@ -115,7 +115,7 @@ class ImportControl:
         new_import = Import(successful=False, version=1, files_in_os=0, files_in_mdh=100)
         self._write(new_import)
 
-    def update_import(self, files_in_os):
+    def update_import(self, imported_files):
         """
                 Updates the import state with the given files_in_os value.
 
@@ -124,7 +124,7 @@ class ImportControl:
         last_import: Import = self._get_last_import()
         if last_import is not None:
             updated_import = Import(successful=True, version=last_import.version,
-                                    files_in_os=files_in_os, files_in_mdh=last_import.files_in_mdh)
+                                    files_in_os=last_import.files_in_os + imported_files, files_in_mdh=last_import.files_in_mdh)
             self._write(updated_import)
 
     def last_import_successful(self):
