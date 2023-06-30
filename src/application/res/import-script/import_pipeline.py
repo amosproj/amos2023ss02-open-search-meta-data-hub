@@ -2,7 +2,6 @@ import time
 from datetime import datetime
 from mdh_api import MetaDataHubManager
 import sys
-#from import_controller import *
 
 import os
 import configparser
@@ -179,7 +178,7 @@ def print_import_pipeline_results(start_time: float):
 
 
 
-def execute_pipeline(start_index: int = 1):
+def execute_pipeline():
     """
         This function executes the complete import-pipeline by executing 4 steps:
         1. connecting to the OpenSearch Node and the MetaDataHub
@@ -193,33 +192,21 @@ def execute_pipeline(start_index: int = 1):
     current_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
     instance_name = config.get('General','default_index_name')
 
-    # getting the manager to handle the APIs
-    print("1. Start to connect to the OpenSearch Node and the MetaDataHub API.")
-    start_time_connecting = time.time()
-    print(config.getboolean('General','localhost'))
     mdh_manager, os_manager = create_managers(localhost=config.getboolean('General','localhost'))
-    print("--> Finished to connect to the OpenSearch Node and the MetaDataHub API!")
-    print("--> Time needed: %s seconds!" % (time.time() - start_time_connecting))
 
-    # get the timestamp of the latest data import
     latest_timestamp = os_manager.get_latest_timestamp(index_name=instance_name)
 
-    # MdH data extraction
     mdh_datatypes, mdh_data, files_amount = extract_data_from_mdh(mdh_manager=mdh_manager, limit=15)
 
-    # save initial import control
-    #save_initial_import(os_manager=os_manager, files_count=files_amount)
 
-    # Modifying the data into correct format
     data_types = modify_datatypes(mdh_datatypes=mdh_datatypes)  # modify the datatypes so they fit in OpenSearch
-    data = modify_data(mdh_data=mdh_data[start_index - 1:-1], data_types=data_types,
+    data = modify_data(mdh_data=mdh_data, data_types=data_types,
                        current_time=current_time)  # modify the data so it fits in OpenSearch
 
     # Loading the data into OpenSearch
     imported_files = upload_data(instance_name=instance_name, os_manager=os_manager, data_types=data_types, data=data,
                                  files_amount=files_amount)
 
-    #import_info = update_import(os_manager=os_manager, files_count=files_amount, uploaded_files=imported_files)
 
     #return import_info
 
@@ -236,3 +223,7 @@ if __name__ == "__main__":
     #     execute_pipeline(new_start_index)
     print_import_pipeline_results(start_time)
     print("---------------------- Import-Pipeline ----------------------")
+
+
+# TODO: Put current time into modify data
+# TODO: (optional) make multiple used variables global
