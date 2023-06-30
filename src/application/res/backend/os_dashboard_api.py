@@ -49,7 +49,7 @@ class OSDashboardManager:
         iframe_code of all saved visualization of the OpenSearch-Dashboard
         """
         # Fetch visualizations
-        url = f'http://{self._host}:{self._port}/api/saved_objects/_find?type=visualization'
+        url = f'http://{self._host}:{self._port}/api/saved_objects/_find?type=dashboard'
         headers = {
             'Content-Type': 'application/json',
             'kbn-xsrf': 'true'  # Add this header if required by your OpenSearch Dashboards instance
@@ -60,24 +60,24 @@ class OSDashboardManager:
         visualizations = response_data.get('saved_objects', [])
         iframe_data = []
         for obj in visualizations:
-            if obj.get('id') and obj.get('type') == 'visualization':
+            if obj.get('id') and obj.get('type') == 'dashboard':
                 # Extract visualization information
                 visualization_id = obj['id']
                 encoded_id = urllib.parse.quote(visualization_id)
                 title = obj['attributes']['title'].capitalize()
-                vis_state = json.loads(obj['attributes']['visState'])
-                vis_type = vis_state['type'].capitalize()
+                #vis_state = json.loads(obj['attributes']['visState'])
+                #vis_type = vis_state['type'].capitalize()
 
                 # get and convert last update time
                 updated_at_human_readable = _convert_time(obj['updated_at'])
 
                 # Generate the iframe code
-                iframe_code = f'http://localhost:5601/app/visualize#/edit/{encoded_id}?embed=true&_g=(filters%3A!()%2CrefreshInterval%3A(pause%3A!t%2Cvalue%3A0)%2Ctime%3A(from%3Anow-15m%2Cto%3Anow))'
+                iframe_code = f'http://localhost:5601/app/dashboards#/view/{encoded_id}?embed=true&_g=(filters%3A!()%2CrefreshInterval%3A(pause%3A!t%2Cvalue%3A0)%2Ctime%3A(from%3Anow-15m%2Cto%3Anow))'
 
                 # Add the data to the iframe_data list
                 iframe_data.append({
                     'title': title,
-                    'type': vis_type,
+                    #'type': vis_type,
                     'updated_at': updated_at_human_readable,
                     'iframe_code': iframe_code
                 })
