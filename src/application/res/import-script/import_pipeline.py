@@ -2,7 +2,7 @@ import time
 from datetime import datetime
 from mdh_api import MetaDataHubManager
 import sys
-
+from import_control import ImportControl
 import os
 import configparser
 
@@ -178,7 +178,7 @@ def print_import_pipeline_results(start_time: float):
 
 
 
-def execute_pipeline():
+def execute_pipeline(import_control: ImportControl):
     """
         This function executes the complete import-pipeline by executing 4 steps:
         1. connecting to the OpenSearch Node and the MetaDataHub
@@ -198,6 +198,9 @@ def execute_pipeline():
 
     mdh_datatypes, mdh_data, files_amount = extract_data_from_mdh(mdh_manager=mdh_manager, limit=15)
 
+    files_in_mdh = mdh_manager.get_total_files_count()
+    files_in_os = os_manager.count_files(index_name=instance_name)
+    import_control.create_import(files_in_os=files_in_os, files_in_mdh=files_in_mdh)
 
     data_types = modify_datatypes(mdh_datatypes=mdh_datatypes)  # modify the datatypes so they fit in OpenSearch
     data = modify_data(mdh_data=mdh_data, data_types=data_types,
@@ -207,8 +210,23 @@ def execute_pipeline():
     imported_files = upload_data(instance_name=instance_name, os_manager=os_manager, data_types=data_types, data=data,
                                  files_amount=files_amount)
 
+    import_control.update_import(imported_files=imported_files)
 
     #return import_info
+
+
+def manage_import_pipeline():
+    import_control = ImportControl()
+    last_import = import_control.get_last_import()
+    if last_import is None: # initial import
+        execute_pipeline(import_control=import_control)
+    elif not last_import.successful:
+        execute_pipeline(import_control=import_control)
+    else:
+        print("Last import was successful")
+
+
+
 
 
 if __name__ == "__main__":

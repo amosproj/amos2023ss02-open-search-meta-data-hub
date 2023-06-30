@@ -53,19 +53,19 @@ class ImportControl:
         new_import = Import(successful=False, version=1, files_in_os=0, files_in_mdh=100)
         self._write(new_import)
 
-    def update_import(self, files_in_os):
+    def update_import(self, imported_files):
         last_import: Import = self._get_last_import()
         if last_import is not None:
             updated_import = Import(successful=True, version=last_import.version,
-                                files_in_os=files_in_os, files_in_mdh=last_import.files_in_mdh)
+                                files_in_os=last_import.files_in_os+imported_files, files_in_mdh=last_import.files_in_mdh)
             self._write(updated_import)
 
-    def last_import_successful(self):
+    def get_last_import(self):
         last_import: Import = self._get_last_import()
         if last_import is not None:
-            return last_import.successful
+            return last_import
         else:
-            return False
+            return None
 
     def _get_last_import(self):
         try:
@@ -87,29 +87,3 @@ ic.update_import(0)
 print(ic.last_import_successful())
 
 
-"""
-
-Files in MDH: 1000 
-
-1. Import: Limit = 150,
--> files downloaded = 150
--> offset = 0
--> Import-Control:
-    - files in OS: 150 
-    - files in MDH: 1000
-
-2. Import: Limit = 100
--> files downloaded = 250 
--> offset = 150 
--> import control:
-    - files in OS: 250
-    - files in MDH: 1000
-    
-3. Import: Limit = False
--> files downloaded = 1000
--> offset = 250
--> import control:
-    - files in OS: 1000
-    - files in MDH: 1000
-
-"""
