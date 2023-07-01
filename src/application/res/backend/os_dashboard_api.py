@@ -6,11 +6,20 @@ from dateutil import tz
 
 
 def _convert_time(updated_at_ts):
+    # Convert the UTC timestamp to a datetime object with UTC timezone information
     utc_dt = datetime.fromisoformat(updated_at_ts[:-1]).replace(tzinfo=tz.tzutc())
+
+    # Define the German timezone
     german_tz = tz.gettz('Europe/Berlin')
+
+    # Convert the UTC datetime to the German timezone
     german_dt = utc_dt.astimezone(german_tz)
+
+    # Format the German datetime as a human-readable string
     updated_at_human_readable = german_dt.strftime('%b %d, %Y - %H:%M:%S')
+
     return updated_at_human_readable
+
 
 
 class OSDashboardManager:

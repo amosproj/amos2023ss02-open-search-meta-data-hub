@@ -168,16 +168,20 @@ class OpenSearchManager:
             return False
 
     def get_total_files(self, index_name):
+        # Prepare the Elasticsearch query to match all documents
         query = {
             "query": {
                 "match_all": {}
             }
         }
 
+        # Execute the search query to retrieve the total number of files in the specified index
         response = self._client.search(
             body=query,
             index=index_name
         )
+
+        # Extract and return the total count of files from the response
         return response['hits']['total']['value']
 
     def create_index(self, index_name: str):
