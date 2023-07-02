@@ -219,7 +219,10 @@ class OpenSearchManager:
             print(f"Index '{index_name}' already exists.")
 
     def count_files(self, index_name):
-        return self._client.count(index_name=index_name)
+        try:
+            return self._client.count(index=index_name)
+        except NotFoundError:
+            return 0
 
     def update_index(self, index_name: str, data_types: dict) -> any:
         """ This function adds properties (datatypes for fields) to an existing index

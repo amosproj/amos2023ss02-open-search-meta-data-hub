@@ -102,7 +102,7 @@ class ImportControl:
            Controls the import operations and manages the import state.
 
            The path attribute specifies the file path where the import state is stored.
-           """
+       """
         self.path = 'import.dictionary'
 
     def create_import(self, files_in_os, files_in_mdh):
@@ -111,16 +111,16 @@ class ImportControl:
 
              :param files_in_os: An integer indicating the number of files in the operating system.
              :param files_in_mdh: An integer indicating the number of files in the MDH.
-             """
+         """
         new_import = Import(successful=False, version=1, files_in_os=0, files_in_mdh=100)
         self._write(new_import)
 
     def update_import(self, imported_files):
         """
-                Updates the import state with the given files_in_os value.
+            Updates the import state with the given files_in_os value.
 
-                :param files_in_os: An integer indicating the number of files in the operating system.
-                """
+            :param files_in_os: An integer indicating the number of files in the operating system.
+        """
         last_import: Import = self._get_last_import()
         if last_import is not None:
             updated_import = Import(successful=True, version=last_import.version,
@@ -133,7 +133,7 @@ class ImportControl:
              Checks if the last import was successful.
 
              :return: A boolean indicating whether the last import was successful.
-             """
+         """
         last_import: Import = self._get_last_import()
         if last_import is not None:
             return last_import.successful
@@ -145,63 +145,35 @@ class ImportControl:
              Retrieves the last import state from the file.
 
              :return: The last Import object if it exists, None otherwise.
-             """
+         """
         try:
             with open(self.path, 'rb') as import_dictionary_file:
                 last_import = pickle.load(import_dictionary_file)
                 return last_import
         except EOFError:
             return None
+        except FileNotFoundError:
+            return None
+
+    def is_first_import(self):
+        """
+            Checks if an import was executed before already
+
+            :return: True, if there has been an import before, false otherwise
+        """
+        last_import: Import = self._get_last_import()
+        if last_import is not None:
+            return True
+        else:
+            return False
 
     def _write(self, new_import):
         """
              Writes the new import state to the file.
 
              :param new_import: The Import object to be written to the file.
-             """
+         """
         with open(self.path, 'wb') as import_dictionary_file:
             # Step 3
             pickle.dump(new_import, import_dictionary_file)
         pass
-
-
-# Usage example
-
-# Create an instance of ImportControl
-ic = ImportControl()
-
-# Create an initial import with files_in_os = 0 and files_in_mdh = 0
-ic.create_import(0, 0)
-
-# Update the import with files_in_os = 0
-ic.update_import(0)
-
-# Check if the last import was successful
-print(ic.last_import_successful())
-
-"""
-
-Files in MDH: 1000 
-
-1. Import: Limit = 150,
--> files downloaded = 150
--> offset = 0
--> Import-Control:
-    - files in OS: 150 
-    - files in MDH: 1000
-
-2. Import: Limit = 100
--> files downloaded = 250 
--> offset = 150 
--> import control:
-    - files in OS: 250
-    - files in MDH: 1000
-    
-3. Import: Limit = False
--> files downloaded = 1000
--> offset = 250
--> import control:
-    - files in OS: 1000
-    - files in MDH: 1000
-
-"""

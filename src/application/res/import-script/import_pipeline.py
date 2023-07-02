@@ -187,12 +187,15 @@ def execute_pipeline(import_control: ImportControl):
         4. Uploading the modified data into the OpenSearch Node
     """
 
+    print("---------------------- Import-Pipeline ----------------------")
+    print("Start executing the pipeline ...")
+
     # the instance of the MetaDataHub in which the search is performed
     #instance_name = "amoscore"
     current_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-    instance_name = config.get('General','default_index_name')
+    instance_name = "amoscore"#config.get('General','default_index_name')
 
-    mdh_manager, os_manager = create_managers(localhost=config.getboolean('General','localhost'))
+    mdh_manager, os_manager = create_managers(localhost=True)#config.getboolean('General','localhost'))
 
     latest_timestamp = os_manager.get_latest_timestamp(index_name=instance_name)
 
@@ -214,33 +217,29 @@ def execute_pipeline(import_control: ImportControl):
 
     #return import_info
 
+    print("----> Pipeline finished!")
+    print("---------------------- Import-Pipeline ----------------------")
 
 def manage_import_pipeline():
+
+    caller = os.environ.get("CALLER", "manual")
+
     import_control = ImportControl()
-    last_import = import_control.get_last_import()
-    if last_import is None: # initial import
-        execute_pipeline(import_control=import_control)
-    elif not last_import.successful:
-        execute_pipeline(import_control=import_control)
+
+    if not caller == "cronjob": # Docker container gets started
+        # 1. Case: Initial start
+        if import_control.is_first_import():
+            execute_pipeline(import_control)
+        else:
+            if not import_control.last_import_successful():
+                execute_pipeline(import_control)
     else:
-        print("Last import was successful")
-
-
-
+        print("Pipeline called by Cronjob")
+        execute_pipeline(import_control)
 
 
 if __name__ == "__main__":
-    print("---------------------- Import-Pipeline ----------------------")
-    print("Start executing the pipeline ...")
-    start_time = time.time()
-    execute_pipeline()
-    # import_info = execute_pipeline()
-    # if not import_info["Status"] == "Successful":
-    #     print("Import not successful ... retry import")
-    #     new_start_index = import_info["Files to be uploaded"] - import_info["Successfully uploaded files"]
-    #     execute_pipeline(new_start_index)
-    print_import_pipeline_results(start_time)
-    print("---------------------- Import-Pipeline ----------------------")
+    manage_import_pipeline()
 
 
 # TODO: Put current time into modify data

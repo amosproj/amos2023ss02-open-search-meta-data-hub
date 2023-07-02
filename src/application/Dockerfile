@@ -1,4 +1,6 @@
-FROM  python:3
+FROM python:3
+
+# Add your existing code here without any modifications
 RUN mkdir WORK_REPO
 WORKDIR /WORK_REPO
 
@@ -16,9 +18,17 @@ ADD config.ini config.ini
 RUN wget https://metadatahub.de/cloud/s/JpgrZMQBMn6GWHs/download/mdh-2.3.1-py3-none-any.whl
 RUN pip install mdh-2.3.1-py3-none-any.whl
 
-# mdh-configurations
-RUN mkdir mdh_home
+# Install cron package
+RUN apt-get update && apt-get install -y cron
 
-CMD python3 import-script/import_pipeline.py && python3 app.py
+# Add cron job file
+ADD res/import-script/cronjob /etc/cron.d/
 
+# Set permissions for the cron job file
+RUN chmod 0644 /etc/cron.d/cronjob
 
+# Apply the cron job
+RUN crontab /etc/cron.d/cronjob
+
+# Start cron service and keep the container running
+CMD cron && python3 import-script/import_pipeline.py && python3 app.py
