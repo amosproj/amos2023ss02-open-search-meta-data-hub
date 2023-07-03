@@ -245,48 +245,4 @@ if __name__ == "__main__":
 
 # TODO: Put current time into modify data
 
-def reformat_metadata(mdh_data: list[dict], data_types: dict, current_time: str) -> list[(dict, id)]:
-    """
-    Reformat the mdh_data dictionary for storage in OpenSearch.
-
-    :param mdh_data: A list of dictionaries containing metadata-tags for each file of a MetaDataHub request.
-    :param data_types: A dictionary containing the modified OpenSearch datatypes.
-    :param current_time: The current time in string format.
-    :return: A list of tuples containing the modified metadata tags and their corresponding values,
-             along with the file ID.
-    """
-    modified_data = []  # Initialize the resulting list
-
-    for file_data in mdh_data:  # Iterate over each file's data in mdh_data
-        metadata = file_data.get("metadata", [])  # Get the metadata for the current file
-        file_info = {}  # Initialize the dictionary to store the modified metadata tags
-
-        id = None  # Initialize the file ID
-
-        for meta in metadata:  # Iterate over each metadata tag
-            # Get the name and replace '.' with '_' to avoid parsing errors
-            name = str(meta.get("name")).replace(".", "_")
-            value = meta.get("value")  # Get the corresponding value for the metadata tag
-
-            if name in data_types:  # Check if the metadata tag has a corresponding data type
-                if name == "SourceFile":
-                    id = str(value)  # Set the ID to the value of the "SourceFile" tag
-
-                if data_types[name] == 'date':  # Check if the data type is 'date'
-                    # Parse the value as a datetime object
-                    date = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
-                    # Format the datetime as a string for storage in OpenSearch
-                    value = date.strftime("%Y-%m-%dT%H:%M:%S")
-                elif data_types[name] == 'float':  # Check if the data type is 'float'
-                    value = float(value)  # Convert the value to a float
-
-                if name and value:  # Check if both the name and value are valid
-                    file_info[name] = value  # Store the modified metadata tag and its value in the file_info dictionary
-        file_info['timestamp'] = current_time
-
-        modified_data.append(
-            (file_info, id))  # Append the modified metadata and the ID as a tuple to the modified_data list
-
-    return modified_data
-
 # TODO: (optional) make multiple used variables global
