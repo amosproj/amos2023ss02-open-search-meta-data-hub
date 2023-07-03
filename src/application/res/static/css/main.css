@@ -134,8 +134,8 @@ body {
   
   .resizable-component {
     position: relative;
-    width: calc(50% - 10px);
-    height: 400px;
+    width: 100%;
+    height: 600px;
     overflow: hidden;
     resize: both;
     border: 1px solid #ccc;

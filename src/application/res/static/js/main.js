@@ -91,7 +91,6 @@ $(document).ready(function(){
     });
 
     //entry-${rowIdx}-metadata_tag
-
     updateConditionOptions(rowIdx, $('#entry-' + rowIdx + '-metadata_tag').val());
 
 

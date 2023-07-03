@@ -12,14 +12,12 @@
 </button></td>
 
 <div id="resultContainer">
-{% for item in iframe_data|batch(2) %}
+{% for iframe in iframe_data%}
 <div class="iframe-row">
-  {% for iframe in item %}
   <div class="resizable-component draggable-iframe" draggable="true" ondragstart="drag(event)">
     <p class="iframe-name">{{ iframe.title }}</p>
     <iframe class="resizable-iframe" src="{{ iframe.iframe_code }}" frameborder="0"></iframe>
   </div>
-  {% endfor %}
 </div>
 {% endfor %}
 </div>
