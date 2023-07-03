@@ -51,6 +51,7 @@ def extract_data_from_mdh(mdh_manager: MetaDataHubManager, latest_timestamp: str
     return mdh_datatypes, mdh_data, files_amount
 
 
+
 def modify_datatypes(mdh_datatypes: dict) -> dict:
     """
     Modify the mdh_datatypes dictionary for storage in OpenSearch.
