@@ -1,4 +1,4 @@
-FROM opensearchproject/opensearch-dashboards:latest
+FROM opensearchproject/opensearch-dashboards:2.8.0
 
 #ENV OPENSEARCH_HOSTS=["http://opensearch-node1:9200"]
 # disables security dashboards plugin in OpenSearch

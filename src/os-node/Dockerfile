@@ -1,4 +1,4 @@
-FROM opensearchproject/opensearch:latest
+FROM opensearchproject/opensearch:2.8.0
 
 # Name the cluster
 #ENV cluster.name=opensearch-cluster
