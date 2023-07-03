@@ -96,11 +96,12 @@ class OpenSearchManager:
             index_mapping = self._client.indices.get_mapping(index=index_name)
             properties = index_mapping[index_name]["mappings"]["properties"]
             fields = list(properties.keys())
+            return fields
 
         except Exception as e:
             print(f"Error occurred while retrieving fields for index '{index_name}': {str(e)}")
+            return None
 
-        return fields
 
     def get_datatype(self, index_name: str, field_name: str) -> str:
         """Get the datatype of a specific field for a specific index.
