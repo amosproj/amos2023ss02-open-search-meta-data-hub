@@ -196,7 +196,7 @@ def execute_pipeline(import_control: ImportControl):
     current_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
     instance_name = "amoscore"#config.get('General','default_index_name')
 
-    mdh_manager, os_manager = create_managers(localhost=True)#config.getboolean('General','localhost'))
+    mdh_manager, os_manager = create_managers(localhost=False)#config.getboolean('General','localhost'))
 
     latest_timestamp = os_manager.get_latest_timestamp(index_name=instance_name)
 
