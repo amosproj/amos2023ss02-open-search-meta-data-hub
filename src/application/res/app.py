@@ -137,11 +137,11 @@ def search():
 def advanced_search_v2():
     return render_template('index1.html')
 
-@app.route('/visualizations')
-def visualizations():
+@app.route('/dashboards')
+def dashboards():
     iframe_data = os_dashboard_manager.get_iframes()
 
-    return render_template('visualizations.html',iframe_data=iframe_data)
+    return render_template('dashboards.html',iframe_data=iframe_data)
 
 
 if __name__ == '__main__':
