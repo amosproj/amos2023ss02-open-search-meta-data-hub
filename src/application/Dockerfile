@@ -26,9 +26,5 @@ RUN chmod 0644 mycron
 # Apply the cron job
 RUN crontab mycron
 
-COPY startup.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/startup.sh
-CMD ["/usr/local/bin/startup.sh"]
-
 # Start cron service and keep the container running
-#CMD python3 import-script/import_pipeline.py && python3 app.py
+CMD python3 import-script/import_pipeline.py && service cron start && python3 app.py
