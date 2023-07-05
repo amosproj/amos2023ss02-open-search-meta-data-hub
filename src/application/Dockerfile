@@ -1,6 +1,5 @@
 FROM python:3
 
-# Add your existing code here without any modifications
 RUN mkdir WORK_REPO
 WORKDIR /WORK_REPO
 
