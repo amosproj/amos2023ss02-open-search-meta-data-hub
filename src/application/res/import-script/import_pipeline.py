@@ -2,8 +2,7 @@ import time
 from datetime import datetime
 from mdh_api import MetaDataHubManager
 import sys
-#from import_controller import *
-
+from import_control import ImportControl
 import os
 import configparser
 
@@ -50,6 +49,7 @@ def extract_data_from_mdh(mdh_manager: MetaDataHubManager, latest_timestamp: str
     files_amount = len(mdh_data)
 
     return mdh_datatypes, mdh_data, files_amount
+
 
 
 def modify_datatypes(mdh_datatypes: dict) -> dict:
@@ -179,7 +179,7 @@ def print_import_pipeline_results(start_time: float):
 
 
 
-def execute_pipeline(start_index: int = 1):
+def execute_pipeline(import_control: ImportControl):
     """
         This function executes the complete import-pipeline by executing 4 steps:
         1. connecting to the OpenSearch Node and the MetaDataHub
@@ -188,51 +188,105 @@ def execute_pipeline(start_index: int = 1):
         4. Uploading the modified data into the OpenSearch Node
     """
 
+    print("---------------------- Import-Pipeline ----------------------")
+    print("Start executing the pipeline ...")
+
     # the instance of the MetaDataHub in which the search is performed
     #instance_name = "amoscore"
     current_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-    instance_name = config.get('General','default_index_name')
+    instance_name = "amoscore"#config.get('General','default_index_name')
 
-    # getting the manager to handle the APIs
-    print("1. Start to connect to the OpenSearch Node and the MetaDataHub API.")
-    start_time_connecting = time.time()
-    print(config.getboolean('General','localhost'))
-    mdh_manager, os_manager = create_managers(localhost=config.getboolean('General','localhost'))
-    print("--> Finished to connect to the OpenSearch Node and the MetaDataHub API!")
-    print("--> Time needed: %s seconds!" % (time.time() - start_time_connecting))
+    mdh_manager, os_manager = create_managers(localhost=False)#config.getboolean('General','localhost'))
 
-    # get the timestamp of the latest data import
     latest_timestamp = os_manager.get_latest_timestamp(index_name=instance_name)
 
-    # MdH data extraction
     mdh_datatypes, mdh_data, files_amount = extract_data_from_mdh(mdh_manager=mdh_manager, limit=15)
 
-    # save initial import control
-    #save_initial_import(os_manager=os_manager, files_count=files_amount)
+    files_in_mdh = mdh_manager.get_total_files_count()
+    files_in_os = os_manager.count_files(index_name=instance_name)
+    import_control.create_import(files_in_os=files_in_os, files_in_mdh=files_in_mdh)
 
-    # Modifying the data into correct format
     data_types = modify_datatypes(mdh_datatypes=mdh_datatypes)  # modify the datatypes so they fit in OpenSearch
-    data = modify_data(mdh_data=mdh_data[start_index - 1:-1], data_types=data_types,
+    data = modify_data(mdh_data=mdh_data, data_types=data_types,
                        current_time=current_time)  # modify the data so it fits in OpenSearch
 
     # Loading the data into OpenSearch
     imported_files = upload_data(instance_name=instance_name, os_manager=os_manager, data_types=data_types, data=data,
                                  files_amount=files_amount)
 
-    #import_info = update_import(os_manager=os_manager, files_count=files_amount, uploaded_files=imported_files)
+    import_control.update_import(imported_files=imported_files)
 
     #return import_info
 
+    print("----> Pipeline finished!")
+    print("---------------------- Import-Pipeline ----------------------")
+
+def manage_import_pipeline():
+
+    caller = os.environ.get("CALLER", "manual")
+
+    import_control = ImportControl()
+
+    if not caller == "cronjob": # Docker container gets started
+        # 1. Case: Initial start
+        if import_control.is_first_import():
+            execute_pipeline(import_control)
+        else:
+            if not import_control.last_import_successful():
+                execute_pipeline(import_control)
+    else:
+        print("Pipeline called by Cronjob")
+        execute_pipeline(import_control)
+
 
 if __name__ == "__main__":
-    print("---------------------- Import-Pipeline ----------------------")
-    print("Start executing the pipeline ...")
-    start_time = time.time()
-    execute_pipeline()
-    # import_info = execute_pipeline()
-    # if not import_info["Status"] == "Successful":
-    #     print("Import not successful ... retry import")
-    #     new_start_index = import_info["Files to be uploaded"] - import_info["Successfully uploaded files"]
-    #     execute_pipeline(new_start_index)
-    print_import_pipeline_results(start_time)
-    print("---------------------- Import-Pipeline ----------------------")
+    manage_import_pipeline()
+
+
+# TODO: Put current time into modify data
+
+def reformat_metadata(mdh_data: list[dict], data_types: dict, current_time: str) -> list[(dict, id)]:
+    """
+    Reformat the mdh_data dictionary for storage in OpenSearch.
+
+    :param mdh_data: A list of dictionaries containing metadata-tags for each file of a MetaDataHub request.
+    :param data_types: A dictionary containing the modified OpenSearch datatypes.
+    :param current_time: The current time in string format.
+    :return: A list of tuples containing the modified metadata tags and their corresponding values,
+             along with the file ID.
+    """
+    modified_data = []  # Initialize the resulting list
+
+    for file_data in mdh_data:  # Iterate over each file's data in mdh_data
+        metadata = file_data.get("metadata", [])  # Get the metadata for the current file
+        file_info = {}  # Initialize the dictionary to store the modified metadata tags
+
+        id = None  # Initialize the file ID
+
+        for meta in metadata:  # Iterate over each metadata tag
+            # Get the name and replace '.' with '_' to avoid parsing errors
+            name = str(meta.get("name")).replace(".", "_")
+            value = meta.get("value")  # Get the corresponding value for the metadata tag
+
+            if name in data_types:  # Check if the metadata tag has a corresponding data type
+                if name == "SourceFile":
+                    id = str(value)  # Set the ID to the value of the "SourceFile" tag
+
+                if data_types[name] == 'date':  # Check if the data type is 'date'
+                    # Parse the value as a datetime object
+                    date = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+                    # Format the datetime as a string for storage in OpenSearch
+                    value = date.strftime("%Y-%m-%dT%H:%M:%S")
+                elif data_types[name] == 'float':  # Check if the data type is 'float'
+                    value = float(value)  # Convert the value to a float
+
+                if name and value:  # Check if both the name and value are valid
+                    file_info[name] = value  # Store the modified metadata tag and its value in the file_info dictionary
+        file_info['timestamp'] = current_time
+
+        modified_data.append(
+            (file_info, id))  # Append the modified metadata and the ID as a tuple to the modified_data list
+
+    return modified_data
+
+# TODO: (optional) make multiple used variables global
