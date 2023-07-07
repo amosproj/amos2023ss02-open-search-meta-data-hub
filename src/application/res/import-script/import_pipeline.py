@@ -23,8 +23,10 @@ def create_managers(localhost: bool = False):
     :param localhost: Boolean value that defines if the connection is local or on a Docker container (for testing).
     :return: Tuple containing MetaDataHubManager and OpenSearchManager objects.
     """
+
     mdh_manager = MetaDataHubManager(localhost=localhost)  # Create MetaDataHubManager instance
-    os_manager = OpenSearchManager(localhost=localhost)  # Create OpenSearchManager instance
+    os_manager = OpenSearchManager(localhost=localhost)
+    # os_manager = OpenSearchManager(localhost=localhost, http_auth='https://metadatahub.de/projects/amos/core:UiQjMEvwok3IBuNSfgIN')  # Create OpenSearchManager instance
     return mdh_manager, os_manager
 
 

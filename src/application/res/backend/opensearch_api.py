@@ -48,10 +48,13 @@ class OpenSearchManager:
         # Port on which the OpenSearch node runs
         load_dotenv()  # load the environment
         # print(os.getenv("OS_PASSWORD"))
-        auth = (os.getenv("OS_USER"), os.getenv("OS_PASSWORD"))  # credentials are loaded from the .env file
+        # credentials are loaded from the .env file
+        username = os.getenv("OS_USER")
+        password = os.getenv("OS_PASSWORD")
+        http_auth = f"{username}:{password}"
         self._client = OpenSearch(
             hosts=[{'host': self._host, 'port': self._port}],  # Host and port to connect with
-            http_auth=auth,  # Credentials
+            http_auth=http_auth,  # Credentials
             use_ssl=False,  # Disable SSL
             verify_certs=False,  # Disable verification of certificates
             ssl_assert_hostname=False,  # Disable verification of hostname
@@ -176,7 +179,6 @@ class OpenSearchManager:
 
         # Execute the search query to retrieve the total number of files in the specified index
         response = self._execute_search_query(query, index_name)
-
 
         # Extract and return the total count of files from the response
         return response['hits']['total']['value']
