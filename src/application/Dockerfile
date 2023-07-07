@@ -17,9 +17,6 @@ RUN pip install mdh-2.3.1-py3-none-any.whl
 # Install cron package
 RUN apt-get update && apt-get install -y cron
 
-# Write the crontab using echo
-#RUN echo "*/1 * * * * cd /WORK_REPO/import-script/ && /usr/local/bin/python import_pipeline.py >> cronjob_log.txt 2>&1" >> mycron
-
 # Set permissions for the cron job file
 RUN chmod 0644 import-script/cronjob
 
@@ -27,4 +24,4 @@ RUN chmod 0644 import-script/cronjob
 RUN crontab import-script/cronjob
 
 # Start cron service and keep the container running
-CMD python3 import-script/import_pipeline.py && service cron start && python3 app.py
+CMD python3 import-script/import_pipeline.py && env >> /etc/environment && service cron start && python3 app.py
