@@ -1,6 +1,0 @@
-URL_CORE_1=https://metadatahub.de/projects/amos/core
-PW_USER_CORE_1=UiQjMEvwok3IBuNSfgIN
-OS_USER=admin
-OS_PASSWORD=admin
-
-*/1 * * * * /usr/local/bin/python /WORK_REPO/import-script/import_pipeline.py >> cronjob_log.txt 2>&1
