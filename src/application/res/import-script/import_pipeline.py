@@ -12,9 +12,7 @@ parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Add the parent directory to the sys.path list
 sys.path.append(parent_dir)
 from backend.opensearch_api import OpenSearchManager
-
-config = configparser.ConfigParser()
-config.read('config.ini')
+from backend.configuration import get_config_values
 
 
 def create_managers(localhost: bool = False):
@@ -26,7 +24,6 @@ def create_managers(localhost: bool = False):
 
     mdh_manager = MetaDataHubManager(localhost=localhost)  # Create MetaDataHubManager instance
     os_manager = OpenSearchManager(localhost=localhost)
-    # os_manager = OpenSearchManager(localhost=localhost, http_auth='https://metadatahub.de/projects/amos/core:UiQjMEvwok3IBuNSfgIN')  # Create OpenSearchManager instance
     return mdh_manager, os_manager
 
 
@@ -187,19 +184,22 @@ def execute_pipeline(import_control: ImportControl):
         4. Uploading the modified data into the OpenSearch Node
     """
 
+
     print("---------------------- Import-Pipeline ----------------------")
     print("Start executing the pipeline ...")
 
-    # the instance of the MetaDataHub in which the search is performed
-    # instance_name = "amoscore"
+    options = get_config_values()
+
+
     current_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-    instance_name = "amoscore"  # config.get('General','default_index_name')
 
-    mdh_manager, os_manager = create_managers(localhost=False)  # config.getboolean('General','localhost'))
+    instance_name = options['index_name']
 
-    latest_timestamp = os_manager.get_latest_timestamp(index_name=instance_name)
+    mdh_manager, os_manager = create_managers(options['localhost'])
 
-    mdh_datatypes, mdh_data, files_amount = extract_data_from_mdh(mdh_manager=mdh_manager, limit=15)
+    total_files_mdh = mdh_manager.get_total_files_count()
+
+    mdh_datatypes, mdh_data, files_amount = extract_data_from_mdh(mdh_manager=mdh_manager, limit=options['limit'])
 
     files_in_mdh = mdh_manager.get_total_files_count()
     files_in_os = os_manager.count_files(index_name=instance_name)
@@ -242,50 +242,3 @@ if __name__ == "__main__":
     manage_import_pipeline()
 
 
-# TODO: Put current time into modify data
-
-def reformat_metadata(mdh_data: list[dict], data_types: dict, current_time: str) -> list[(dict, id)]:
-    """
-    Reformat the mdh_data dictionary for storage in OpenSearch.
-
-    :param mdh_data: A list of dictionaries containing metadata-tags for each file of a MetaDataHub request.
-    :param data_types: A dictionary containing the modified OpenSearch datatypes.
-    :param current_time: The current time in string format.
-    :return: A list of tuples containing the modified metadata tags and their corresponding values,
-             along with the file ID.
-    """
-    modified_data = []  # Initialize the resulting list
-
-    for file_data in mdh_data:  # Iterate over each file's data in mdh_data
-        metadata = file_data.get("metadata", [])  # Get the metadata for the current file
-        file_info = {}  # Initialize the dictionary to store the modified metadata tags
-
-        id = None  # Initialize the file ID
-
-        for meta in metadata:  # Iterate over each metadata tag
-            # Get the name and replace '.' with '_' to avoid parsing errors
-            name = str(meta.get("name")).replace(".", "_")
-            value = meta.get("value")  # Get the corresponding value for the metadata tag
-
-            if name in data_types:  # Check if the metadata tag has a corresponding data type
-                if name == "SourceFile":
-                    id = str(value)  # Set the ID to the value of the "SourceFile" tag
-
-                if data_types[name] == 'date':  # Check if the data type is 'date'
-                    # Parse the value as a datetime object
-                    date = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
-                    # Format the datetime as a string for storage in OpenSearch
-                    value = date.strftime("%Y-%m-%dT%H:%M:%S")
-                elif data_types[name] == 'float':  # Check if the data type is 'float'
-                    value = float(value)  # Convert the value to a float
-
-                if name and value:  # Check if both the name and value are valid
-                    file_info[name] = value  # Store the modified metadata tag and its value in the file_info dictionary
-        file_info['timestamp'] = current_time
-
-        modified_data.append(
-            (file_info, id))  # Append the modified metadata and the ID as a tuple to the modified_data list
-
-    return modified_data
-
-# TODO: (optional) make multiple used variables global

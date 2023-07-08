@@ -76,13 +76,18 @@ class MetaDataHubManager:
         with path.open(mode='w') as file:
             file.write(contents)
 
-    def _generate_query(self, timestamp: str = False, limit: int = False):
+    def _generate_query(self, timestamp: str = False, filters: list = None, limit: int = False, selected_tags: list = None):
+        if filters is None:
+            filters = []
         filter_functions = []
+        sort_functions = [SortFunction(tag="MdHTimestamp", operation="ASC"),
+                          SortFunction(tag="SourceFile", operation="ASC")]
         if timestamp:
             f = FilterFunction(tag="MdhTimestamp", value=timestamp, operation="GREATER", data_type="TS")
             filter_functions.append(f)
 
-        gql_query = GraphQLQuery(filter_functions=filter_functions, limit=limit)
+        gql_query = GraphQLQuery(filter_functions=filter_functions, sort_functions=sort_functions
+                                 , limit=limit, selected_tags=selected_tags)
 
         self._write_file(self.format_query(gql_query.generate_query()))
         return gql_query

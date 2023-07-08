@@ -1,6 +1,7 @@
 from graphql_query import Argument, Operation, Query, Field
 
 
+
 class FilterFunction:
     def __init__(self, tag: str, value: str, operation: str, data_type: str):
         """Creates a new object of class FilterFunction.
@@ -46,8 +47,8 @@ class SortFunction:
 
 
 class GraphQLQuery:
-    def __init__(self, filter_functions: list = None, sort_functions: list = None, limit: int = False,
-                 filter_logic="AND"):
+    def __init__(self, filter_functions: list = None, sort_functions: list = None, selected_tags: list = None,
+                 limit: int = False, offset: int = False, filter_logic="AND"):
         """Creates a new object of class GraphQLQuery.
 
         Args:
@@ -62,7 +63,9 @@ class GraphQLQuery:
             sort_functions = list()
         self.filter_functions = filter_functions
         self.sort_functions = sort_functions
+        self.selected_tags = selected_tags
         self.limit = Argument(name="limit", value=limit)
+        self.offset = Argument(name="offset", value=offset)
         self.filter_logic = Argument(name="filterLogicOption", value=filter_logic)
 
     def _get_filter_functions(self) -> Argument:
@@ -89,7 +92,26 @@ class GraphQLQuery:
         )
         return sort_functions
 
-    def _get_arguments(self, filter_functions: Argument, sort_functions: Argument):
+    def _get_selected_tags(self) -> Argument:
+        """Returns all selected tags as one argument for the GraphQL query.
+
+        Returns:
+            graphql_query.Argument: Argument containing all selected tags.
+        """
+
+        try:
+            value = [f'"{tag}"' for tag in self.selected_tags]
+        except TypeError:
+            value = []
+
+        selected_tags = Argument(
+            name="selectedTags",
+            value=value
+        )
+        return selected_tags
+
+
+    def _get_arguments(self, filter_functions: Argument, sort_functions: Argument, selected_tags: Argument):
         """Returns all necessary arguments for the GraphQL query.
 
         Args:
@@ -102,10 +124,14 @@ class GraphQLQuery:
         arguments = [
             filter_functions,
             sort_functions,
+            selected_tags,
             self.filter_logic
         ]
         if self.limit.value:
             arguments.append(self.limit)
+
+        if self.offset.value:
+            arguments.append(self.offset)
 
         return arguments
 
@@ -118,7 +144,8 @@ class GraphQLQuery:
         # Get all arguments into a list
         filter_functions = self._get_filter_functions()
         sort_functions = self._get_sort_functions()
-        arguments = self._get_arguments(filter_functions, sort_functions)
+        selected_tags = self._get_selected_tags()
+        arguments = self._get_arguments(filter_functions, sort_functions, selected_tags)
 
         # Create new query
         query = Query(
@@ -143,3 +170,4 @@ class GraphQLQuery:
 
         # Return the rendered version of the executed query as a string
         return operation.render()
+

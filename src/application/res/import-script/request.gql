@@ -2,8 +2,9 @@ query {
   mdhSearch(
     filterFunctions: []
     sortFunctions: []
+    selectedTags: []
     filterLogicOption: AND
-    limit: 15
+    limit: 100
   ) {
     totalFilesCount
     returnedFilesCount
