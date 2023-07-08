@@ -87,6 +87,7 @@ class OSDashboardManager:
                 iframe_data.append({
                     'title': title,
                     #'type': vis_type,
+
                     'updated_at': updated_at_human_readable,
                     'iframe_code': iframe_code
                 })

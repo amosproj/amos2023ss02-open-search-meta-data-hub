@@ -6,7 +6,6 @@ from import_control import ImportControl
 import os
 import configparser
 
-
 # Get the path to the parent directory
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -17,14 +16,17 @@ from backend.opensearch_api import OpenSearchManager
 config = configparser.ConfigParser()
 config.read('config.ini')
 
-def create_managers(localhost : bool = False):
+
+def create_managers(localhost: bool = False):
     """ This function creates the managers to handle the APIs to the MetaDataHub and the OpenSearch Node
 
     :param localhost: Boolean value that defines if the connection is local or on a Docker container (for testing).
     :return: Tuple containing MetaDataHubManager and OpenSearchManager objects.
     """
+
     mdh_manager = MetaDataHubManager(localhost=localhost)  # Create MetaDataHubManager instance
-    os_manager = OpenSearchManager(localhost=localhost)  # Create OpenSearchManager instance
+    os_manager = OpenSearchManager(localhost=localhost)
+    # os_manager = OpenSearchManager(localhost=localhost, http_auth='https://metadatahub.de/projects/amos/core:UiQjMEvwok3IBuNSfgIN')  # Create OpenSearchManager instance
     return mdh_manager, os_manager
 
 
@@ -49,7 +51,6 @@ def extract_data_from_mdh(mdh_manager: MetaDataHubManager, latest_timestamp: str
     files_amount = len(mdh_data)
 
     return mdh_datatypes, mdh_data, files_amount
-
 
 
 def modify_datatypes(mdh_datatypes: dict) -> dict:
@@ -162,7 +163,6 @@ def upload_data(instance_name: str, os_manager: OpenSearchManager, data_types: d
     return imported_files
 
 
-
 def print_import_pipeline_results(start_time: float):
     """
     Prints the results of the import pipeline execution.
@@ -178,7 +178,6 @@ def print_import_pipeline_results(start_time: float):
     print("--> Pipeline took ", "%s seconds" % (time.time() - start_time), " to execute!")
 
 
-
 def execute_pipeline(import_control: ImportControl):
     """
         This function executes the complete import-pipeline by executing 4 steps:
@@ -192,11 +191,11 @@ def execute_pipeline(import_control: ImportControl):
     print("Start executing the pipeline ...")
 
     # the instance of the MetaDataHub in which the search is performed
-    #instance_name = "amoscore"
+    # instance_name = "amoscore"
     current_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-    instance_name = "amoscore"#config.get('General','default_index_name')
+    instance_name = "amoscore"  # config.get('General','default_index_name')
 
-    mdh_manager, os_manager = create_managers(localhost=False)#config.getboolean('General','localhost'))
+    mdh_manager, os_manager = create_managers(localhost=False)  # config.getboolean('General','localhost'))
 
     latest_timestamp = os_manager.get_latest_timestamp(index_name=instance_name)
 
@@ -216,18 +215,18 @@ def execute_pipeline(import_control: ImportControl):
 
     import_control.update_import(imported_files=imported_files)
 
-    #return import_info
+    # return import_info
 
     print("----> Pipeline finished!")
     print("---------------------- Import-Pipeline ----------------------")
 
-def manage_import_pipeline():
 
+def manage_import_pipeline():
     caller = os.environ.get("CALLER", "manual")
 
     import_control = ImportControl()
 
-    if not caller == "cronjob": # Docker container gets started
+    if not caller == "cronjob":  # Docker container gets started
         # 1. Case: Initial start
         if import_control.is_first_import():
             execute_pipeline(import_control)

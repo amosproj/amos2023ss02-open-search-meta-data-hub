@@ -30,7 +30,7 @@ class MetaDataHubManager:
             gql_path = 'request.gql'
         else:
             gql_path = '/WORK_REPO/import-script/request.gql'
-        self._request_path_file = gql_path #os.path.join(os.getcwd(), gql_path)  # define where to find the GraphQL request
+        self._request_path_file = gql_path  # os.path.join(os.getcwd(), gql_path)  # define where to find the GraphQL request
 
     @staticmethod
     def _set_environment(localhost: bool):
