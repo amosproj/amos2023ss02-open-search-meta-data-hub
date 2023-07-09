@@ -6,11 +6,14 @@ query {
         sortBy: "MdHTimestamp"
         sortByOption: ASC
       }
+      {
+        sortBy: "FileName"
+        sortByOption: ASC
+      }
     ]
     selectedTags: []
     filterLogicOption: AND
-    limit: 111
-    offset: 111
+    limit: 205
   ) {
     totalFilesCount
     returnedFilesCount

@@ -27,58 +27,73 @@ def create_managers(localhost: bool = False):
     return mdh_manager, os_manager
 
 
-def extract_data_from_mdh(mdh_manager: MetaDataHubManager, latest_timestamp: str = False, limit: int = False, offset: int = False) -> tuple[
-    dict, list[dict], int]:
+def extract_metadata_tags_from_mdh(mdh_manager: MetaDataHubManager, amount_of_tags: int = 900) -> list[dict]:
+    """
+    Extract the most frequently used metadata tags from the MetaDataHub.
+
+    :param mdh_manager: Manager to handle the MetaDataHub API.
+    :param amount_of_tags: amount of tags that will be downloaded from the MetaDataHub (default = 900)
+    :return: A list of dictionaries of the most frequently metadata-tags and their corresponding datatypes
+    """
+
+    # Download data from the MetaDataHub
+    mdh_manager.download_metadata_tags(amount_of_tags=amount_of_tags)
+
+    # Get the metadata tags, and the number of downloaded files
+    mdh_tags = mdh_manager.get_metadata_tags()
+
+    return mdh_tags
+
+
+def extract_data_from_mdh(mdh_manager: MetaDataHubManager, latest_timestamp: str = False, limit: int = False,
+                          offset: int = False) -> tuple[list[dict], int]:
     """
     Extract data from the MetaDataHub.
 
     :param mdh_manager: Manager to handle the MetaDataHub API.
     :param latest_timestamp: Timestamp of the last executed import.
     :param limit: Limit of files that will be downloaded from the MetaDataHub (default = False --> no limit)
-    :return: A tuple containing a dictionary of metadata-tags and their corresponding datatypes,
-             a list of dictionaries containing all the metadata tags and their values for each file,
+    :return: A tuple containing a list of dictionaries containing all the metadata tags and their values for each file,
              and the amount of files downloaded.
     """
+
     # Download data from the MetaDataHub
     mdh_manager.download_data(timestamp=latest_timestamp, limit=limit, offset=offset)
 
-    # Get the metadata datatypes, metadata data, and the number of downloaded files
-    mdh_datatypes = mdh_manager.get_datatypes()
+    # Get the data, and the number of downloaded files
     mdh_data = mdh_manager.get_data()
-    files_amount = len(mdh_data)
+    files_amount = mdh_manager.get_return_files_count()
 
-    return mdh_datatypes, mdh_data, files_amount
+    return mdh_data, files_amount
 
 
-def modify_datatypes(mdh_datatypes: dict) -> dict:
+def modify_metadata_tags(mdh_tags: list) -> dict:
     """
     Modify the mdh_datatypes dictionary for storage in OpenSearch.
 
-    :param mdh_datatypes: A dictionary containing the corresponding datatypes to the metadata-tags from a MetaDataHub request.
+    :param mdh_datatypes: A list dictionaries containing the corresponding datatypes to the metadata-tags from a MetaDataHub request.
     :return: A dictionary containing the corresponding OpenSearch datatypes for the metadata-tags.
     """
-    modified_datatypes = {}
+    modified_tags = {}
 
     # Iterate over each entry in mdh_datatypes
-    for mdh_datatype in mdh_datatypes:
-        name = mdh_datatype.get("name").replace(".", "_")  # Replace '.' with '_' in the metadata-tag
-        mdh_type = mdh_datatype.get("type")  # Get the corresponding datatype
+    for mdh_tag in mdh_tags:
+        name = mdh_tag.get("name").replace(".", "_")  # Replace '.' with '_' in the metadata-tag
+        mdh_type = mdh_tag.get("type")  # Get the corresponding datatype
 
         # Map MetaDataHub datatype to OpenSearch datatype
         if mdh_type == 'num':
-            modified_datatypes[name] = 'float'
+            modified_tags[name] = 'float'
         elif mdh_type == 'ts':
-            modified_datatypes[name] = 'date'
+            modified_tags[name] = 'date'
         elif mdh_type == 'str':
-            modified_datatypes[name] = 'text'
+            modified_tags[name] = 'text'
         else:
-            modified_datatypes[name] = 'text'
-        if len(modified_datatypes) >= 900:
-            break
-    return modified_datatypes
+            modified_tags[name] = 'text'
+    return modified_tags
 
 
-def modify_data(mdh_data: list[dict], data_types: dict, current_time: str) -> list[(dict, id)]:
+def modify_data(mdh_data: list[dict], metadata_tags: dict, current_time: str) -> list[(dict, id)]:
     """
     Reformat the mdh_data dictionary for storage in OpenSearch.
 
@@ -100,17 +115,19 @@ def modify_data(mdh_data: list[dict], data_types: dict, current_time: str) -> li
             name = str(meta.get("name")).replace(".", "_")
             value = meta.get("value")  # Get the corresponding value for the metadata tag
 
-            if name in data_types:  # Check if the metadata tag has a corresponding data type
+            if name in metadata_tags:  # Check if the metadata tag exists in OpenSearch
                 if name == "SourceFile":
                     id = str(value)  # Set the ID to the value of the "SourceFile" tag
 
-                if data_types[name] == 'date':  # Check if the data type is 'date'
+                if metadata_tags[name] == 'date':  # Check if the data type is 'date'
                     # Parse the value as a datetime object
                     date = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
                     # Format the datetime as a string for storage in OpenSearch
                     value = date.strftime("%Y-%m-%dT%H:%M:%S")
-                elif data_types[name] == 'float':  # Check if the data type is 'float'
+                elif metadata_tags[name] == 'float':  # Check if the data type is 'float'
                     value = float(value)  # Convert the value to a float
+                else:
+                    value = str(value)
 
                 if name and value:  # Check if both the name and value are valid
                     file_info[name] = value  # Store the modified metadata tag and its value in the file_info dictionary
@@ -122,7 +139,7 @@ def modify_data(mdh_data: list[dict], data_types: dict, current_time: str) -> li
     return modified_data
 
 
-def upload_data(instance_name: str, os_manager: OpenSearchManager, data_types: dict, data: list[dict],
+def upload_data(instance_name: str, os_manager: OpenSearchManager, metadata_tags: dict, data: list[dict],
                 files_amount: int) -> int:
     """
     Uploads the modified data from MetaDataHub to OpenSearch using the bulk API.
@@ -142,11 +159,12 @@ def upload_data(instance_name: str, os_manager: OpenSearchManager, data_types: d
     os_manager.create_index(index_name=instance_name)
 
     # Update the index mapping with the data types
-    os_manager.update_index(index_name=instance_name, data_types=data_types)
+    os_manager.update_index(index_name=instance_name, data_types=metadata_tags)
 
-    chunk_size = 10000  # Size of chunks the data will be split into
-    imported_files = 1  # Counter for files that are successfully imported
+    chunk_size = 1000  # Size of chunks the data will be split into
+    imported_files = 0  # Counter for files that are successfully imported
 
+    failed_imports = []
     for i in range(0, files_amount, chunk_size):
         # Split the data into chunks
         chunk_data = data[i:i + chunk_size]
@@ -156,7 +174,10 @@ def upload_data(instance_name: str, os_manager: OpenSearchManager, data_types: d
         # Increment the imported files count by the number of successfully imported files in the response
         imported_files += len(response.get('items', []))
 
-    return imported_files
+        if response['errors'] == True:
+            failed_imports.append(response)
+
+    return imported_files, failed_imports
 
 
 def print_import_pipeline_results(start_time: float):
@@ -174,6 +195,11 @@ def print_import_pipeline_results(start_time: float):
     print("--> Pipeline took ", "%s seconds" % (time.time() - start_time), " to execute!")
 
 
+def handle_failed_imports(failed_imports: list[any]):
+    for failed_import in failed_imports:
+        print(failed_import["items"])
+
+
 def execute_pipeline(import_control: ImportControl):
     """
         This function executes the complete import-pipeline by executing 4 steps:
@@ -183,45 +209,62 @@ def execute_pipeline(import_control: ImportControl):
         4. Uploading the modified data into the OpenSearch Node
     """
 
-
     print("---------------------- Import-Pipeline ----------------------")
     print("Start executing the pipeline ...")
 
+    # get config values
     options = get_config_values()
     index_name = options['index_name']
-    limit = options['limit']
-    localhost = True#options['localhost']
+    limit = 205 #options['limit']
+    localhost = True  # options['localhost']
 
-
+    # get current time
     current_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
-    instance_name = options['index_name']
-
+    # create manager
     mdh_manager, os_manager = create_managers(localhost=localhost)
 
-    files_in_os = os_manager.get_total_files(index_name)
+    # get the current amount of files in os
+    files_in_os = os_manager.get_total_files(index_name=index_name)
 
+    # set the offset to the current amount of files in os
     offset = files_in_os
 
-    if limit:
-        limit = offset+limit
 
-    mdh_datatypes, mdh_data, files_amount = extract_data_from_mdh(mdh_manager=mdh_manager, limit=limit, offset=offset)
+    # get the current amount of fields (metadata tags) in os
+    fields_in_os = os_manager.get_all_fields(index_name=index_name)
 
+    # get the metadata tags and their datatypes either from the mdh itself (initial import) or from OpenSearch
+    if not fields_in_os is None:  # this is not the first (initial) import
+        metadata_tags = {}
+        for field in fields_in_os:
+            metadata_tags[field] = os_manager.get_datatype(index_name=index_name, field_name=field)
+    else: # this is executed if it is the first import
+        mdh_tags = extract_metadata_tags_from_mdh(mdh_manager=mdh_manager)
+        metadata_tags = modify_metadata_tags(mdh_tags=mdh_tags)  # modify the datatypes so they fit in OpenSearch
+
+    # extract the data from the mdh
+    mdh_data, files_amount = extract_data_from_mdh(mdh_manager=mdh_manager, limit=limit, offset=offset)
+
+    # get the amount of files that exist in the mdh core
     files_in_mdh = mdh_manager.get_total_files_count()
-    files_in_os = os_manager.count_files(index_name=instance_name)
+
+    # create a new import in the 'import.dictionary' file (monitoring purposes)
     import_control.create_import(files_in_os=files_in_os, files_in_mdh=files_in_mdh)
 
-    data_types = modify_datatypes(mdh_datatypes=mdh_datatypes)  # modify the datatypes so they fit in OpenSearch
-    data = modify_data(mdh_data=mdh_data, data_types=data_types,
-                       current_time=current_time)  # modify the data so it fits in OpenSearch
+    # modify the data so it can be easily stored in OpenSearch
+    data = modify_data(mdh_data=mdh_data, metadata_tags=metadata_tags,
+                       current_time=current_time)
 
     # Loading the data into OpenSearch
-    imported_files = upload_data(instance_name=instance_name, os_manager=os_manager, data_types=data_types, data=data,
+    imported_files, failed_imports = upload_data(instance_name=index_name, os_manager=os_manager, metadata_tags=metadata_tags,
+                                 data=data,
                                  files_amount=files_amount)
 
+    # update the import in the 'import.dictionary' file
     import_control.update_import(imported_files=imported_files)
 
+    handle_failed_imports(failed_imports)
     # return import_info
 
     print("----> Pipeline finished!")
@@ -238,5 +281,3 @@ def manage_import_pipeline():
 
 if __name__ == "__main__":
     manage_import_pipeline()
-
-

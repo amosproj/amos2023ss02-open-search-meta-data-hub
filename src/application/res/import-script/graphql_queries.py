@@ -48,7 +48,7 @@ class SortFunction:
 
 class GraphQLQuery:
     def __init__(self, filter_functions: list = None, sort_functions: list = None, selected_tags: list = None,
-                 limit: int = False, offset: int = False, filter_logic="AND"):
+                 limit: int = False, offset: int = False, filter_logic="AND", amount_of_tags: int = 900):
         """Creates a new object of class GraphQLQuery.
 
         Args:
@@ -67,6 +67,7 @@ class GraphQLQuery:
         self.limit = Argument(name="limit", value=limit)
         self.offset = Argument(name="offset", value=offset)
         self.filter_logic = Argument(name="filterLogicOption", value=filter_logic)
+        self.amount_of_tags = Argument(name="limit", value=amount_of_tags)
 
     def _get_filter_functions(self) -> Argument:
         """Returns all filter functions as arguments for the GraphQL query.
@@ -135,7 +136,7 @@ class GraphQLQuery:
 
         return arguments
 
-    def generate_query(self) -> str:
+    def generate_data_query(self) -> str:
         """Creates a new GraphQL query in the correct string format by using all the arguments provided to this object.
 
         Returns:
@@ -148,7 +149,7 @@ class GraphQLQuery:
         arguments = self._get_arguments(filter_functions, sort_functions, selected_tags)
 
         # Create new query
-        query = Query(
+        data_query = Query(
             name="mdhSearch",  # Name of the query
             arguments=arguments,  # List of arguments
             fields=[
@@ -166,8 +167,27 @@ class GraphQLQuery:
                 )
             ]
         )
-        operation = Operation(type="query", queries=[query])  # Transform query into an operation
+
+        operation = Operation(type="query", queries=[data_query])  # Transform query into an operation
 
         # Return the rendered version of the executed query as a string
         return operation.render()
 
+    def generate_tag_query(self) -> str:
+
+        metadata_tag_query = Query(
+            name="getMetadataTags",
+            arguments=[
+                self.amount_of_tags,
+                Argument(name="sortFunction", value="FREQUENCY_DESC")
+            ],
+            fields=["name", "type"]
+        )
+
+        operation = Operation(type="query", queries=[metadata_tag_query])  # Transform query into an operation
+
+        # Return the rendered version of the executed query as a string
+        return operation.render()
+
+ggql=GraphQLQuery(amount_of_tags=1)
+print(ggql.generate_tag_query())

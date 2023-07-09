@@ -170,18 +170,22 @@ class OpenSearchManager:
             return False
 
     def get_total_files(self, index_name):
-        # Prepare the query to match all documents
-        query = {
-            "query": {
-                "match_all": {}
+        try:
+            # Prepare the query to match all documents
+            query = {
+                "query": {
+                    "match_all": {}
+                }
             }
-        }
 
-        # Execute the search query to retrieve the total number of files in the specified index
-        response = self._execute_search_query(query, index_name)
-
-        # Extract and return the total count of files from the response
-        return response['hits']['total']['value']
+            # Execute the search query to retrieve the total number of files in the specified index
+            response = self._execute_search_query(query, index_name)
+            # Extract and return the total count of files from the response
+            return response['hits']['total']['value']
+        except KeyError:
+            return 0
+        except TransportError:
+            return 0
 
     def create_index(self, index_name: str):
         """Create a new index with non-default settings.
@@ -216,12 +220,6 @@ class OpenSearchManager:
 
         else:
             print(f"Index '{index_name}' already exists.")
-
-    def count_files(self, index_name):
-        try:
-            return self._client.count(index=index_name)
-        except NotFoundError:
-            return 0
 
     def update_index(self, index_name: str, data_types: dict) -> any:
         """ This function adds properties (datatypes for fields) to an existing index
