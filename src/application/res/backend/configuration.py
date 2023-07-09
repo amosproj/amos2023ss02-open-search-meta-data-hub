@@ -14,6 +14,7 @@ def get_config_values():
     fallback_values = {
         'localhost': False,
         'index_name': 'amoscore',
+        'search_size': 24,
         'limit': False,
         'selected_tags': [],
         'only_selected_tags': False
@@ -24,6 +25,12 @@ def get_config_values():
     for key, value in fallback_values.items():
         if key == 'selected_tags':
             options[key] = config.get('General', key, fallback=value).split(";")
+        elif key == 'limit':
+            options[key] = config.getint('General', key, fallback=value)
+        elif key == 'search_size':
+            options[key] = config.getint('General', key, fallback=value)
+        elif key == 'localhost':
+            options[key] = config.getboolean('General', key, fallback=value)
         else:
             options[key] = config.get('General', key, fallback=value)
 

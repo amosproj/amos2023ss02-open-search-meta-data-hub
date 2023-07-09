@@ -76,18 +76,17 @@ class MetaDataHubManager:
         with path.open(mode='w') as file:
             file.write(contents)
 
-    def _generate_query(self, timestamp: str = False, filters: list = None, limit: int = False, selected_tags: list = None):
+    def _generate_query(self, timestamp: str = False, filters: list = None, limit: int = False, offset: int = False, selected_tags: list = None):
         if filters is None:
             filters = []
         filter_functions = []
-        sort_functions = [SortFunction(tag="MdHTimestamp", operation="ASC"),
-                          SortFunction(tag="SourceFile", operation="ASC")]
+        sort_functions = [SortFunction(tag="MdHTimestamp", operation="ASC")]
         if timestamp:
             f = FilterFunction(tag="MdhTimestamp", value=timestamp, operation="GREATER", data_type="TS")
             filter_functions.append(f)
 
         gql_query = GraphQLQuery(filter_functions=filter_functions, sort_functions=sort_functions
-                                 , limit=limit, selected_tags=selected_tags)
+                                 , limit=limit, offset=offset, selected_tags=selected_tags)
 
         self._write_file(self.format_query(gql_query.generate_query()))
         return gql_query
@@ -103,9 +102,9 @@ class MetaDataHubManager:
         formatted_query = '\n'.join(line[min_indentation:] for line in lines)
         return formatted_query
 
-    def download_data(self, timestamp: str = False, limit: int = False):
+    def download_data(self, timestamp: str = False, limit: int = False, offset: int = False):
         """ download the data from the request and store it """
-        self._generate_query(timestamp, limit)
+        self._generate_query(timestamp, limit=offset, offset=offset)
         for core in mdh.core.main.get():
             self.result = mdh.core.main.execute(core, self._request_path_file)
 

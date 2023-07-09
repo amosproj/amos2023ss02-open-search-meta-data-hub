@@ -27,7 +27,7 @@ def create_managers(localhost: bool = False):
     return mdh_manager, os_manager
 
 
-def extract_data_from_mdh(mdh_manager: MetaDataHubManager, latest_timestamp: str = False, limit: int = False) -> tuple[
+def extract_data_from_mdh(mdh_manager: MetaDataHubManager, latest_timestamp: str = False, limit: int = False, offset: int = False) -> tuple[
     dict, list[dict], int]:
     """
     Extract data from the MetaDataHub.
@@ -40,7 +40,7 @@ def extract_data_from_mdh(mdh_manager: MetaDataHubManager, latest_timestamp: str
              and the amount of files downloaded.
     """
     # Download data from the MetaDataHub
-    mdh_manager.download_data(timestamp=latest_timestamp, limit=limit)
+    mdh_manager.download_data(timestamp=latest_timestamp, limit=limit, offset=offset)
 
     # Get the metadata datatypes, metadata data, and the number of downloaded files
     mdh_datatypes = mdh_manager.get_datatypes()
@@ -153,7 +153,6 @@ def upload_data(instance_name: str, os_manager: OpenSearchManager, data_types: d
 
         # Perform a bulk request to store the new data in OpenSearch
         response = os_manager.perform_bulk(index_name=instance_name, data=chunk_data)
-
         # Increment the imported files count by the number of successfully imported files in the response
         imported_files += len(response.get('items', []))
 
@@ -189,17 +188,25 @@ def execute_pipeline(import_control: ImportControl):
     print("Start executing the pipeline ...")
 
     options = get_config_values()
+    index_name = options['index_name']
+    limit = options['limit']
+    localhost = True#options['localhost']
 
 
     current_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
     instance_name = options['index_name']
 
-    mdh_manager, os_manager = create_managers(options['localhost'])
+    mdh_manager, os_manager = create_managers(localhost=localhost)
 
-    total_files_mdh = mdh_manager.get_total_files_count()
+    files_in_os = os_manager.get_total_files(index_name)
 
-    mdh_datatypes, mdh_data, files_amount = extract_data_from_mdh(mdh_manager=mdh_manager, limit=options['limit'])
+    offset = files_in_os
+
+    if limit:
+        limit = offset+limit
+
+    mdh_datatypes, mdh_data, files_amount = extract_data_from_mdh(mdh_manager=mdh_manager, limit=limit, offset=offset)
 
     files_in_mdh = mdh_manager.get_total_files_count()
     files_in_os = os_manager.count_files(index_name=instance_name)
@@ -226,16 +233,7 @@ def manage_import_pipeline():
 
     import_control = ImportControl()
 
-    if not caller == "cronjob":  # Docker container gets started
-        # 1. Case: Initial start
-        if import_control.is_first_import():
-            execute_pipeline(import_control)
-        else:
-            if not import_control.last_import_successful():
-                execute_pipeline(import_control)
-    else:
-        print("Pipeline called by Cronjob")
-        execute_pipeline(import_control)
+    execute_pipeline(import_control)
 
 
 if __name__ == "__main__":

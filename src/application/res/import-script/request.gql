@@ -1,10 +1,16 @@
 query {
   mdhSearch(
     filterFunctions: []
-    sortFunctions: []
+    sortFunctions: [
+      {
+        sortBy: "MdHTimestamp"
+        sortByOption: ASC
+      }
+    ]
     selectedTags: []
     filterLogicOption: AND
-    limit: 100
+    limit: 111
+    offset: 111
   ) {
     totalFilesCount
     returnedFilesCount

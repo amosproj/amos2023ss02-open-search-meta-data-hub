@@ -170,7 +170,7 @@ class OpenSearchManager:
             return False
 
     def get_total_files(self, index_name):
-        # Prepare the Elasticsearch query to match all documents
+        # Prepare the query to match all documents
         query = {
             "query": {
                 "match_all": {}
