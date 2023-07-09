@@ -38,6 +38,10 @@ os_manager: OpenSearchManager = OpenSearchManager(localhost=config.getboolean('G
 class SimpleSearchForm(FlaskForm):
     searchValue = StringField('Search Value', validators=[DataRequired()])
     submit = SubmitField('Search')
+    #values for pagination
+    currentPageSS = IntegerField('currentPageSS')
+    resultsPerPageSS = IntegerField('resultsPerPageSS')
+
 
 
 class AdvancedEntryForm(FlaskForm):
@@ -64,7 +68,6 @@ class AdvancedEntryForm(FlaskForm):
                           [validators.NumberRange(min=1, max=100, message="Weight must be between 1 and 100")],
                           default=1)
 
-
 # Define a form class for advanced search functionality
 class AdvancedSearchForm(FlaskForm):
     """
@@ -78,6 +81,10 @@ class AdvancedSearchForm(FlaskForm):
     entry = FieldList(FormField(AdvancedEntryForm), min_entries=1)
     # Submit button for submitting the form
     submit = SubmitField('Submit')
+    #values for pagination
+    currentPage = IntegerField('currentPage')
+    resultsPerPage = IntegerField('resultsPerPage')
+
 
 
 def renderResult(input):
@@ -135,7 +142,7 @@ def search():
         searchValue = simpleSearchForm.searchValue.data
 
         # Perform simple search using the default index name
-        resultTmp = os_manager.simple_search(config.get('General', 'default_index_name'), searchValue)
+        resultTmp = os_manager.simple_search(config.get('General', 'default_index_name'), searchValue, page=int(simpleSearchForm.currentPageSS.data), page_size=int(simpleSearchForm.resultsPerPageSS.data))
 
         # Set the last_form session variable to 'simple'
         session['last_form'] = 'simple'
@@ -167,7 +174,7 @@ def search():
 
         # Perform advanced search using the default index name and the search information
         resultTmp = os_manager.advanced_search(index_name=config.get('General', 'default_index_name'),
-                                               search_info=search_info)
+                                               search_info=search_info, page=int(advancedSearchForm.currentPage.data), page_size=int(advancedSearchForm.resultsPerPage.data))
 
         # Set the last_form session variable to 'advanced'
         session['last_form'] = 'advanced'

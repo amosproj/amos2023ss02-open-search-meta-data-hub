@@ -289,7 +289,7 @@ class OpenSearchManager:
         )
         return response
 
-    def simple_search(self, index_name: str, search_text: str) -> any:
+    def simple_search(self, index_name: str, search_text: str, page: int = 0, page_size: int = 10) -> any:
         """
         A function that performs a simple search in OpenSearch.
 
@@ -314,19 +314,24 @@ class OpenSearchManager:
 
         response = self._client.search(
             body=query,
-            index=index_name
+            index=index_name,
+            from_=page * page_size,
+            size=page_size
         )
         return response
 
-    def advanced_search(self, index_name: str, search_info: dict) -> any:
-        """
-        Function that performs an advanced search in OpenSearch.
+    def advanced_search(self, index_name: str, search_info: dict, page: int = 0, page_size: int = 100) -> any:
 
-        :param index_name: The name of the index in which the search should be performed.
-        :param search_info: A dictionary containing the different fields and operators for
-        the advanced search.
-        :return: None (or specify the return type if applicable).
         """
+    Function that performs an advanced search in OpenSearch.
+
+    :param index_name: The name of the index in which the search should be performed.
+    :param search_info: A dictionary containing the different fields and operators for
+    the advanced search.
+    :param page: The page number of the search results.
+    :param page_size: The number of search results to return per page.
+    :return: None (or specify the return type if applicable).
+    """
 
         print("Search_info: ", search_info)
         sub_queries = []
@@ -346,9 +351,12 @@ class OpenSearchManager:
 
         response = self._client.search(
             body=query,
-            index=index_name
+            index=index_name,
+            from_=page * page_size,
+            size=page_size
         )
         return response
+
 
     @staticmethod
     def _get_query(sub_queries: list[tuple], search_size) -> dict:

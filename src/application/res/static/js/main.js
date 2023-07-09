@@ -20,10 +20,39 @@ $(document).ready(function(){
     $("#simpleSearch").show(); // Show the simple search section
   });
 
+  $("#currentPagePagNeg").on("click", function(){
+    if ($(this).hasClass("disabled")){
+      return;
+    }
+    else{
+      $("#currentPage").val(parseInt($("#currentPage").val())-1);
+      $("#advancedSearchForm").submit();
+    }
+  });
+  $("#currentPagePagAdd").on("click", function(){
+    $("#currentPage").val(parseInt($("#currentPage").val())+1);
+    $("#advancedSearchForm").submit();
+  });
+
+  $("#currentPagePagNegSS").on("click", function(){
+    if ($(this).hasClass("disabled")){
+      return;
+    }
+    else{
+      $("#currentPageSS").val(parseInt($("#currentPageSS").val())-1);
+      $("#simpleSearchForm").submit();
+    }
+  });
+  $("#currentPagePagAddSS").on("click", function(){
+    $("#currentPageSS").val(parseInt($("#currentPageSS").val())+1);
+    $("#simpleSearchForm").submit();
+  });
+
   rowIdx = 0;
   myDict = JSON.parse($("#datatypesDict").val());  // Parse the JSON string back to a JavaScript object
 
   populateAdvancedSearchFormFromSession();
+  populateSimpleSearch();
 
   $('#addRow').on('click', function () {
     // Increment the row index when button is clicked
@@ -115,10 +144,27 @@ $(document).ready(function(){
           var weight = row.find("input[name^='entry-'][name$='-weight']").val();
           advancedSearchEntries.push({ metadataTag: metadataTag, condition: condition, value: value, weight: weight });
       });
+      var resultsPerPage = $("#resultsPerPage").val();
+      var currentPage = $("#currentPage").val();
       sessionStorage.setItem('advanced_search_entries', JSON.stringify(advancedSearchEntries));
+      sessionStorage.setItem('results_per_page', resultsPerPage);
+      sessionStorage.setItem('current_page', currentPage);  
+    
       console.log("session");
       $(this).submit();
   });
+
+  //advanced Search handler
+  $("#simpleSearchForm").one("submit", function(e) {
+    e.preventDefault();
+    var resultsPerPage = $("#resultsPerPageSS").val();
+    var currentPage = $("#currentPageSS").val();
+    sessionStorage.setItem('results_per_pageSS', resultsPerPage);
+    sessionStorage.setItem('current_pageSS', currentPage);  
+  
+    console.log("session");
+    $(this).submit();
+});
 
 
 
@@ -209,7 +255,28 @@ function populateAdvancedSearchFormFromSession() {
       addRowWithValues(entry.metadataTag, entry.condition, entry.value, entry.weight);
   }
   }
+
+  var resultsPerPage = sessionStorage.getItem('results_per_page') || "10";
+  var currentPage = sessionStorage.getItem('current_page') || "0";
+  $("#resultsPerPage").val(resultsPerPage);
+  $("#currentPage").val(currentPage);
+  $("#currentPagePag").html(currentPage);
+  if(currentPage >0){
+    $("#currentPagePagNeg").removeClass("disabled");
+  }
   
+}
+
+function populateSimpleSearch(){
+  var resultsPerPage = sessionStorage.getItem('results_per_pageSS') || "10";
+  var currentPage = sessionStorage.getItem('current_pageSS') || "0";
+  $("#resultsPerPageSS").val(resultsPerPage);
+  $("#currentPageSS").val(currentPage);
+  $("#currentPagePagSS").html(currentPage);
+  if(currentPage >0){
+    $("#currentPagePagNegSS").removeClass("disabled");
+  }
+
 }
 
 function showDetails(button) {
