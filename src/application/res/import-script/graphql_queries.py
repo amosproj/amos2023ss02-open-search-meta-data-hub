@@ -156,11 +156,7 @@ class GraphQLQuery:
                 "totalFilesCount",
                 "returnedFilesCount",
                 "instanceName",
-                "timeZone",
-                "fixedReturnColumnSize",
-                "limitedByLicensing",
                 "queryStatusAsText",
-                Field(name="dataTypes", fields=["name", "type"]),
                 Field(
                     name="files",
                     fields=[Field(name="metadata", fields=["name", "value"])]
@@ -189,5 +185,4 @@ class GraphQLQuery:
         # Return the rendered version of the executed query as a string
         return operation.render()
 
-ggql=GraphQLQuery(amount_of_tags=1)
-print(ggql.generate_tag_query())
+

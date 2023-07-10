@@ -15,6 +15,7 @@ from backend.opensearch_api import OpenSearchManager
 from backend.configuration import get_config_values
 
 
+
 def create_managers(localhost: bool = False):
     """ This function creates the managers to handle the APIs to the MetaDataHub and the OpenSearch Node
 
@@ -46,7 +47,7 @@ def extract_metadata_tags_from_mdh(mdh_manager: MetaDataHubManager, amount_of_ta
 
 
 def extract_data_from_mdh(mdh_manager: MetaDataHubManager, latest_timestamp: str = False, limit: int = False,
-                          offset: int = False) -> tuple[list[dict], int]:
+                          offset: int = False, selected_tags: list = None) -> tuple[list[dict], int]:
     """
     Extract data from the MetaDataHub.
 
@@ -58,7 +59,7 @@ def extract_data_from_mdh(mdh_manager: MetaDataHubManager, latest_timestamp: str
     """
 
     # Download data from the MetaDataHub
-    mdh_manager.download_data(timestamp=latest_timestamp, limit=limit, offset=offset)
+    mdh_manager.download_data(timestamp=latest_timestamp, limit=limit, selected_tags=selected_tags)
 
     # Get the data, and the number of downloaded files
     mdh_data = mdh_manager.get_data()
@@ -139,15 +140,15 @@ def modify_data(mdh_data: list[dict], metadata_tags: dict, current_time: str) ->
     return modified_data
 
 
-def upload_data(instance_name: str, os_manager: OpenSearchManager, metadata_tags: dict, data: list[(dict, id)],
+def upload_data(index_name: str, os_manager: OpenSearchManager, metadata_tags: dict, data: list[(dict, id)],
                 files_amount: int) -> tuple[any, list[dict]]:
     """
     Uploads the modified data from MetaDataHub to OpenSearch using the bulk API.
 
     Args:
-        instance_name (str): Name of the instance (equivalent to index name in OpenSearch Node).
+        index_name (str): Name of the instance (equivalent to index name in OpenSearch Node).
         os_manager (OpenSearchManager): Manager to handle the OpenSearch API.
-        data_types (dict): Dictionary of metadata tags and their corresponding data types.
+        metadata_tags (dict): Dictionary of metadata tags and their corresponding data types.
         data (list[dict]): List of dictionaries containing metadata tags and their values for each file.
         files_amount (int): Total number of files (equal to the length of data).
 
@@ -156,10 +157,10 @@ def upload_data(instance_name: str, os_manager: OpenSearchManager, metadata_tags
     """
 
     # Create an index for the new data in OpenSearch
-    os_manager.create_index(index_name=instance_name)
+    os_manager.create_index(index_name=index_name)
 
     # Update the index mapping with the data types
-    os_manager.update_index(index_name=instance_name, data_types=metadata_tags)
+    os_manager.update_index(index_name=index_name, data_types=metadata_tags)
 
     chunk_size = 1000  # Size of chunks the data will be split into
 
@@ -169,16 +170,15 @@ def upload_data(instance_name: str, os_manager: OpenSearchManager, metadata_tags
         chunk_data = data[i:i + chunk_size]
 
         # Perform a bulk request to store the new data in OpenSearch
-        response = os_manager.perform_bulk(index_name=instance_name, data=chunk_data)
+        response = os_manager.perform_bulk(index_name=index_name, data=chunk_data)
 
-        if response['errors'] == True:
+        if response is not None and response['errors']:
             failed_imports.append((response, chunk_data))
-
 
     return failed_imports
 
 
-def print_import_pipeline_results(start_time: float):
+def print_import_pipeline_results(start_time: float, imported_files: int):
     """
     Prints the results of the import pipeline execution.
 
@@ -191,24 +191,32 @@ def print_import_pipeline_results(start_time: float):
     #     print("Import not successfull after retry.")
     print("--> Pipeline execution finished!")
     print("--> Pipeline took ", "%s seconds" % (time.time() - start_time), " to execute!")
+    print(f"--> Pipeline imported {imported_files}!")
+    print("---------------------- Import-Pipeline ----------------------")
 
 
-def handle_failed_imports(os_manager,index_name, failed_imports: list[any]):
+def handle_failed_imports(os_manager: OpenSearchManager, index_name: str, failed_imports: list[any]):
+    """
+    Handle the failed imports of the import pipeline execution, by retrying the import
+
+    Args:
+        os_manager (OpenSearchManager): Manager to handle the OpenSearch API.
+        index_name (str): Name of the instance (equivalent to index name in OpenSearch Node).
+        failed_imports (list): List of all bulk requests that contained at least one failed import
+
+    """
     for response, chunk_data in failed_imports:
         for item in response["items"]:
             if "error" in item["create"]:
                 error = item["create"]["error"]["type"]
                 error_id = item["create"]["_id"]
-                print(f"Import for file with id: '{error_id}' failed because of the following error: '{error}'")
-                # retry failed import
-                retry_data = []
-                for file, id in chunk_data:
-                    if error_id == id:
-                        retry_data.append((file, id))
-                        print((file, id))
-                response = os_manager.perform_bulk(index_name=index_name, data=retry_data)
-                print("Retried:", response)
-
+                # skip errors caused by a version conflict (file already exists)
+                if not error == "version_conflict_engine_exception":
+                    retry_data = []
+                    for file, id in chunk_data:
+                        if error_id == id:
+                            retry_data.append((file, id))
+                    response = os_manager.perform_bulk(index_name=index_name, data=retry_data)
 
 
 def execute_pipeline(import_control: ImportControl):
@@ -222,12 +230,19 @@ def execute_pipeline(import_control: ImportControl):
 
     print("---------------------- Import-Pipeline ----------------------")
     print("Start executing the pipeline ...")
+    start_time = time.time()
 
     # get config values
     options = get_config_values()
     index_name = options['index_name']
-    limit = 205 #options['limit']
-    localhost = True  # options['localhost']
+    limit = options['limit']
+    localhost = options['localhost']
+    only_new_data = options['only_new_data']
+    only_selected_tags = options['only_selected_tags']
+    if only_selected_tags:
+        selected_tags = options['selected_tags']
+    else:
+        selected_tags = []
 
     # get current time
     current_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
@@ -236,11 +251,13 @@ def execute_pipeline(import_control: ImportControl):
     mdh_manager, os_manager = create_managers(localhost=localhost)
 
     # get the current amount of files in os
-    files_in_os = os_manager.get_total_files(index_name=index_name)
+    files_in_os = os_manager.count_files(index_name=index_name)
 
-    # set the offset to the current amount of files in os
-    offset = files_in_os
-
+    # get the date of the last import if only new data should be imported
+    if only_new_data:
+        latest_timestamp = os_manager.get_latest_timestamp(index_name=index_name)
+    else:
+        latest_timestamp = False
 
     # get the current amount of fields (metadata tags) in os
     fields_in_os = os_manager.get_all_fields(index_name=index_name)
@@ -255,7 +272,7 @@ def execute_pipeline(import_control: ImportControl):
         metadata_tags = modify_metadata_tags(mdh_tags=mdh_tags)  # modify the datatypes so they fit in OpenSearch
 
     # extract the data from the mdh
-    mdh_data, files_amount = extract_data_from_mdh(mdh_manager=mdh_manager, limit=limit, offset=offset)
+    mdh_data, files_amount = extract_data_from_mdh(mdh_manager=mdh_manager, limit=limit, latest_timestamp=latest_timestamp, selected_tags=selected_tags)
 
     # get the amount of files that exist in the mdh core
     files_in_mdh = mdh_manager.get_total_files_count()
@@ -268,29 +285,26 @@ def execute_pipeline(import_control: ImportControl):
                        current_time=current_time)
 
     # Loading the data into OpenSearch
-    failed_imports = upload_data(instance_name=index_name, os_manager=os_manager, metadata_tags=metadata_tags,
+    failed_imports = upload_data(index_name=index_name, os_manager=os_manager, metadata_tags=metadata_tags,
                                  data=data,
                                  files_amount=files_amount)
-
+    time.sleep(2)
     # files in os after import
-    imported_files = os_manager.get_total_files(index_name=index_name) - files_in_os
+    imported_files = os_manager.count_files(index_name=index_name) - files_in_os
     print(imported_files)
 
     # update the import in the 'import.dictionary' file
     import_control.update_import(imported_files=imported_files)
 
-    handle_failed_imports(os_manager,index_name, failed_imports)
-    # return import_info
+    # handle the failed imports
+    handle_failed_imports(os_manager, index_name, failed_imports)
 
-    print("----> Pipeline finished!")
-    print("---------------------- Import-Pipeline ----------------------")
+    # print the import results
+    print_import_pipeline_results(start_time=start_time, imported_files=imported_files)
 
 
 def manage_import_pipeline():
-    caller = os.environ.get("CALLER", "manual")
-
     import_control = ImportControl()
-
     execute_pipeline(import_control)
 
 

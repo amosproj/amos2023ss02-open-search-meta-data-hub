@@ -187,6 +187,15 @@ class OpenSearchManager:
         except TransportError:
             return 0
 
+    def count_files(self, index_name):
+        try:
+            response = self._client.count(index=index_name)
+            return response['count']
+        except KeyError:
+            return 0
+        except TransportError:
+            return 0
+
     def create_index(self, index_name: str):
         """Create a new index with non-default settings.
 
@@ -414,19 +423,19 @@ class OpenSearchManager:
             "size": 1,
             "query": {
                 "exists": {
-                    "field": "MdHTimestamp"
+                    "field": "timestamp"
                 },
             },
             "sort": [
                 {
-                    "MdHTimestamp": "desc"
+                    "timestamp": "desc"
                 }
             ]
         }
         try:
             response = self._execute_search_query(query, index_name)
 
-            mdh_timestamp = response['hits']['hits'][0]['_source']['MdHTimestamp']
+            mdh_timestamp = response['hits']['hits'][0]['_source']['timestamp']
             return mdh_timestamp.replace("T", " ")
         except KeyError:
             print(f"No data for the index '{index_name}' is stored.")

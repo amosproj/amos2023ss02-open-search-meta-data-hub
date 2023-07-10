@@ -16,8 +16,9 @@ def get_config_values():
         'index_name': 'amoscore',
         'search_size': 24,
         'limit': False,
-        'selected_tags': [],
-        'only_selected_tags': False
+        'selected_tags': "FileName;FileSize;FileType;SourceFile",
+        'only_selected_tags': False,
+        'only_new_data': True,
     }
 
     # Retrieve values from the config file, with fallback to default values
@@ -31,9 +32,12 @@ def get_config_values():
             options[key] = config.getint('General', key, fallback=value)
         elif key == 'localhost':
             options[key] = config.getboolean('General', key, fallback=value)
+        elif key == "only_new_data":
+            options[key] = config.getboolean('General', key, fallback=value)
+        elif key == "only_selected_tags":
+            options[key] = config.getboolean('General', key, fallback=value)
         else:
             options[key] = config.get('General', key, fallback=value)
-
 
     return options
 

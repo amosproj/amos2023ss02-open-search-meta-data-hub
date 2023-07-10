@@ -1,32 +1,15 @@
 query {
   mdhSearch(
     filterFunctions: []
-    sortFunctions: [
-      {
-        sortBy: "MdHTimestamp"
-        sortByOption: ASC
-      }
-      {
-        sortBy: "FileName"
-        sortByOption: ASC
-      }
-    ]
+    sortFunctions: []
     selectedTags: []
     filterLogicOption: AND
-    limit: 205
-    offset: 198
+    limit: 1000
   ) {
     totalFilesCount
     returnedFilesCount
     instanceName
-    timeZone
-    fixedReturnColumnSize
-    limitedByLicensing
     queryStatusAsText
-    dataTypes {
-      name
-      type
-    }
     files {
       metadata {
         name

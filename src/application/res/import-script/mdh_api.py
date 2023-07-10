@@ -83,16 +83,23 @@ class MetaDataHubManager:
         self._write_file(self.format_query(gql_query.generate_tag_query()))
         return gql_query
 
-    def _generate_data_query(self, filters: list = None, limit: int = False, offset: int = False, selected_tags: list = None):
-        if filters is None:
-            filters = []
+    def _generate_data_query(self, timestamp: str = False, filters: list = None, limit: int = False, offset: int = False, selected_tags: list = None):
+
         filter_functions = []
+        if timestamp:
+            f = FilterFunction(tag="MdHTimestamp", value=timestamp, operation="GREATER", data_type="TS")
+            filter_functions.append(f)
+
+        if selected_tags:
+            if "SourceFile" not in selected_tags:
+                selected_tags.append("SourceFile")
+
         sort_functions = [
             SortFunction(tag="MdHTimestamp", operation="ASC"),
             SortFunction(tag="FileName", operation="ASC")
         ]
 
-        gql_query = GraphQLQuery(filter_functions=filter_functions, sort_functions=sort_functions
+        gql_query = GraphQLQuery(filter_functions=filter_functions, sort_functions=[]
                                  , limit=limit, offset=offset, selected_tags=selected_tags)
 
         self._write_file(self.format_query(gql_query.generate_data_query()))
@@ -115,9 +122,9 @@ class MetaDataHubManager:
         for core in mdh.core.main.get():
             self.metadata_tags = mdh.core.main.execute(core, self._request_path_file)
 
-    def download_data(self, timestamp: str = False, limit: int = False, offset: int = False):
+    def download_data(self, timestamp: str = False, limit: int = False, offset: int = False, selected_tags: list = None):
         """ download the data from a request and store it """
-        self._generate_data_query(timestamp, limit=limit, offset=offset)
+        self._generate_data_query(timestamp=timestamp, limit=limit, offset=offset, selected_tags=selected_tags)
         for core in mdh.core.main.get():
             self.data = mdh.core.main.execute(core, self._request_path_file)
 
