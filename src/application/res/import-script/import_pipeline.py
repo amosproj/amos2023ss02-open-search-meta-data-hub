@@ -271,12 +271,14 @@ def execute_pipeline(import_control: ImportControl):
         mdh_tags = extract_metadata_tags_from_mdh(mdh_manager=mdh_manager)
         metadata_tags = modify_metadata_tags(mdh_tags=mdh_tags)  # modify the datatypes so they fit in OpenSearch
 
-    file_types = ["XML","JPEG"] #TODO
+    file_types = ["XML","JPEG", "TXT"] #TODO
+    limit = 1500 #TODO
+    limit = int(limit / len(file_types))
 
     for file_type in file_types:
 
         # extract the data from the mdh
-        mdh_data, files_amount = extract_data_from_mdh(mdh_manager=mdh_manager, limit=limit, latest_timestamp=latest_timestamp, selected_tags=selected_tags)
+        mdh_data, files_amount = extract_data_from_mdh(mdh_manager=mdh_manager, limit=limit, latest_timestamp=latest_timestamp, selected_tags=selected_tags, file_type=file_type)
 
         # get the amount of files that exist in the mdh core
         files_in_mdh = mdh_manager.get_total_files_count()
