@@ -14,6 +14,7 @@ query {
     selectedTags: []
     filterLogicOption: AND
     limit: 205
+    offset: 198
   ) {
     totalFilesCount
     returnedFilesCount

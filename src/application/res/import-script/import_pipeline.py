@@ -139,8 +139,8 @@ def modify_data(mdh_data: list[dict], metadata_tags: dict, current_time: str) ->
     return modified_data
 
 
-def upload_data(instance_name: str, os_manager: OpenSearchManager, metadata_tags: dict, data: list[dict],
-                files_amount: int) -> int:
+def upload_data(instance_name: str, os_manager: OpenSearchManager, metadata_tags: dict, data: list[(dict, id)],
+                files_amount: int) -> tuple[any, list[dict]]:
     """
     Uploads the modified data from MetaDataHub to OpenSearch using the bulk API.
 
@@ -162,7 +162,6 @@ def upload_data(instance_name: str, os_manager: OpenSearchManager, metadata_tags
     os_manager.update_index(index_name=instance_name, data_types=metadata_tags)
 
     chunk_size = 1000  # Size of chunks the data will be split into
-    imported_files = 0  # Counter for files that are successfully imported
 
     failed_imports = []
     for i in range(0, files_amount, chunk_size):
@@ -171,13 +170,12 @@ def upload_data(instance_name: str, os_manager: OpenSearchManager, metadata_tags
 
         # Perform a bulk request to store the new data in OpenSearch
         response = os_manager.perform_bulk(index_name=instance_name, data=chunk_data)
-        # Increment the imported files count by the number of successfully imported files in the response
-        imported_files += len(response.get('items', []))
 
         if response['errors'] == True:
-            failed_imports.append(response)
+            failed_imports.append((response, chunk_data))
 
-    return imported_files, failed_imports
+
+    return failed_imports
 
 
 def print_import_pipeline_results(start_time: float):
@@ -195,9 +193,22 @@ def print_import_pipeline_results(start_time: float):
     print("--> Pipeline took ", "%s seconds" % (time.time() - start_time), " to execute!")
 
 
-def handle_failed_imports(failed_imports: list[any]):
-    for failed_import in failed_imports:
-        print(failed_import["items"])
+def handle_failed_imports(os_manager,index_name, failed_imports: list[any]):
+    for response, chunk_data in failed_imports:
+        for item in response["items"]:
+            if "error" in item["create"]:
+                error = item["create"]["error"]["type"]
+                error_id = item["create"]["_id"]
+                print(f"Import for file with id: '{error_id}' failed because of the following error: '{error}'")
+                # retry failed import
+                retry_data = []
+                for file, id in chunk_data:
+                    if error_id == id:
+                        retry_data.append((file, id))
+                        print((file, id))
+                response = os_manager.perform_bulk(index_name=index_name, data=retry_data)
+                print("Retried:", response)
+
 
 
 def execute_pipeline(import_control: ImportControl):
@@ -257,14 +268,18 @@ def execute_pipeline(import_control: ImportControl):
                        current_time=current_time)
 
     # Loading the data into OpenSearch
-    imported_files, failed_imports = upload_data(instance_name=index_name, os_manager=os_manager, metadata_tags=metadata_tags,
+    failed_imports = upload_data(instance_name=index_name, os_manager=os_manager, metadata_tags=metadata_tags,
                                  data=data,
                                  files_amount=files_amount)
+
+    # files in os after import
+    imported_files = os_manager.get_total_files(index_name=index_name) - files_in_os
+    print(imported_files)
 
     # update the import in the 'import.dictionary' file
     import_control.update_import(imported_files=imported_files)
 
-    handle_failed_imports(failed_imports)
+    handle_failed_imports(os_manager,index_name, failed_imports)
     # return import_info
 
     print("----> Pipeline finished!")
