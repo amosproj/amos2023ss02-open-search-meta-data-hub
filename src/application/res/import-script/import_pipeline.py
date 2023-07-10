@@ -184,14 +184,14 @@ def print_import_pipeline_results(start_time: float, imported_files: int):
 
     Args:
         start_time (float): Start time of the pipeline execution.
-        import_info (dict): Information about the import status.
+        imported_files (int): Amount of successful imported files.
 
     """
     # if not import_info["Status"] == "Successful":
     #     print("Import not successfull after retry.")
     print("--> Pipeline execution finished!")
     print("--> Pipeline took ", "%s seconds" % (time.time() - start_time), " to execute!")
-    print(f"--> Pipeline imported {imported_files}!")
+    print(f"--> Pipeline imported {imported_files} files!")
     print("---------------------- Import-Pipeline ----------------------")
 
 
@@ -288,16 +288,18 @@ def execute_pipeline(import_control: ImportControl):
     failed_imports = upload_data(index_name=index_name, os_manager=os_manager, metadata_tags=metadata_tags,
                                  data=data,
                                  files_amount=files_amount)
-    time.sleep(2)
-    # files in os after import
-    imported_files = os_manager.count_files(index_name=index_name) - files_in_os
-    print(imported_files)
 
-    # update the import in the 'import.dictionary' file
-    import_control.update_import(imported_files=imported_files)
+    # wait for two seconds to avoid synchronization problems
+    time.sleep(2)
 
     # handle the failed imports
     handle_failed_imports(os_manager, index_name, failed_imports)
+
+    # files in os after import
+    imported_files = os_manager.count_files(index_name=index_name) - files_in_os
+
+    # update the import in the 'import.dictionary' file
+    import_control.update_import(imported_files=imported_files)
 
     # print the import results
     print_import_pipeline_results(start_time=start_time, imported_files=imported_files)

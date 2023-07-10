@@ -4,7 +4,7 @@ query {
     sortFunctions: []
     selectedTags: []
     filterLogicOption: AND
-    limit: 1000
+    limit: 3435
   ) {
     totalFilesCount
     returnedFilesCount

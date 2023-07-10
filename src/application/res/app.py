@@ -10,13 +10,16 @@ from wtforms import StringField, SelectField, FieldList, FormField, Form, Submit
 from wtforms.validators import DataRequired
 from backend.opensearch_api import OpenSearchManager
 from backend.os_dashboard_api import OSDashboardManager
+from backend.configuration import get_config_values
 import pandas as pd
 import urllib
 import configparser
 
 # Configuration Setup
-config = configparser.ConfigParser()
-config.read('config.ini')
+options = get_config_values()
+index_name = options['index_name']
+search_size = options['search_size']
+localhost = options['localhost']
 
 # Flask Application Setup
 app = Flask(__name__)
@@ -27,11 +30,10 @@ bootstrap = Bootstrap5(app)
 csrf = CSRFProtect(app)
 
 # OSDashboardManager Initialization
-os_dashboard_manager: OSDashboardManager = OSDashboardManager(localhost=config.getboolean('General', 'localhost'))
+os_dashboard_manager: OSDashboardManager = OSDashboardManager(localhost=localhost)
 
 # OpenSearchManager Initialization
-os_manager: OpenSearchManager = OpenSearchManager(localhost=config.getboolean('General', 'localhost'),
-                                                  search_size=config.getint('General', 'search_size'))
+os_manager: OpenSearchManager = OpenSearchManager(localhost=localhost, search_size=search_size)
 
 
 # SimpleSearchForm Definition
@@ -42,7 +44,7 @@ class SimpleSearchForm(FlaskForm):
 
 class AdvancedEntryForm(FlaskForm):
     # Get all available fields for the specified index
-    all_fields = os_manager.get_all_fields(index_name=config.get('General', 'default_index_name'))
+    all_fields = os_manager.get_all_fields(index_name=index_name)
     # Dropdown menu for selecting a metadata tag
     metadata_tag = SelectField('Metadata tag', choices=all_fields)
     # Dropdown menu for selecting a condition for the metadata tag

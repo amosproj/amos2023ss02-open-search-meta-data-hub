@@ -8,7 +8,7 @@ def get_config_values():
     """
     # read config file
     config = configparser.ConfigParser()
-    config.read('../config.ini')
+    config.read('config.ini')
 
     # Define fallback and default values
     fallback_values = {

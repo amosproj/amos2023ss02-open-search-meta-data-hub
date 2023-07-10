@@ -1,1 +1,1 @@
-*/1 * * * * . $HOME/.profile; /usr/local/bin/python /WORK_REPO/import-script/import_pipeline.py >> /var/log/cronjob_log 2>&1
+*/10 * * * * . $HOME/.profile; /usr/local/bin/python /WORK_REPO/import-script/import_pipeline.py >> /var/log/cronjob_log 2>&1
