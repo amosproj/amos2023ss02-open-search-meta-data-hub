@@ -244,6 +244,8 @@ def execute_pipeline(import_control: ImportControl):
     else:
         selected_tags = []
 
+    file_types = options['file_types']
+
     # get current time
     current_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
@@ -271,7 +273,7 @@ def execute_pipeline(import_control: ImportControl):
         mdh_tags = extract_metadata_tags_from_mdh(mdh_manager=mdh_manager)
         metadata_tags = modify_metadata_tags(mdh_tags=mdh_tags)  # modify the datatypes so they fit in OpenSearch
 
-    file_types = ["XML","JPEG", "TXT"] #TODO
+    #file_types = ["XML","JPEG", "TXT"] #TODO
     limit = int(limit / len(file_types))
 
     for file_type in file_types:

@@ -19,6 +19,7 @@ def get_config_values():
         'selected_tags': "FileName;FileSize;FileType;SourceFile",
         'only_selected_tags': False,
         'only_new_data': True,
+        'file_types': "",
     }
 
     # Retrieve values from the config file, with fallback to default values
@@ -36,6 +37,9 @@ def get_config_values():
             options[key] = config.getboolean('General', key, fallback=value)
         elif key == "only_selected_tags":
             options[key] = config.getboolean('General', key, fallback=value)
+        elif key == "file_types":
+            tmp = config.get('General',key,fallback=value)
+            options[key] = tmp.split(";")
         else:
             options[key] = config.get('General', key, fallback=value)
 
