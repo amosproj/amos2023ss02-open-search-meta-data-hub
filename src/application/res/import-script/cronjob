@@ -1,1 +1,1 @@
-*/1 * * * * env CALLER=cronjob python3 /WORK_REPO/import-script/import_pipeline.py >> ~/cronjob_log.txt
+*/60 * * * * . $HOME/.profile; /usr/local/bin/python /WORK_REPO/import-script/import_pipeline.py >> /var/log/cronjob_log 2>&1

@@ -2,20 +2,14 @@ query {
   mdhSearch(
     filterFunctions: []
     sortFunctions: []
+    selectedTags: []
     filterLogicOption: AND
-    limit: 15
+    limit: 3435
   ) {
     totalFilesCount
     returnedFilesCount
     instanceName
-    timeZone
-    fixedReturnColumnSize
-    limitedByLicensing
     queryStatusAsText
-    dataTypes {
-      name
-      type
-    }
     files {
       metadata {
         name

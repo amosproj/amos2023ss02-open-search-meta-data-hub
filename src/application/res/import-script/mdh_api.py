@@ -19,7 +19,8 @@ class MetaDataHubManager:
         MetaDataHubManager._set_environment(localhost)  # set the MetaDataHub environment
         MetaDataHubManager._connect_to_mdh()  # connect to the MetaDataHub
         self._set_request_path(localhost)
-        self.result = {}  # dictionary containing the data from the last request
+        self.metadata_tags = {}  # dictionary containing the most frequently used metadata tags from the last request
+        self.data = {}  # dictionary containing the data from the last request
 
     def _set_request_path(self, localhost: bool):
         """ Tbhis function initally sets the path to the graphQL file needed for the download from the MetaDataHub
@@ -30,7 +31,7 @@ class MetaDataHubManager:
             gql_path = 'request.gql'
         else:
             gql_path = '/WORK_REPO/import-script/request.gql'
-        self._request_path_file = gql_path #os.path.join(os.getcwd(), gql_path)  # define where to find the GraphQL request
+        self._request_path_file = gql_path  # os.path.join(os.getcwd(), gql_path)  # define where to find the GraphQL request
 
     @staticmethod
     def _set_environment(localhost: bool):
@@ -76,15 +77,32 @@ class MetaDataHubManager:
         with path.open(mode='w') as file:
             file.write(contents)
 
-    def _generate_query(self, timestamp: str = False, limit: int = False):
+    def _generate_metadata_tag_query(self, amount_of_tags: int = 900):
+        gql_query = GraphQLQuery(amount_of_tags=amount_of_tags)
+
+        self._write_file(self.format_query(gql_query.generate_tag_query()))
+        return gql_query
+
+    def _generate_data_query(self, timestamp: str = False, filters: list = None, limit: int = False, offset: int = False, selected_tags: list = None):
+
         filter_functions = []
         if timestamp:
-            f = FilterFunction(tag="MdhTimestamp", value=timestamp, operation="GREATER", data_type="TS")
+            f = FilterFunction(tag="MdHTimestamp", value=timestamp, operation="GREATER", data_type="TS")
             filter_functions.append(f)
 
-        gql_query = GraphQLQuery(filter_functions=filter_functions, limit=limit)
+        if selected_tags:
+            if "SourceFile" not in selected_tags:
+                selected_tags.append("SourceFile")
 
-        self._write_file(self.format_query(gql_query.generate_query()))
+        sort_functions = [
+            SortFunction(tag="MdHTimestamp", operation="ASC"),
+            SortFunction(tag="FileName", operation="ASC")
+        ]
+
+        gql_query = GraphQLQuery(filter_functions=filter_functions, sort_functions=[]
+                                 , limit=limit, offset=offset, selected_tags=selected_tags)
+
+        self._write_file(self.format_query(gql_query.generate_data_query()))
         return gql_query
 
     def format_query(self, gql_query: str) -> str:
@@ -98,36 +116,47 @@ class MetaDataHubManager:
         formatted_query = '\n'.join(line[min_indentation:] for line in lines)
         return formatted_query
 
-    def download_data(self, timestamp: str = False, limit: int = False):
-        """ download the data from the request and store it """
-        self._generate_query(timestamp, limit)
+    def download_metadata_tags(self, amount_of_tags: int = 900):
+        """ download the metadata tags from a request and store it """
+        self._generate_metadata_tag_query(amount_of_tags=amount_of_tags)
         for core in mdh.core.main.get():
-            self.result = mdh.core.main.execute(core, self._request_path_file)
+            self.metadata_tags = mdh.core.main.execute(core, self._request_path_file)
+
+    def download_data(self, timestamp: str = False, limit: int = False, offset: int = False, selected_tags: list = None):
+        """ download the data from a request and store it """
+        self._generate_data_query(timestamp=timestamp, limit=limit, offset=offset, selected_tags=selected_tags)
+        for core in mdh.core.main.get():
+            self.data = mdh.core.main.execute(core, self._request_path_file)
 
     def get_instance_name(self) -> str:
         """ get the instance (core name) from the last request
 
         :return: String containing the name of the instance on which the downloaded was executed
         """
-        return self.result['mdhSearch']['instanceName'].lower()
+        return self.data['mdhSearch']['instanceName'].lower()
 
     def get_data(self) -> list[dict]:
-        """ get data from the result-dictionary
+        """ get data from the data-dictionary
 
         :return: list of dictionaries containing all metadata-tags and their values for each file
         """
-        mdh_search = self.result["mdhSearch"]
-        files = mdh_search.get("files", [])
-        return files
+        try:
+            mdh_search = self.data["mdhSearch"]
+            files = mdh_search.get("files", [])
+            return files
+        except KeyError:
+            return None
 
-    def get_datatypes(self) -> dict:
-        """ get the datatypes of the regarding metadata tags form the result-dictionary
+    def get_metadata_tags(self) -> dict:
+        """ get the datatypes of the regarding metadata tags form the data-dictionary
 
-        :return: Dictionary containing all metadata-tags and their corresponding datatypes
+        :return: List of dictionaries containing all metadata-tags and their corresponding datatypes
         """
-        mdh_search = self.result["mdhSearch"]
-        data_types = mdh_search.get("dataTypes", [])
-        return data_types
+        try:
+            mdh_search = self.metadata_tags["getMetadataTags"]
+            return mdh_search
+        except KeyError:
+            return None
 
     def get_total_files_count(self) -> int:
         """ This function get the total amount of files that are stored in the MetaDataHub core
@@ -136,7 +165,7 @@ class MetaDataHubManager:
         :return: Integer containing the total files count
         """
         try:
-            mdh_search = self.result["mdhSearch"]
+            mdh_search = self.data["mdhSearch"]
             return mdh_search['totalFilesCount']
         except KeyError:
             print("No files found. Please download the data first.")
@@ -148,7 +177,7 @@ class MetaDataHubManager:
         :return: Integer containing the returned files count
         """
         try:
-            mdh_search = self.result["mdhSearch"]
+            mdh_search = self.data["mdhSearch"]
             return mdh_search["returnedFilesCount"]
         except KeyError:
             print("No files found. Please download the data first.")
