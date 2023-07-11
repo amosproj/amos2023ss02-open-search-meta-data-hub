@@ -137,7 +137,7 @@ def search():
         searchValue = simpleSearchForm.searchValue.data
 
         # Perform simple search using the default index name
-        resultTmp = os_manager.simple_search(config.get('General', 'default_index_name'), searchValue)
+        resultTmp = os_manager.simple_search(index_name, searchValue)
 
         # Set the last_form session variable to 'simple'
         session['last_form'] = 'simple'
@@ -168,7 +168,7 @@ def search():
             }
 
         # Perform advanced search using the default index name and the search information
-        resultTmp = os_manager.advanced_search(index_name=config.get('General', 'default_index_name'),
+        resultTmp = os_manager.advanced_search(index_name=index_name,
                                                search_info=search_info)
 
         # Set the last_form session variable to 'advanced'
