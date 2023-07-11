@@ -1,20 +1,20 @@
 query {
-  mdhSearch(
-    filterFunctions: []
-    sortFunctions: []
-    selectedTags: []
-    filterLogicOption: AND
-    limit: 3435
-  ) {
-    totalFilesCount
-    returnedFilesCount
-    instanceName
-    queryStatusAsText
-    files {
-      metadata {
-        name
-        value
-      }
+    mdhSearch(
+        filterFunctions: []
+        sortFunctions: []
+        selectedTags: []
+        filterLogicOption: AND
+        limit: 3435
+    ) {
+        totalFilesCount
+        returnedFilesCount
+        instanceName
+        queryStatusAsText
+        files {
+            metadata {
+                name
+                value
+            }
+        }
     }
-  }
 }

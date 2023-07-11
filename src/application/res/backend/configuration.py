@@ -38,10 +38,9 @@ def get_config_values():
         elif key == "only_selected_tags":
             options[key] = config.getboolean('General', key, fallback=value)
         elif key == "file_types":
-            tmp = config.get('General',key,fallback=value)
+            tmp = config.get('General', key, fallback=value)
             options[key] = tmp.split(";")
         else:
             options[key] = config.get('General', key, fallback=value)
 
     return options
-

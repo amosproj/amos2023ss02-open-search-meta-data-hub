@@ -47,8 +47,8 @@ class OpenSearchManager:
         # Create the client with SSL/TLS and hostname verification disabled
         # Port on which the OpenSearch node runs
         load_dotenv()  # load the environment
-        #print(os.getenv("OS_PASSWORD"))
-        auth = (os.getenv("OS_USER"),os.getenv("OS_PASSWORD") ) # credentials are loaded from the .env file
+        # print(os.getenv("OS_PASSWORD"))
+        auth = (os.getenv("OS_USER"), os.getenv("OS_PASSWORD"))  # credentials are loaded from the .env file
         self._client = OpenSearch(
             hosts=[{'host': self._host, 'port': self._port}],  # Host and port to connect with
             http_auth=auth,  # Credentials
@@ -100,7 +100,6 @@ class OpenSearchManager:
         except Exception as e:
             print(f"Error occurred while retrieving fields for index '{index_name}': {str(e)}")
             return None
-
 
     def get_datatype(self, index_name: str, field_name: str) -> str:
         """Get the datatype of a specific field for a specific index.
@@ -298,7 +297,7 @@ class OpenSearchManager:
         """
         fields = self.get_all_fields(index_name)
         query = {
-            'size' : self.search_size,
+            'size': self.search_size,
             "query": {
                 "bool": {
                     "should": []
@@ -341,12 +340,12 @@ class OpenSearchManager:
                 search_content = search_info[search_field]['search_content']
                 operator = search_info[search_field]['operator']
                 weight = search_info[search_field]['weight']
-                sub_queries.append(self._get_sub_query(data_type, operator, search_field, weight,search_content))
+                sub_queries.append(self._get_sub_query(data_type, operator, search_field, weight, search_content))
         if sub_queries:
             query = self._get_query(sub_queries, self.search_size)
         else:
             query = {"query": {"exists": {"field": " "}}}
-        print("Advanced_query:",query)
+        print("Advanced_query:", query)
 
         response = self._client.search(
             body=query,
@@ -355,7 +354,6 @@ class OpenSearchManager:
             size=page_size
         )
         return response
-
 
     @staticmethod
     def _get_query(sub_queries: list[tuple], search_size) -> dict:
@@ -366,8 +364,8 @@ class OpenSearchManager:
         the value 'must' or 'must_not'.
         :return: Returns a query that can be used to search in OpenSearch.
         """
-        #The default size is 10, now it goes to 100 for example!
-        query = {'size' : search_size,'query': {'bool': {}}}
+        # The default size is 10, now it goes to 100 for example!
+        query = {'size': search_size, 'query': {'bool': {}}}
         for sub_query, functionality in sub_queries:
             if functionality not in query['query']['bool']:
                 query['query']['bool'][functionality] = [sub_query]
@@ -376,7 +374,7 @@ class OpenSearchManager:
         return query
 
     @staticmethod
-    def _get_sub_query(data_type: str, operator: str, search_field: str, weight: str,search_content: any) -> tuple:
+    def _get_sub_query(data_type: str, operator: str, search_field: str, weight: str, search_content: any) -> tuple:
         """Returns a subquery that can be used to create a complete query.
 
           Args:

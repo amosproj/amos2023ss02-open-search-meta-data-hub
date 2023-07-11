@@ -4,23 +4,24 @@
 
 <br>
 <div class="dashboard-header">
-  <h1>{% block title %}Dashboards{% endblock %}</h1>
-  <script src="{{ url_for('static', filename='js/main.js')}}"></script>
-  <button class="btn btn-info" id="openSidebarButton" onclick="openSidebar({{ iframe_data }})">Panels configuration</button>
-  <!-- <button type="button" class="btn btn-primary" id="openSidebarButton" onclick="openSidebar()">Open Sidebar</button> -->
+    <h1>{% block title %}Dashboards{% endblock %}</h1>
+    <script src="{{ url_for('static', filename='js/main.js')}}"></script>
+    <button class="btn btn-info" id="openSidebarButton" onclick="openSidebar({{ iframe_data }})">Panels configuration
+    </button>
+    <!-- <button type="button" class="btn btn-primary" id="openSidebarButton" onclick="openSidebar()">Open Sidebar</button> -->
 
 </div>
 </button></td>
 
 <div id="resultContainer">
-{% for iframe in iframe_data%}
-<div class="iframe-row">
-  <div class="resizable-component draggable-iframe" draggable="true" ondragstart="drag(event)">
-    <p class="iframe-name">{{ iframe.title }}</p>
-    <iframe class="resizable-iframe" src="{{ iframe.iframe_code }}" frameborder="0"></iframe>
-  </div>
-</div>
-{% endfor %}
+    {% for iframe in iframe_data%}
+    <div class="iframe-row">
+        <div class="resizable-component draggable-iframe" draggable="true" ondragstart="drag(event)">
+            <p class="iframe-name">{{ iframe.title }}</p>
+            <iframe class="resizable-iframe" src="{{ iframe.iframe_code }}" frameborder="0"></iframe>
+        </div>
+    </div>
+    {% endfor %}
 </div>
 <style>
 
@@ -28,8 +29,13 @@
 </style>
 
 <script>
-var iframeData = {{ iframe_data | tojson }};
-showCheckedCheckboxes(iframeData);
+    var iframeData = {
+    {
+        iframe_data | tojson
+    }
+    }
+    ;
+    showCheckedCheckboxes(iframeData);
 </script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
@@ -42,19 +48,19 @@ showCheckedCheckboxes(iframeData);
 <br> </br>
 
 <div class="sidebar-container" id="sidebarContainer">
-  <div class="sidebar-content">
-    <div class="sidebar-header">
-      <h5 class="sidebar-title" id="sidebarTitle"></h5>
+    <div class="sidebar-content">
+        <div class="sidebar-header">
+            <h5 class="sidebar-title" id="sidebarTitle"></h5>
+        </div>
+        <div class="sidebar-body" id="detailsTable">
+            <!-- The JavaScript function will insert the details table here -->
+
+        </div>
+        <div class="sidebar-footer">
+            <button class="btn btn-info" onclick="saveCheckedCheckboxes({{ iframe_data }})">Save</button>
+            <button class="btn btn-info" onclick="closeSidebar()">Close</button>
+        </div>
     </div>
-    <div class="sidebar-body" id="detailsTable">
-      <!-- The JavaScript function will insert the details table here -->
-      
-    </div>
-    <div class="sidebar-footer">
-      <button class="btn btn-info" onclick="saveCheckedCheckboxes({{ iframe_data }})">Save</button>
-      <button class="btn btn-info" onclick="closeSidebar()">Close</button>
-    </div>
-  </div>
 </div>
 
 

@@ -83,7 +83,8 @@ class MetaDataHubManager:
         self._write_file(self.format_query(gql_query.generate_tag_query()))
         return gql_query
 
-    def _generate_data_query(self, timestamp: str = False, filters: list = None, limit: int = False, offset: int = False, selected_tags: list = None, file_type: str = False):
+    def _generate_data_query(self, timestamp: str = False, filters: list = None, limit: int = False,
+                             offset: int = False, selected_tags: list = None, file_type: str = False):
         filter_functions = []
         if timestamp:
             f = FilterFunction(tag="MdHTimestamp", value=timestamp, operation="GREATER", data_type="TS")
@@ -93,7 +94,7 @@ class MetaDataHubManager:
             if "SourceFile" not in selected_tags:
                 selected_tags.append("SourceFile")
 
-        if file_type: 
+        if file_type:
             t = FilterFunction(tag="FileType", value=file_type, operation="EQUAL", data_type="STR")
             filter_functions.append(t)
 
@@ -125,9 +126,11 @@ class MetaDataHubManager:
         for core in mdh.core.main.get():
             self.metadata_tags = mdh.core.main.execute(core, self._request_path_file)
 
-    def download_data(self, timestamp: str = False, limit: int = False, offset: int = False, selected_tags: list = None, file_type: str = False):
+    def download_data(self, timestamp: str = False, limit: int = False, offset: int = False, selected_tags: list = None,
+                      file_type: str = False):
         """ download the data from a request and store it """
-        self._generate_data_query(timestamp=timestamp, limit=limit, offset=offset, selected_tags=selected_tags, file_type=file_type)
+        self._generate_data_query(timestamp=timestamp, limit=limit, offset=offset, selected_tags=selected_tags,
+                                  file_type=file_type)
         for core in mdh.core.main.get():
             self.data = mdh.core.main.execute(core, self._request_path_file)
 

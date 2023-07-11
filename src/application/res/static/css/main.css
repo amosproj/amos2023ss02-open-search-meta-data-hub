@@ -1,14 +1,14 @@
-    .iframeContainer {
-        width: 100%;
-        margin-bottom: 20px;
-    }
+.iframeContainer {
+    width: 100%;
+    margin-bottom: 20px;
+}
 
-    .iframeContainer iframe {
-        display: block;
-        width: 100%;
-        height: auto;
-        border: none;
-    }
+.iframeContainer iframe {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: none;
+}
 
 
 body {
@@ -77,13 +77,13 @@ body {
     border: none;
 }
 
-.wrap-text{
+.wrap-text {
     word-wrap: break-word;
     table-layout: fixed;
     width: 100%;
 }
 
-.formRow{
+.formRow {
     margin-bottom: 10px;
 }
 
@@ -91,11 +91,13 @@ body {
 .table {
     border: none;
 }
+
 .table td, .table th {
     border: none;
     text-align: left;
 
 }
+
 .table thead th:last-child {
     text-align: right;
 }
@@ -108,31 +110,31 @@ body {
     font-size: 22px;
     font-style: italic;
     color: #000000;
-  }
+}
 
-  .page-link{
+.page-link {
     color: #000000;
 
-  }
+}
 
-  .page-item.active .page-link {
-    background-color:#000000;
+.page-item.active .page-link {
+    background-color: #000000;
     border-color: #000000;
-  }
+}
 
-  .page-item.disabled .page-link {
+.page-item.disabled .page-link {
     color: #c7c7c7;
     pointer-events: none;
-  }
+}
 
 
-  .iframe-row {
+.iframe-row {
     display: flex;
     justify-content: space-between;
     margin-bottom: 10px;
-  }
-  
-  .resizable-component {
+}
+
+.resizable-component {
     position: relative;
     width: 100%;
     height: 600px;
@@ -140,32 +142,34 @@ body {
     resize: both;
     border: 1px solid #ccc;
     cursor: move;
-  }
-  
-  .iframe-name {
+}
+
+.iframe-name {
     position: absolute;
     top: 10px;
     right: 10px;
     font-size: 16px;
     font-weight: bold;
-  }
-  
-  .resizable-iframe {
+}
+
+.resizable-iframe {
     width: 100%;
     height: 100%;
     border: none;
-  }
-  .dashboard-header {
+}
+
+.dashboard-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 20px;
-  }
-    
-  .dashboard-header button {
+}
+
+.dashboard-header button {
     margin-left: 10px;
-  }
-  .sidebar-container {
+}
+
+.sidebar-container {
     position: fixed;
     top: 56px; /* Adjust this value based on the height of your navbar */
     right: 0;
@@ -176,49 +180,49 @@ body {
     z-index: 9999;
     transform: translateX(100%);
     transition: transform 0.3s ease-out;
-  }
-  
-  .sidebar-content {
+}
+
+.sidebar-content {
     height: 100%;
     padding: 20px;
-  }
-  
-  .sidebar-header {
+}
+
+.sidebar-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 20px;
-  }
-  
-  .sidebar-title {
+}
+
+.sidebar-title {
     margin: 0;
-  }
-  
-  .sidebar-body {
+}
+
+.sidebar-body {
     flex-grow: 1;
-  }
-  
-  .sidebar-footer {
+}
+
+.sidebar-footer {
     margin-top: 20px;
     text-align: right;
-  }
-  
-  .checkbox-container {
+}
+
+.checkbox-container {
     display: flex;
     align-items: center;
 
-  }
-  
-  .checkbox-container input[type="checkbox"] {
+}
+
+.checkbox-container input[type="checkbox"] {
     margin-right: 15px;
     transform: scale(1.3);
-  }
+}
 
-  .checkbox-container label {
+.checkbox-container label {
     font-size: 1.2em;
-  }
+}
 
-  .respp{
+.respp {
     display: flex;
     align-items: center;
-  }
+}

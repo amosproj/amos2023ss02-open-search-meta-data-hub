@@ -21,7 +21,6 @@ def _convert_time(updated_at_ts):
     return updated_at_human_readable
 
 
-
 class OSDashboardManager:
     """
      Class for managing the connection to the OpenSearch-Dashboard detects new visualizations.
@@ -74,8 +73,8 @@ class OSDashboardManager:
                 visualization_id = obj['id']
                 encoded_id = urllib.parse.quote(visualization_id)
                 title = obj['attributes']['title'].capitalize()
-                #vis_state = json.loads(obj['attributes']['visState'])
-                #vis_type = vis_state['type'].capitalize()
+                # vis_state = json.loads(obj['attributes']['visState'])
+                # vis_type = vis_state['type'].capitalize()
 
                 # get and convert last update time
                 updated_at_human_readable = _convert_time(obj['updated_at'])
@@ -86,7 +85,7 @@ class OSDashboardManager:
                 # Add the data to the iframe_data list
                 iframe_data.append({
                     'title': title,
-                    #'type': vis_type,
+                    # 'type': vis_type,
 
                     'updated_at': updated_at_human_readable,
                     'iframe_code': iframe_code

@@ -1,7 +1,6 @@
 from graphql_query import Argument, Operation, Query, Field
 
 
-
 class FilterFunction:
     def __init__(self, tag: str, value: str, operation: str, data_type: str):
         """Creates a new object of class FilterFunction.
@@ -111,7 +110,6 @@ class GraphQLQuery:
         )
         return selected_tags
 
-
     def _get_arguments(self, filter_functions: Argument, sort_functions: Argument, selected_tags: Argument):
         """Returns all necessary arguments for the GraphQL query.
 
@@ -184,5 +182,3 @@ class GraphQLQuery:
 
         # Return the rendered version of the executed query as a string
         return operation.render()
-
-

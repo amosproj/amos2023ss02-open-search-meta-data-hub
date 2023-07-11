@@ -15,7 +15,6 @@ from backend.opensearch_api import OpenSearchManager
 from backend.configuration import get_config_values
 
 
-
 def create_managers(localhost: bool = False):
     """ This function creates the managers to handle the APIs to the MetaDataHub and the OpenSearch Node
 
@@ -47,7 +46,8 @@ def extract_metadata_tags_from_mdh(mdh_manager: MetaDataHubManager, amount_of_ta
 
 
 def extract_data_from_mdh(mdh_manager: MetaDataHubManager, latest_timestamp: str = False, limit: int = False,
-        offset: int = False, selected_tags: list = None, file_type: str = False) -> tuple[list[dict], int]:
+                          offset: int = False, selected_tags: list = None, file_type: str = False) -> tuple[
+    list[dict], int]:
     """
     Extract data from the MetaDataHub.
 
@@ -269,17 +269,18 @@ def execute_pipeline(import_control: ImportControl):
         metadata_tags = {}
         for field in fields_in_os:
             metadata_tags[field] = os_manager.get_datatype(index_name=index_name, field_name=field)
-    else: # this is executed if it is the first import
+    else:  # this is executed if it is the first import
         mdh_tags = extract_metadata_tags_from_mdh(mdh_manager=mdh_manager)
         metadata_tags = modify_metadata_tags(mdh_tags=mdh_tags)  # modify the datatypes so they fit in OpenSearch
 
-    #file_types = ["XML","JPEG", "TXT"] #TODO
+    # file_types = ["XML","JPEG", "TXT"] #TODO
     limit = int(limit / len(file_types))
 
     for file_type in file_types:
-
         # extract the data from the mdh
-        mdh_data, files_amount = extract_data_from_mdh(mdh_manager=mdh_manager, limit=limit, latest_timestamp=latest_timestamp, selected_tags=selected_tags, file_type=file_type)
+        mdh_data, files_amount = extract_data_from_mdh(mdh_manager=mdh_manager, limit=limit,
+                                                       latest_timestamp=latest_timestamp, selected_tags=selected_tags,
+                                                       file_type=file_type)
 
         # get the amount of files that exist in the mdh core
         files_in_mdh = mdh_manager.get_total_files_count()

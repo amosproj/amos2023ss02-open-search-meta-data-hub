@@ -40,10 +40,9 @@ os_manager: OpenSearchManager = OpenSearchManager(localhost=localhost, search_si
 class SimpleSearchForm(FlaskForm):
     searchValue = StringField('Search Value', validators=[DataRequired()])
     submit = SubmitField('Search')
-    #values for pagination
+    # values for pagination
     currentPageSS = IntegerField('currentPageSS')
     resultsPerPageSS = IntegerField('resultsPerPageSS')
-
 
 
 class AdvancedEntryForm(FlaskForm):
@@ -84,10 +83,9 @@ class AdvancedSearchForm(FlaskForm):
     entry = FieldList(FormField(AdvancedEntryForm), min_entries=1)
     # Submit button for submitting the form
     submit = SubmitField('Submit')
-    #values for pagination
+    # values for pagination
     currentPage = IntegerField('currentPage')
     resultsPerPage = IntegerField('resultsPerPage')
-
 
 
 def renderResult(input):
