@@ -49,7 +49,7 @@ class OpenSearchManager:
         # Port on which the OpenSearch node runs
         load_dotenv()  # load the environment
         #print(os.getenv("OS_PASSWORD"))
-        auth = (os.getenv("OS_USER"),os.getenv("OS_PASSWORD"))  # credentials are loaded from the .env file
+        auth = (os.getenv("OS_USER"),os.getenv("OS_PASSWORD") ) # credentials are loaded from the .env file
         self._client = OpenSearch(
             hosts=[{'host': self._host, 'port': self._port}],  # Host and port to connect with
             http_auth=auth,  # Credentials
