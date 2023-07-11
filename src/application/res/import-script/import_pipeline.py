@@ -272,7 +272,6 @@ def execute_pipeline(import_control: ImportControl):
         metadata_tags = modify_metadata_tags(mdh_tags=mdh_tags)  # modify the datatypes so they fit in OpenSearch
 
     file_types = ["XML","JPEG", "TXT"] #TODO
-    limit = 1500 #TODO
     limit = int(limit / len(file_types))
 
     for file_type in file_types:

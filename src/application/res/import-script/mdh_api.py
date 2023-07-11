@@ -127,7 +127,7 @@ class MetaDataHubManager:
 
     def download_data(self, timestamp: str = False, limit: int = False, offset: int = False, selected_tags: list = None, file_type: str = False):
         """ download the data from a request and store it """
-        self._generate_data_query(timestamp=timestamp, limit=limit, offset=offset, selected_tags=selected_tags, file_type)
+        self._generate_data_query(timestamp=timestamp, limit=limit, offset=offset, selected_tags=selected_tags, file_type=file_type)
         for core in mdh.core.main.get():
             self.data = mdh.core.main.execute(core, self._request_path_file)
 
