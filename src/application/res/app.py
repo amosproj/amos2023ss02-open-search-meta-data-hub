@@ -16,8 +16,10 @@ import urllib
 import configparser
 
 # Configuration Setup
-config = configparser.ConfigParser()
-config.read('config.ini')
+options = get_config_values()
+index_name = options['index_name']
+search_size = options['search_size']
+localhost = options['localhost']
 
 # Flask Application Setup
 app = Flask(__name__)
@@ -28,22 +30,25 @@ bootstrap = Bootstrap5(app)
 csrf = CSRFProtect(app)
 
 # OSDashboardManager Initialization
-os_dashboard_manager: OSDashboardManager = OSDashboardManager(localhost=config.getboolean('General', 'localhost'))
+os_dashboard_manager: OSDashboardManager = OSDashboardManager(localhost=localhost)
 
 # OpenSearchManager Initialization
-os_manager: OpenSearchManager = OpenSearchManager(localhost=config.getboolean('General', 'localhost'),
-                                                  search_size=config.getint('General', 'search_size'))
+os_manager: OpenSearchManager = OpenSearchManager(localhost=localhost, search_size=search_size)
 
 
 # SimpleSearchForm Definition
 class SimpleSearchForm(FlaskForm):
     searchValue = StringField('Search Value', validators=[DataRequired()])
     submit = SubmitField('Search')
+    #values for pagination
+    currentPageSS = IntegerField('currentPageSS')
+    resultsPerPageSS = IntegerField('resultsPerPageSS')
+
 
 
 class AdvancedEntryForm(FlaskForm):
     # Get all available fields for the specified index
-    all_fields = os_manager.get_all_fields(index_name=config.get('General', 'default_index_name'))
+    all_fields = os_manager.get_all_fields(index_name=index_name)
     # Dropdown menu for selecting a metadata tag
     metadata_tag = SelectField('Metadata tag', choices=all_fields)
     # Dropdown menu for selecting a condition for the metadata tag
@@ -79,6 +84,10 @@ class AdvancedSearchForm(FlaskForm):
     entry = FieldList(FormField(AdvancedEntryForm), min_entries=1)
     # Submit button for submitting the form
     submit = SubmitField('Submit')
+    #values for pagination
+    currentPage = IntegerField('currentPage')
+    resultsPerPage = IntegerField('resultsPerPage')
+
 
 
 def renderResult(input):
@@ -136,7 +145,8 @@ def search():
         searchValue = simpleSearchForm.searchValue.data
 
         # Perform simple search using the default index name
-        resultTmp = os_manager.simple_search(config.get('General', 'default_index_name'), searchValue, page=int(simpleSearchForm.currentPageSS.data), page_size=int(simpleSearchForm.resultsPerPageSS.data))
+        resultTmp = os_manager.simple_search(index_name, searchValue, page=int(simpleSearchForm.currentPageSS.data),
+                                             page_size=int(simpleSearchForm.resultsPerPageSS.data))
 
         # Set the last_form session variable to 'simple'
         session['last_form'] = 'simple'
@@ -167,8 +177,9 @@ def search():
             }
 
         # Perform advanced search using the default index name and the search information
-        resultTmp = os_manager.advanced_search(index_name=config.get('General', 'default_index_name'),
-                                               search_info=search_info, page=int(advancedSearchForm.currentPage.data), page_size=int(advancedSearchForm.resultsPerPage.data))
+        resultTmp = os_manager.advanced_search(index_name=index_name,
+                                               search_info=search_info, page=int(advancedSearchForm.currentPage.data),
+                                               page_size=int(advancedSearchForm.resultsPerPage.data))
 
         # Set the last_form session variable to 'advanced'
         session['last_form'] = 'advanced'
@@ -199,13 +210,14 @@ def advanced_search_v2():
     # Render the index1.html template for advanced search version 2
     return render_template('index1.html')
 
+
 @app.route('/dashboards')
 def dashboards():
     # Get the iframe data from the OS dashboard manager
     iframe_data = os_dashboard_manager.get_iframes()
 
     # Render the visualizations.html template, passing the iframe data
-    return render_template('dashboards.html',iframe_data=iframe_data)
+    return render_template('dashboards.html', iframe_data=iframe_data)
 
 
 if __name__ == '__main__':
@@ -216,4 +228,3 @@ if __name__ == '__main__':
     # The app will listen for incoming requests on host '0.0.0.0' and port 8000.
     # The server will continue running until it is manually stopped.
     app.run(host='0.0.0.0', port=8000)
-
