@@ -47,7 +47,7 @@ def extract_metadata_tags_from_mdh(mdh_manager: MetaDataHubManager, amount_of_ta
 
 
 def extract_data_from_mdh(mdh_manager: MetaDataHubManager, latest_timestamp: str = False, limit: int = False,
-                          offset: int = False, selected_tags: list = None) -> tuple[list[dict], int]:
+        offset: int = False, selected_tags: list = None, file_type: str = False) -> tuple[list[dict], int]:
     """
     Extract data from the MetaDataHub.
 
@@ -59,7 +59,7 @@ def extract_data_from_mdh(mdh_manager: MetaDataHubManager, latest_timestamp: str
     """
 
     # Download data from the MetaDataHub
-    mdh_manager.download_data(timestamp=latest_timestamp, limit=limit, selected_tags=selected_tags)
+    mdh_manager.download_data(timestamp=latest_timestamp, limit=limit, selected_tags=selected_tags, file_type=file_type)
 
     # Get the data, and the number of downloaded files
     mdh_data = mdh_manager.get_data()
@@ -244,6 +244,8 @@ def execute_pipeline(import_control: ImportControl):
     else:
         selected_tags = []
 
+    file_types = options['file_types']
+
     # get current time
     current_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
@@ -271,35 +273,40 @@ def execute_pipeline(import_control: ImportControl):
         mdh_tags = extract_metadata_tags_from_mdh(mdh_manager=mdh_manager)
         metadata_tags = modify_metadata_tags(mdh_tags=mdh_tags)  # modify the datatypes so they fit in OpenSearch
 
-    # extract the data from the mdh
-    mdh_data, files_amount = extract_data_from_mdh(mdh_manager=mdh_manager, limit=limit, latest_timestamp=latest_timestamp, selected_tags=selected_tags)
+    #file_types = ["XML","JPEG", "TXT"] #TODO
+    limit = int(limit / len(file_types))
 
-    # get the amount of files that exist in the mdh core
-    files_in_mdh = mdh_manager.get_total_files_count()
+    for file_type in file_types:
 
-    # create a new import in the 'import.dictionary' file (monitoring purposes)
-    import_control.create_import(files_in_os=files_in_os, files_in_mdh=files_in_mdh)
+        # extract the data from the mdh
+        mdh_data, files_amount = extract_data_from_mdh(mdh_manager=mdh_manager, limit=limit, latest_timestamp=latest_timestamp, selected_tags=selected_tags, file_type=file_type)
 
-    # modify the data so it can be easily stored in OpenSearch
-    data = modify_data(mdh_data=mdh_data, metadata_tags=metadata_tags,
-                       current_time=current_time)
+        # get the amount of files that exist in the mdh core
+        files_in_mdh = mdh_manager.get_total_files_count()
 
-    # Loading the data into OpenSearch
-    failed_imports = upload_data(index_name=index_name, os_manager=os_manager, metadata_tags=metadata_tags,
-                                 data=data,
-                                 files_amount=files_amount)
+        # create a new import in the 'import.dictionary' file (monitoring purposes)
+        import_control.create_import(files_in_os=files_in_os, files_in_mdh=files_in_mdh)
 
-    # wait for two seconds to avoid synchronization problems
-    time.sleep(2)
+        # modify the data so it can be easily stored in OpenSearch
+        data = modify_data(mdh_data=mdh_data, metadata_tags=metadata_tags,
+                           current_time=current_time)
 
-    # handle the failed imports
-    handle_failed_imports(os_manager, index_name, failed_imports)
+        # Loading the data into OpenSearch
+        failed_imports = upload_data(index_name=index_name, os_manager=os_manager, metadata_tags=metadata_tags,
+                                     data=data,
+                                     files_amount=files_amount)
 
-    # files in os after import
-    imported_files = os_manager.count_files(index_name=index_name) - files_in_os
+        # wait for two seconds to avoid synchronization problems
+        time.sleep(2)
 
-    # update the import in the 'import.dictionary' file
-    import_control.update_import(imported_files=imported_files)
+        # handle the failed imports
+        handle_failed_imports(os_manager, index_name, failed_imports)
+
+        # files in os after import
+        imported_files = os_manager.count_files(index_name=index_name) - files_in_os
+
+        # update the import in the 'import.dictionary' file
+        import_control.update_import(imported_files=imported_files)
 
     # print the import results
     print_import_pipeline_results(start_time=start_time, imported_files=imported_files)
