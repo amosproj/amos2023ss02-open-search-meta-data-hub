@@ -16,10 +16,8 @@ import urllib
 import configparser
 
 # Configuration Setup
-options = get_config_values()
-index_name = options['index_name']
-search_size = options['search_size']
-localhost = options['localhost']
+config = configparser.ConfigParser()
+config.read('config.ini')
 
 # Flask Application Setup
 app = Flask(__name__)
@@ -30,10 +28,11 @@ bootstrap = Bootstrap5(app)
 csrf = CSRFProtect(app)
 
 # OSDashboardManager Initialization
-os_dashboard_manager: OSDashboardManager = OSDashboardManager(localhost=localhost)
+os_dashboard_manager: OSDashboardManager = OSDashboardManager(localhost=config.getboolean('General', 'localhost'))
 
 # OpenSearchManager Initialization
-os_manager: OpenSearchManager = OpenSearchManager(localhost=localhost, search_size=search_size)
+os_manager: OpenSearchManager = OpenSearchManager(localhost=config.getboolean('General', 'localhost'),
+                                                  search_size=config.getint('General', 'search_size'))
 
 
 # SimpleSearchForm Definition
@@ -44,7 +43,7 @@ class SimpleSearchForm(FlaskForm):
 
 class AdvancedEntryForm(FlaskForm):
     # Get all available fields for the specified index
-    all_fields = os_manager.get_all_fields(index_name=index_name)
+    all_fields = os_manager.get_all_fields(index_name=config.get('General', 'default_index_name'))
     # Dropdown menu for selecting a metadata tag
     metadata_tag = SelectField('Metadata tag', choices=all_fields)
     # Dropdown menu for selecting a condition for the metadata tag
@@ -137,7 +136,7 @@ def search():
         searchValue = simpleSearchForm.searchValue.data
 
         # Perform simple search using the default index name
-        resultTmp = os_manager.simple_search(index_name, searchValue)
+        resultTmp = os_manager.simple_search(config.get('General', 'default_index_name'), searchValue, page=int(simpleSearchForm.currentPageSS.data), page_size=int(simpleSearchForm.resultsPerPageSS.data))
 
         # Set the last_form session variable to 'simple'
         session['last_form'] = 'simple'
@@ -168,8 +167,8 @@ def search():
             }
 
         # Perform advanced search using the default index name and the search information
-        resultTmp = os_manager.advanced_search(index_name=index_name,
-                                               search_info=search_info)
+        resultTmp = os_manager.advanced_search(index_name=config.get('General', 'default_index_name'),
+                                               search_info=search_info, page=int(advancedSearchForm.currentPage.data), page_size=int(advancedSearchForm.resultsPerPage.data))
 
         # Set the last_form session variable to 'advanced'
         session['last_form'] = 'advanced'
