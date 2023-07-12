@@ -16,10 +16,13 @@ import urllib
 import configparser
 
 # Configuration Setup
+# Retrieve configuration values
 options = get_config_values()
-index_name = options['index_name']
-search_size = options['search_size']
-localhost = options['localhost']
+
+# Extract specific configuration values
+index_name = options['index_name']  # Name of the index
+search_size = options['search_size']  # Size or limit of search results
+localhost = options['localhost']  # Host or IP address of the local server
 
 # Flask Application Setup
 app = Flask(__name__)
