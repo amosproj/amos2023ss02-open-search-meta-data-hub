@@ -76,14 +76,14 @@ $(document).ready(function () {
                     <option value="contains" selected>contains</option>
                     <option value="not_contains">not contains</option>
                     <option disabled style="text-align:center;">────────────────</option>
-                    <option value="is_equal">is equal</option>
-                    <option value="is_not_equal">is not equal</option>
+                    <option value="is_equal">is equal(==</option>
+                    <option value="is_not_equal">is not equal (!=)</option>
                     <option disabled style="text-align:center;">────────────────</option>
-                    <option value="is_greater">is greater</option>
-                    <option value="is_smaller">is smaller</option>
+                    <option value="is_greater">is greater (>)</option>
+                    <option value="is_smaller">is smaller (<)</option>
                     <option disabled style="text-align:center;">────────────────</option>
-                    <option value="is_greater_or_equal">is greater or equal</option>
-                    <option value="is_smaller_or_equal">is smaller or equal</option>
+                    <option value="is_greater_or_equal">is greater (>) or equal (==)</option>
+                    <option value="is_smaller_or_equal">is smaller (<) or equal (==) </option>
                 </select>
             </div>
             <div class="col-md-3">
