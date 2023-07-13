@@ -1,3 +1,4 @@
+/* Styles for .iframeContainer */
 .iframeContainer {
     width: 100%;
     margin-bottom: 20px;
@@ -10,84 +11,82 @@
     border: none;
 }
 
-
+/* Styles for body */
 body {
-
     background: #d1d5db;
 }
 
+/* Styles for .height */
 .height {
-
     height: 100vh;
 }
 
+/* Styles for .form */
 .form {
-
     position: relative;
 }
 
 .form .fa-search {
-
     position: absolute;
     top: 20px;
     left: 20px;
     color: #9ca3af;
-
 }
 
 .form span {
-
     position: absolute;
     right: 17px;
     top: 13px;
     padding: 2px;
     border-left: 1px solid #d1d5db;
-
 }
 
+/* Styles for .left-pan */
 .left-pan {
     padding-left: 7px;
 }
 
 .left-pan i {
-
     padding-left: 10px;
 }
 
+/* Styles for .form-input */
 .form-input {
-
     height: 55px;
     text-indent: 33px;
     border-radius: 10px;
 }
 
 .form-input:focus {
-
     box-shadow: none;
     border: none;
 }
 
+/* Styles for #resTable */
 #resTable {
     display: none;
 }
 
+/* Styles for #iframeContainer iframe */
 #iframeContainer iframe {
     width: 100%;
     height: 700px;
     border: none;
 }
 
+/* Styles for .wrap-text */
 .wrap-text {
     word-wrap: break-word;
     table-layout: fixed;
     width: 100%;
 }
 
+/* Styles for .formRow */
 .formRow {
     margin-bottom: 10px;
 }
 
-
+/* Styles for .table */
 .table {
     border: none;
 }
@@ -95,7 +94,6 @@ body {
 .table td, .table th {
     border: none;
     text-align: left;
-
 }
 
 .table thead th:last-child {
@@ -106,15 +104,16 @@ body {
     text-align: right;
 }
 
+/* Styles for .no-visualizations */
 .no-visualizations {
     font-size: 22px;
     font-style: italic;
     color: #000000;
 }
 
+/* Styles for .page-link */
 .page-link {
     color: #000000;
-
 }
 
 .page-item.active .page-link {
@@ -127,13 +126,14 @@ body {
     pointer-events: none;
 }
 
-
+/* Styles for .iframe-row */
 .iframe-row {
     display: flex;
     justify-content: space-between;
     margin-bottom: 10px;
 }
 
+/* Styles for .resizable-component */
 .resizable-component {
     position: relative;
     width: 100%;
@@ -144,6 +144,7 @@ body {
     cursor: move;
 }
 
+/* Styles for .iframe-name */
 .iframe-name {
     position: absolute;
     top: 10px;
@@ -152,12 +153,14 @@ body {
     font-weight: bold;
 }
 
+/* Styles for .resizable-iframe */
 .resizable-iframe {
     width: 100%;
     height: 100%;
     border: none;
 }
 
+/* Styles for .dashboard-header */
 .dashboard-header {
     display: flex;
     align-items: center;
@@ -169,6 +172,7 @@ body {
     margin-left: 10px;
 }
 
+/* Styles for .sidebar-container */
 .sidebar-container {
     position: fixed;
     top: 56px; /* Adjust this value based on the height of your navbar */
@@ -182,11 +186,13 @@ body {
     transition: transform 0.3s ease-out;
 }
 
+/* Styles for .sidebar-content */
 .sidebar-content {
     height: 100%;
     padding: 20px;
 }
 
+/* Styles for .sidebar-header */
 .sidebar-header {
     display: flex;
     align-items: center;
@@ -194,34 +200,40 @@ body {
     margin-bottom: 20px;
 }
 
+/* Styles for .sidebar-title */
 .sidebar-title {
     margin: 0;
 }
 
+/* Styles for .sidebar-body */
 .sidebar-body {
     flex-grow: 1;
 }
 
+/* Styles for .sidebar-footer */
 .sidebar-footer {
     margin-top: 20px;
     text-align: right;
 }
 
+/* Styles for .checkbox-container */
 .checkbox-container {
     display: flex;
     align-items: center;
-
 }
 
+/* Styles for .checkbox-container input[type="checkbox"] */
 .checkbox-container input[type="checkbox"] {
     margin-right: 15px;
     transform: scale(1.3);
 }
 
+/* Styles for .checkbox-container label */
 .checkbox-container label {
     font-size: 1.2em;
 }
 
+/* Styles for .respp */
 .respp {
     display: flex;
     align-items: center;

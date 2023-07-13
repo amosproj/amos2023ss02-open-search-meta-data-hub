@@ -76,14 +76,14 @@ $(document).ready(function () {
                     <option value="contains" selected>contains</option>
                     <option value="not_contains">not contains</option>
                     <option disabled style="text-align:center;">────────────────</option>
-                    <option value="is_equal">is equal</option>
-                    <option value="is_not_equal">is not equal</option>
+                    <option value="is_equal">is equal(==</option>
+                    <option value="is_not_equal">is not equal (!=)</option>
                     <option disabled style="text-align:center;">────────────────</option>
-                    <option value="is_greater">is greater</option>
-                    <option value="is_smaller">is smaller</option>
+                    <option value="is_greater">is greater (>)</option>
+                    <option value="is_smaller">is smaller (<)</option>
                     <option disabled style="text-align:center;">────────────────</option>
-                    <option value="is_greater_or_equal">is greater or equal</option>
-                    <option value="is_smaller_or_equal">is smaller or equal</option>
+                    <option value="is_greater_or_equal">is greater (>) or equal (==)</option>
+                    <option value="is_smaller_or_equal">is smaller (<) or equal (==) </option>
                 </select>
             </div>
             <div class="col-md-3">
@@ -188,23 +188,24 @@ function addRowWithValues(metadataTag, condition, value, weight) {
           <div class="col-md-3">
               <label for="condition${rowIdx}">Condition</label><br>
               <select id="entry-${rowIdx}-condition" name="entry-${rowIdx}-condition" class="form-control">
-                  <option value="tag_exists">tag exists</option>
-                  <option value="tag_not_exists">tag not exists</option>
-                  <option disabled style="text-align:center;">────────────────</option>
-                  <option value="field_is_empty">field is empty</option>
-                  <option value="field_is_not_empty">field is not empty</option>
-                  <option disabled style="text-align:center;">────────────────</option>
-                  <option value="contains" selected>contains</option>
-                  <option value="not_contains">not contains</option>
-                  <option disabled style="text-align:center;">────────────────</option>
-                  <option value="is_equal">is equal</option>
-                  <option value="is_not_equal">is not equal</option>
-                  <option disabled style="text-align:center;">────────────────</option>
-                  <option value="is_greater">is greater</option>
-                  <option value="is_smaller">is smaller</option>
-                  <option disabled style="text-align:center;">────────────────</option>
-                  <option value="is_greater_or_equal">is greater or equal</option>
-                  <option value="is_smaller_or_equal">is smaller or equal</option>
+               <option value="tag_exists">tag exists</option>
+                <option value="tag_not_exists">tag not exists</option>
+                <option disabled style="text-align:center;">────────────────</option>
+                <option value="field_is_empty">field is empty</option>
+                <option value="field_is_not_empty">field is not empty</option>
+                <option disabled style="text-align:center;">────────────────</option>
+                <option value="contains" selected>contains</option>
+                <option value="not_contains">not contains</option>
+                <option disabled style="text-align:center;">────────────────</option>
+                <option value="is_equal">is equal</option>
+                <option value="is_not_equal">is not equal</option>
+                <option disabled style="text-align:center;">────────────────</option>
+                <option value="is_greater">is greater (>)</option>
+                <option value="is_smaller">is smaller (<)</option>
+                <option disabled style="text-align:center;">────────────────</option>
+                <option value="is_greater_or_equal" selected>is greater or equal (>=)</option>
+                <option value="is_smaller_or_equal">is smaller or equal (<=)</option>
+
               </select>
           </div>
           <div class="col-md-3">

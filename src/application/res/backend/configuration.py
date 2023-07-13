@@ -2,11 +2,18 @@ import configparser
 
 
 def get_config_values():
-    """ sets all configuration values to the specified values defined in config.ini or to their default values
+    """Sets all configuration values to the specified values defined in config.ini or their default values.
 
-    :return: dictionary containing all options
+    :return: Dictionary containing all options.
     """
-    # read config file
+    # Helper function to handle boolean values
+    def get_boolean_option(section, key, fallback):
+        if config.has_option(section, key):
+            return config.getboolean(section, key)
+        else:
+            return fallback
+
+    # Read config file
     config = configparser.ConfigParser()
     config.read('config.ini')
 
@@ -27,19 +34,12 @@ def get_config_values():
     for key, value in fallback_values.items():
         if key == 'selected_tags':
             options[key] = config.get('General', key, fallback=value).split(";")
-        elif key == 'limit':
+        elif key == 'limit' or key == 'search_size':
             options[key] = config.getint('General', key, fallback=value)
-        elif key == 'search_size':
-            options[key] = config.getint('General', key, fallback=value)
-        elif key == 'localhost':
-            options[key] = config.getboolean('General', key, fallback=value)
-        elif key == "only_new_data":
-            options[key] = config.getboolean('General', key, fallback=value)
-        elif key == "only_selected_tags":
-            options[key] = config.getboolean('General', key, fallback=value)
-        elif key == "file_types":
-            tmp = config.get('General', key, fallback=value)
-            options[key] = tmp.split(";")
+        elif key == 'localhost' or key == 'only_new_data' or key == 'only_selected_tags':
+            options[key] = get_boolean_option('General', key, fallback=value)
+        elif key == 'file_types':
+            options[key] = config.get('General', key, fallback=value).split(";")
         else:
             options[key] = config.get('General', key, fallback=value)
 
