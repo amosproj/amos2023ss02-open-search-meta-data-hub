@@ -29,8 +29,12 @@ $(document).ready(function () {
         }
     });
     $("#currentPagePagAdd").on("click", function () {
-        $("#currentPage").val(parseInt($("#currentPage").val()) + 1);
-        $("#advancedSearchForm").submit();
+        if ($(this).hasClass("disabled")) {
+            return;
+        } else {
+            $("#currentPage").val(parseInt($("#currentPage").val()) + 1);
+            $("#advancedSearchForm").submit();
+        }
     });
 
     $("#currentPagePagNegSS").on("click", function () {
@@ -42,8 +46,12 @@ $(document).ready(function () {
         }
     });
     $("#currentPagePagAddSS").on("click", function () {
-        $("#currentPageSS").val(parseInt($("#currentPageSS").val()) + 1);
-        $("#simpleSearchForm").submit();
+        if ($(this).hasClass("disabled")) {
+            return;
+        } else {
+            $("#currentPageSS").val(parseInt($("#currentPageSS").val()) + 1);
+            $("#simpleSearchForm").submit();
+        }
     });
 
     rowIdx = 0;

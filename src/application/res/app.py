@@ -19,7 +19,7 @@ import configparser
 options = get_config_values()
 index_name = options['index_name']
 search_size = options['search_size']
-localhost = options['localhost']
+localhost = True#options['localhost']
 
 # Flask Application Setup
 app = Flask(__name__)
@@ -88,12 +88,12 @@ class AdvancedSearchForm(FlaskForm):
     resultsPerPage = IntegerField('resultsPerPage')
 
 
-def renderResult(input):
+def renderResult(input, current_page, results_per_page):
     # Extract the relevant list from the dictionary
     hits_list = input['hits']['hits']
     # Create a DataFrame with only FileName, FileSize, FileInodeChangeDate and a button
     df = pd.DataFrame([{
-        'HitCount': idx + 1,
+        'HitCount': idx + (current_page*results_per_page) + 1,
         'FileName': item['_source']['FileName'],
         'FileSize': item['_source']['FileSize'],
         'ChangeDate': item['_source']['FileInodeChangeDate'],
@@ -124,6 +124,7 @@ def index():
 
 @app.route('/search', methods=['GET', 'POST'])
 def search():
+
     # Set the last_form session variable to 'simple'
     session['last_form'] = 'simple'
 
@@ -137,21 +138,34 @@ def search():
     field_names_data_types = os_manager.extract_metadata_dict('amoscore')
     json_dict = json.dumps(field_names_data_types)
 
+    # init if the result page is the last page to show
+    last_page = True
+
     # Handle simple search form submission
     if simpleSearchForm.validate_on_submit():
         # Get the search value from the form
         searchValue = simpleSearchForm.searchValue.data
 
+        # Get the current page and the amount of results per page from the form
+        currentPage = simpleSearchForm.currentPageSS.data
+        resultsPerPage = simpleSearchForm.resultsPerPageSS.data
+
         # Perform simple search using the default index name
         resultTmp = os_manager.simple_search(index_name, searchValue, page=int(simpleSearchForm.currentPageSS.data),
                                              page_size=int(simpleSearchForm.resultsPerPageSS.data))
+
+        # check if this page will be the last page because there are no more results for next pages
+        if resultTmp['hits']['total']['value'] <= (currentPage+1) * resultsPerPage:
+            last_page = True
+        else:
+            last_page = False
 
         # Set the last_form session variable to 'simple'
         session['last_form'] = 'simple'
 
         # Render the search results or display a message if no results found
         if len(resultTmp) > 0:
-            simpleSearchResult = renderResult(resultTmp)
+            simpleSearchResult = renderResult(resultTmp, currentPage, resultsPerPage)
         else:
             simpleSearchResult = "No results found."
 
@@ -159,6 +173,11 @@ def search():
     if advancedSearchForm.validate_on_submit():
         # Initialize a dictionary to store search information
         search_info = {}
+
+        # Get the current page and the amount of results per page from the form
+        currentPage = advancedSearchForm.currentPage.data
+        resultsPerPage = advancedSearchForm.resultsPerPage.data
+
 
         # Iterate over each entry in the advanced search form
         for entry in advancedSearchForm.entry.data:
@@ -179,19 +198,25 @@ def search():
                                                search_info=search_info, page=int(advancedSearchForm.currentPage.data),
                                                page_size=int(advancedSearchForm.resultsPerPage.data))
 
+        # check if this will be the last page to render
+        if resultTmp['hits']['total']['value'] <= (currentPage+1) * resultsPerPage:
+            last_page = True
+        else:
+            last_page = False
+
         # Set the last_form session variable to 'advanced'
         session['last_form'] = 'advanced'
 
         # Render the search results or display a message if no results found
         if len(resultTmp) > 0:
-            advancedSearchResult = renderResult(resultTmp)
+            advancedSearchResult = renderResult(resultTmp, currentPage, resultsPerPage)
         else:
             advancedSearchResult = "No results found."
 
     # Render the search.html template with form data, search results, and other variables
     return render_template('search.html', simpleSearchForm=simpleSearchForm, simpleSearchResult=simpleSearchResult,
                            advancedSearchForm=advancedSearchForm, advancedSearchResult=advancedSearchResult,
-                           last_form=session.get('last_form'), json_dict=json_dict)
+                           last_form=session.get('last_form'), json_dict=json_dict, last_page=last_page)
 
 
 # @app.route('/search/simple')

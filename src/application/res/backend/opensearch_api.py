@@ -543,3 +543,4 @@ class Operator(Enum):
     IS_LESS_THAN = 'is_smaller'  # Represents the "less than" operator
     IS_GREATER_THAN_OR_EQUAL = 'is_greater_or_equal'  # Represents the "greater than or equal to" operator
     IS_LESS_THAN_OR_EQUAL = 'is_smaller_or_equal'  # Represents the "less than or equal to" operator
+

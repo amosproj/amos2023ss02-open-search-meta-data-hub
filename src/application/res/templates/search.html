@@ -46,7 +46,7 @@
                     <li class="page-item disabled" id="currentPagePagNegSS"><a class="page-link" href="#">Previous</a>
                     </li>
                     <li class="page-item" active><a class="page-link" id="currentPagePagSS">0</a></li>
-                    <li class="page-item" id="currentPagePagAddSS"><a class="page-link" href="#">Next</a></li>
+                    <li class="page-item {% if last_page %} disabled {% endif %}" id="currentPagePagAddSS"><a class="page-link" href="#">Next</a></li>
                 </ul>
                 </nav>
             </div>
@@ -130,7 +130,7 @@
                     <li class="page-item disabled" id="currentPagePagNeg"><a class="page-link" href="#">Previous</a>
                     </li>
                     <li class="page-item" active><a class="page-link" id="currentPagePag">0</a></li>
-                    <li class="page-item" id="currentPagePagAdd"><a class="page-link" href="#">Next</a></li>
+                    <li class="page-item {% if last_page %} disabled {% endif %}" id="currentPagePagAdd"><a class="page-link" href="#">Next</a></li>
                 </ul>
                 </nav>
             </div>
