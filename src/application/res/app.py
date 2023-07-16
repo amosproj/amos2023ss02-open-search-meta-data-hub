@@ -19,7 +19,7 @@ import configparser
 options = get_config_values()
 index_name = options['index_name']
 search_size = options['search_size']
-localhost = True#options['localhost']
+localhost = options['localhost']
 
 # Flask Application Setup
 app = Flask(__name__)
