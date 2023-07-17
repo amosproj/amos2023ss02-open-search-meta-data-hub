@@ -254,10 +254,18 @@ function populateAdvancedSearchFormFromSession() {
     var advancedSearchEntries = JSON.parse(sessionStorage.getItem('advanced_search_entries') || "[]");
     console.log(advancedSearchEntries);
     if (advancedSearchEntries.length > 1) {
+        $("#entry-" + "0" + "-metadata_tag").val(advancedSearchEntries[0].metadataTag);
+        $("#entry-" + "0" + "-condition").val(advancedSearchEntries[0].condition);
+        $("#entry-" + "0" + "-value").val(advancedSearchEntries[0].value);
+        $("#entry-" + "0" + "-weight").val(advancedSearchEntries[0].weight);
+        initializeSelect2("entry-" + "0" + "-metadata_tag");
         for (var i = 1; i < advancedSearchEntries.length; i++) {
             var entry = advancedSearchEntries[i];
             addRowWithValues(entry.metadataTag, entry.condition, entry.value, entry.weight);
         }
+    }
+    else{
+        initializeSelect2("entry-" + "0" + "-metadata_tag");
     }
 
     var resultsPerPage = sessionStorage.getItem('results_per_page') || "10";
