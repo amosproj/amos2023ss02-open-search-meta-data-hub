@@ -100,7 +100,7 @@ def renderResult(input):
         'FileName': item['_source']['FileName'],
         'FileSize': item['_source']['FileSize'],
         'ChangeDate': item['_source']['FileInodeChangeDate'],
-        'Details': '<button class="btn btn-info" onclick="showDetails(this)" data-hit=\'{}\'>Show Details</button>'.format(
+        'Details': '<button class="btn btn-info" onclick="showDetails(this)" type="button" data-hit=\'{}\'>Show Details</button>'.format(
             json.dumps(item['_source']))
     } for idx, item in enumerate(hits_list)])
     # Convert the DataFrame to HTML and apply Bootstrap classes
