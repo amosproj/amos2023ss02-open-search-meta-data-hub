@@ -15,11 +15,11 @@ def get_config_values():
 
     # Read config file
     config = configparser.ConfigParser()
-    config.read('./config.ini')
+    config.read('config.ini')
 
     # Define fallback and default values
     fallback_values = {
-        'localhost': True,
+        'localhost': False,
         'index_name': 'amoscore',
         'search_size': 24,
         'limit': False,

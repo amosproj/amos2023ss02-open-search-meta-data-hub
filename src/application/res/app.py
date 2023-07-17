@@ -33,7 +33,6 @@ bootstrap = Bootstrap5(app)
 csrf = CSRFProtect(app)
 
 # OSDashboardManager Initialization
-print(localhost)
 os_dashboard_manager: OSDashboardManager = OSDashboardManager(localhost=localhost)
 
 # OpenSearchManager Initialization
