@@ -150,7 +150,10 @@ $(document).ready(function () {
     });
 
     //advanced Search handler
-    $("#advancedSearchForm").one("submit", function (e) {
+    $("#advancedSearchForm").one("submit", validateAdvancedSearch);
+
+    function validateAdvancedSearch(e){
+
         e.preventDefault();
         var advancedSearchEntries = [];
         $("#advancedSearchForm .formRow").each(function () {
@@ -168,8 +171,22 @@ $(document).ready(function () {
         sessionStorage.setItem('current_page', currentPage);
 
         console.log("session");
-        $(this).submit();
-    });
+        var validSearch = true;
+        var elemsReq = ['contains', 'not_contains', 'is_equal', 'is_not_equal', 'is_greater', 'is_smaller', 'is_geater_or_equal', 'is_smaller_or_equal']
+        advancedSearchEntries.forEach(element => {
+            console.log(element.condition + " & " + element.value);
+            if(elemsReq.includes(element.condition) && element.value.length==0){
+                validSearch = false;
+            }
+        });
+        if(validSearch){
+            $(this).submit();
+        }
+        else{
+            alert("Please enter a value for each search term.");
+            $("#advancedSearchForm").one("submit", validateAdvancedSearch);
+        }
+    }
 
     //advanced Search handler
     $("#simpleSearchForm").one("submit", function (e) {
@@ -185,12 +202,14 @@ $(document).ready(function () {
 
 
     $('#simpleSearchSubmitButton').on('click', function(event) {
+        event.preventDefault();
         $('#currentPageSS').val(0);
-        $('#simpleSearchForm').submit();
+        $('#simpleSearchForm').trigger('submit');
     });
     $('#advancedSearchSubmitButton').on('click', function(event) {
+        event.preventDefault();
         $('#currentPage').val(0);
-        $('#advancedSearchForm').submit();
+        $('#advancedSearchForm').trigger('submit');
     });
     
 
@@ -221,23 +240,23 @@ function addRowWithValues(metadataTag, condition, value, weight) {
         <div class="col-md-3">
             <label for="condition${rowIdx}">Condition</label><br>
             <select id="entry-${rowIdx}-condition" name="entry-${rowIdx}-condition" class="form-control">
-            <option value="tag_exists">tag exists</option>
-                <option value="tag_not_exists">tag not exists</option>
-                <option disabled style="text-align:center;">────────────────</option>
-                <option value="field_is_empty">field is empty</option>
-                <option value="field_is_not_empty">field is not empty</option>
-                <option disabled style="text-align:center;">────────────────</option>
-                <option value="contains" selected>contains</option>
-                <option value="not_contains">not contains</option>
-                <option disabled style="text-align:center;">────────────────</option>
-                <option value="is_equal">is equal</option>
-                <option value="is_not_equal">is not equal</option>
-                <option disabled style="text-align:center;">────────────────</option>
-                <option value="is_greater">is greater (>)</option>
-                <option value="is_smaller">is smaller (<)</option>
-                <option disabled style="text-align:center;">────────────────</option>
-                <option value="is_greater_or_equal" selected>is greater or equal (>=)</option>
-                <option value="is_smaller_or_equal">is smaller or equal (<=)</option>
+                    <option value="tag_exists">tag exists</option>
+                    <option value="tag_not_exists">tag not exists</option>
+                    <option disabled style="text-align:center;">────────────────</option>
+                    <option value="field_is_empty">field is empty</option>
+                    <option value="field_is_not_empty">field is not empty</option>
+                    <option disabled style="text-align:center;">────────────────</option>
+                    <option value="contains" selected>contains</option>
+                    <option value="not_contains">not contains</option>
+                    <option disabled style="text-align:center;">────────────────</option>
+                    <option value="is_equal">is equal(==)</option>
+                    <option value="is_not_equal">is not equal (!=)</option>
+                    <option disabled style="text-align:center;">────────────────</option>
+                    <option value="is_greater">is greater (>)</option>
+                    <option value="is_smaller">is smaller (<)</option>
+                    <option disabled style="text-align:center;">────────────────</option>
+                    <option value="is_greater_or_equal">is greater (>) or equal (==)</option>
+                    <option value="is_smaller_or_equal">is smaller (<) or equal (==) </option>
 
             </select>
         </div>
@@ -277,13 +296,13 @@ function addRowWithValues(metadataTag, condition, value, weight) {
     });
     initializeSelect2("entry-" + rowIdx + "-metadata_tag");
     updateConditionOptions(rowIdx, $("#entry-" + rowIdx + "-metadata_tag").val());
-    updateValueField(rowIdx, $(this).val());
+    updateValueField(rowIdx, $("#entry-" + rowIdx + "-condition").val());
 }
 
 function populateAdvancedSearchFormFromSession() {
     var advancedSearchEntries = JSON.parse(sessionStorage.getItem('advanced_search_entries') || "[]");
     console.log(advancedSearchEntries);
-    if (advancedSearchEntries.length > 1) {
+    if (advancedSearchEntries.length >= 1) {
         $("#entry-" + "0" + "-metadata_tag").val(advancedSearchEntries[0].metadataTag);
         $("#entry-" + "0" + "-condition").val(advancedSearchEntries[0].condition);
         $("#entry-" + "0" + "-value").val(advancedSearchEntries[0].value);
@@ -347,8 +366,8 @@ function updateConditionOptions(rowIdxLocal, vall) {
 
     var conditionOptions = {
         'text': ['tag_exists', 'tag_not_exists', 'field_is_empty', 'field_is_not_empty', 'contains', 'not_contains'],
-        'float': ['tag_exists', 'tag_not_exists', 'field_is_empty', 'field_is_not_empty', 'is_equal', 'is_not_equal', 'is_greater', 'is_smaller'],
-        'date': ['tag_exists', 'tag_not_exists', 'field_is_empty', 'field_is_not_empty', 'is_equal', 'is_not_equal', 'is_greater', 'is_smaller'],
+        'float': ['tag_exists', 'tag_not_exists', 'field_is_empty', 'field_is_not_empty', 'is_equal', 'is_not_equal', 'is_greater', 'is_smaller', 'is_greater_or_equal', 'is_smaller_or_equal'],
+        'date': ['tag_exists', 'tag_not_exists', 'field_is_empty', 'field_is_not_empty', 'is_equal', 'is_not_equal', 'is_greater', 'is_smaller', 'is_greater_or_equal', 'is_smaller_or_equal'],
     };
 
     // Get the selected data type from the metadata tag value
