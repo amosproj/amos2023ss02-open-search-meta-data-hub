@@ -60,6 +60,20 @@ $(document).ready(function () {
     populateAdvancedSearchFormFromSession();
     populateSimpleSearch();
 
+    $('#form-container').on('change', '[id^=entry-][id$=-metadata_tag]', function() {
+        var id = $(this).attr('id');
+        var idx = id.split('-')[1];  // Get the index from the id
+        updateConditionOptions(idx, $(this).val());
+        console.log($(this).val());
+    });
+    
+    // Delegated change event for condition
+    $('#form-container').on('change', '[id^=entry-][id$=-condition]', function() {
+        var id = $(this).attr('id');
+        var idx = id.split('-')[1];  // Get the index from the id
+        updateValueField(idx, $(this).val());
+    });
+
     $('#addRow').on('click', function () {
         // Increment the row index when button is clicked
         rowIdx++;
@@ -117,17 +131,6 @@ $(document).ready(function () {
         $('#removeRow' + rowIdx).on('click', function () {
             $(this).closest('div.row').remove();
         });
-
-        // Bind the change event for the metadata tag select field of the new row
-        $('#entry-' + rowIdx + '-metadata_tag').on("change", function () {
-            updateConditionOptions(rowIdx, $(this).val());
-            console.log($(this).val());
-        });
-
-        // Set the initial event listener for the choice select field in the first row
-        $('#entry-'+ rowIdx + '-condition').on("change", function () {
-            updateValueField(rowIdx, $(this).val());
-        });
         
         //entry-${rowIdx}-metadata_tag
         updateConditionOptions(rowIdx, $('#entry-' + rowIdx + '-metadata_tag').val());
@@ -137,16 +140,6 @@ $(document).ready(function () {
 
 
 
-    });
-
-    // Set the initial event listener for the metadata tag select field in the first row
-    $('#entry-0-metadata_tag').on("change", function () {
-        updateConditionOptions(0, $(this).val());
-    });
-
-    // Set the initial event listener for the choice select field in the first row
-    $('#entry-0-condition').on("change", function () {
-        updateValueField(0, $(this).val());
     });
 
     //advanced Search handler
@@ -272,7 +265,7 @@ function addRowWithValues(metadataTag, condition, value, weight) {
         <button id="removeRow${rowIdx}" type="button" class="btn btn-danger">Remove</button>
         </div>
     </div>
-`);
+    `);
 
 
     $("#entry-" + rowIdx + "-metadata_tag").append(options);
@@ -285,15 +278,7 @@ function addRowWithValues(metadataTag, condition, value, weight) {
     $('#removeRow' + rowIdx).on('click', function () {
         $(this).closest('div.row').remove();
     });
-    // Bind the change event for the metadata tag select field of the new row
-    $('#entry-' + rowIdx + '-metadata_tag').on("change", function () {
-        updateConditionOptions(rowIdx, $(this).val());
-        console.log($(this).val());
-    });
-    // Set the initial event listener for the choice select field in the first row
-    $('#entry-'+ rowIdx + '-condition').on("change", function () {
-        updateValueField(rowIdx, $(this).val());
-    });
+    
     initializeSelect2("entry-" + rowIdx + "-metadata_tag");
     updateConditionOptions(rowIdx, $("#entry-" + rowIdx + "-metadata_tag").val());
     updateValueField(rowIdx, $("#entry-" + rowIdx + "-condition").val());
