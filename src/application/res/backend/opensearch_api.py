@@ -167,6 +167,15 @@ class OpenSearchManager:
             return False
 
     def get_total_files(self, index_name):
+        """Checks how many files exist for a given index (alternative function, this function is not working perfectly,
+        please use count_files
+
+        Args:
+            index_name (str): The name of the index in which the field is being searched.
+
+        Returns:
+            int: Returns the amount of files existing in a given index
+        """
         try:
             # Prepare the query to match all documents
             query = {
@@ -185,6 +194,14 @@ class OpenSearchManager:
             return 0
 
     def count_files(self, index_name):
+        """Checks how many files exist for a given index
+
+        Args:
+            index_name (str): The name of the index in which the field is being searched.
+
+        Returns:
+            int: Returns the amount of files existing in a given index
+        """
         try:
             response = self._client.count(index=index_name)
             return response['count']
@@ -283,8 +300,15 @@ class OpenSearchManager:
             return None
 
     def add_to_index(self, index_name: str, body: dict, id: int) -> object:
-        response = self._execute_indexing(index_name, body, id)
+        """
+        A function that adds data to an given index (test function, not used currently)
 
+        :param index_name: The name of the index
+        :param body: The body of the query
+        :param id: The id of a field
+        :return: Returns an OpenSearch response.
+        """
+        response = self._execute_indexing(index_name, body, id)
         return response
 
     def simple_search(self, index_name: str, search_text: str, page: int = 0, page_size: int = 10) -> any:
@@ -387,7 +411,11 @@ class OpenSearchManager:
               tuple: A tuple consisting of a subquery and the value 'must' or 'must_not'.
 
           """
-        if data_type == 'float' or data_type == 'date':
+        if operator == Operator.TAG_EXISTS.value or operator == Operator.FIELD_IS_NOT_EMPTY.value:
+            return {'exists': {'field': search_field, 'boost': weight}}, 'must'
+        elif operator == Operator.TAG_NOT_EXISTS.value or operator == Operator.FIELD_IS_EMPTY.value:
+            return {'exists': {'field': search_field, 'boost': weight}}, 'must_not'
+        elif data_type == 'float' or data_type == 'date':
             if operator == Operator.IS_EQUAL.value:
                 return {'term': {search_field: {'value': search_content, 'boost': weight}}}, 'must'
             elif operator == Operator.IS_GREATER_THAN.value:
@@ -403,9 +431,9 @@ class OpenSearchManager:
             else:
                 return {'term': {search_field: {'value': search_content, 'boost': weight}}}, 'must'
         elif data_type == 'text':
-            if operator == Operator.IS_EQUAL.value:
-                return {"term": {search_field + ".keyword": {"value": search_content, 'boost': weight}}}, 'must'
-            elif operator == Operator.IS_NOT_EQUAL.value:
+            if operator == Operator.CONTAINS.value:
+                return {"wildcard": {search_field: {"value": "*" + search_content + "*", 'boost': weight}}}, 'must'
+            elif operator == Operator.NOT_CONTAINS.value:
                 return {"wildcard": {search_field: {"value": "*" + search_content + "*", 'boost': weight}}}, 'must_not'
             else:
                 return {"wildcard": {search_field: {"value": "*" + search_content + "*", 'boost': weight}}}, 'must'
@@ -537,10 +565,18 @@ class Operator(Enum):
     Represents different operators for query comparisons.
     """
 
+    TAG_EXISTS = 'tag_exists'  # Represents the "exists" operator
+    TAG_NOT_EXISTS = 'tag_not_exists'  # Represents the "exists not" operator
+    FIELD_IS_EMPTY = 'field_is_empty'  # Represents the "empty" operator
+    FIELD_IS_NOT_EMPTY = 'field_is_not_empty'  # Represents the "not empty" operator
     IS_EQUAL = 'is_equal'  # Represents the "equals" operator
     IS_NOT_EQUAL = 'is_not_equal'  # Represents the "not equals" operator
+    CONTAINS = 'contains'  # Represents the "contains" operator
+    NOT_CONTAINS = 'not_contains'  # Represents the "contains not" operator
     IS_GREATER_THAN = 'is_greater'  # Represents the "greater than" operator
     IS_LESS_THAN = 'is_smaller'  # Represents the "less than" operator
     IS_GREATER_THAN_OR_EQUAL = 'is_greater_or_equal'  # Represents the "greater than or equal to" operator
     IS_LESS_THAN_OR_EQUAL = 'is_smaller_or_equal'  # Represents the "less than or equal to" operator
+
+
 

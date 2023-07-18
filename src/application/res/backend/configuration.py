@@ -6,6 +6,7 @@ def get_config_values():
 
     :return: Dictionary containing all options.
     """
+
     # Helper function to handle boolean values
     def get_boolean_option(section, key, fallback):
         if config.has_option(section, key):
