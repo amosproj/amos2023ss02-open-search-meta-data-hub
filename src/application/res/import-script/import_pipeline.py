@@ -273,7 +273,6 @@ def execute_pipeline(import_control: ImportControl):
         mdh_tags = extract_metadata_tags_from_mdh(mdh_manager=mdh_manager)
         metadata_tags = modify_metadata_tags(mdh_tags=mdh_tags)  # modify the datatypes so they fit in OpenSearch
 
-    # file_types = ["XML","JPEG", "TXT"] #TODO
     limit = int(limit / len(file_types))
 
     for file_type in file_types:

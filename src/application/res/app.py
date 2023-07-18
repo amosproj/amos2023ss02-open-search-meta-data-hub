@@ -56,7 +56,7 @@ class AdvancedEntryForm(FlaskForm):
     # Dropdown menu for selecting a condition for the metadata tag
     condition = SelectField('Condition', choices=[
         ('tag_exists', 'tag exists'),
-        ('tag_not_exist', 'tag not exists'),
+        ('tag_not_exists', 'tag not exists'),
         ('field_is_empty', 'field is empty'),
         ('field_is_not_empty', 'field is not empty'),
         ('contains', 'contains'),
@@ -64,10 +64,12 @@ class AdvancedEntryForm(FlaskForm):
         ('is_equal', 'is equal'),
         ('is_not_equal', 'is not equal'),
         ('is_greater', 'is greater'),
-        ('is_smaller', 'is smaller')])
+        ('is_smaller', 'is smaller'),
+        ('is_greater_or_equal', 'is greater or equal'),
+        ('is_smaller_or_equal', 'is smaller or equal')])
     # Text field for entering a value associated with the metadata tag
     value = StringField('Value')
-    # Integer field for assigning a weight to the entry
+    # Integer field for assigning a weight to the entrys
     weight = IntegerField('Weight',
                           [validators.NumberRange(min=1, max=100, message="Weight must be between 1 and 100")],
                           default=1)
@@ -146,6 +148,7 @@ def search():
 
     # Handle simple search form submission
     if simpleSearchForm.validate_on_submit():
+        print("simpleSearch")
         # Get the search value from the form
         searchValue = simpleSearchForm.searchValue.data
 
@@ -174,6 +177,7 @@ def search():
 
     # Handle advanced search form submission
     if advancedSearchForm.validate_on_submit():
+        print("advacnedSearch")
         # Initialize a dictionary to store search information
         search_info = {}
 
@@ -217,6 +221,8 @@ def search():
             advancedSearchResult = "No results found."
 
     # Render the search.html template with form data, search results, and other variables
+    print(session.get('last_form'))
+    print(session['last_form'])
     return render_template('search.html', simpleSearchForm=simpleSearchForm, simpleSearchResult=simpleSearchResult,
                            advancedSearchForm=advancedSearchForm, advancedSearchResult=advancedSearchResult,
                            last_form=session.get('last_form'), json_dict=json_dict, last_page=last_page)

@@ -11,6 +11,11 @@ from pathlib import Path
 
 
 class MetaDataHubManager:
+    """
+     Class for managing the connection to the MetaDataHub and extract data from it.
+     class is a basic skeleton, and you may need to add more methods and functionality based
+     on your specific requirements.
+     """
 
     def __init__(self, localhost=False):
         """ creating a new MetaDataHubManager for handling the connection to the MetaDataHub
@@ -78,6 +83,11 @@ class MetaDataHubManager:
             file.write(contents)
 
     def _generate_metadata_tag_query(self, amount_of_tags: int = 900):
+        """ This function generates a GraphQl query to extract a certain amount of the most used metadata tags
+
+        :param amount_of_tags: amount of metadata tags to be extracted (default = 900)
+        :return: returns a GraphQL query string containing the created query based on the settings
+        """
         gql_query = GraphQLQuery(amount_of_tags=amount_of_tags)
 
         self._write_file(self.format_query(gql_query.generate_tag_query()))
@@ -85,6 +95,16 @@ class MetaDataHubManager:
 
     def _generate_data_query(self, timestamp: str = False, filters: list = None, limit: int = False,
                              offset: int = False, selected_tags: list = None, file_type: str = False):
+        """ This function generates a GraphQl query to extract a certain amount of files
+
+        :param timestamp: timestamp of last data extraction. if given only data that was added after this date gets extracted (default = false --> no time filter)
+        :param filters: filters to filter the GraphQL query (default = None --> no filters)
+        :param limit: limit that determines the amount of files that will be extracted (default = false --> no limit)
+        :param offset: offset that determines how many of the first values of the extraction get skipped (default = false --> no offset)
+        :param selected_tags: list of tags that will extracted (default = None --> all possible tags get extracted)
+        :param file_type: type of file (e.g. xml, jpeg, ...). Only files of this type will be extracted (default = false --> all file types)
+        :return: returns a GraphQL query string containing the created query based on the settings
+        """
         filter_functions = []
         if timestamp:
             f = FilterFunction(tag="MdHTimestamp", value=timestamp, operation="GREATER", data_type="TS")
@@ -121,14 +141,22 @@ class MetaDataHubManager:
         return formatted_query
 
     def download_metadata_tags(self, amount_of_tags: int = 900):
-        """ download the metadata tags from a request and store it """
+        """ download the metadata tags from a request and store it
+        :param amount_of_tags: amount of metadata tags to be extracted (default = 900)
+        """
         self._generate_metadata_tag_query(amount_of_tags=amount_of_tags)
         for core in mdh.core.main.get():
             self.metadata_tags = mdh.core.main.execute(core, self._request_path_file)
 
     def download_data(self, timestamp: str = False, limit: int = False, offset: int = False, selected_tags: list = None,
                       file_type: str = False):
-        """ download the data from a request and store it """
+        """ download the data from a request and store it
+        :param timestamp: timestamp of last data extraction. if given only data that was added after this date gets extracted (default = false --> no time filter)
+        :param limit: limit that determines the amount of files that will be extracted (default = false --> no limit)
+        :param offset: offset that determines how many of the first values of the extraction get skipped (default = false --> no offset)
+        :param selected_tags: list of tags that will extracted (default = None --> all possible tags get extracted)
+        :param file_type: type of file (e.g. xml, jpeg, ...). Only files of this type will be extracted (default = false --> all file types)
+        """
         self._generate_data_query(timestamp=timestamp, limit=limit, offset=offset, selected_tags=selected_tags,
                                   file_type=file_type)
         for core in mdh.core.main.get():
